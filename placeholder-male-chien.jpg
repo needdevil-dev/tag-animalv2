@@ -1,0 +1,140 @@
+(function () {
+  "use strict";
+
+  const LOG = "[TA_ENTRY]";
+
+  const STATES = ["home", "rdv", "vaccine", "antiparasite", "vermifuge", "treatment", "protection", "observation"];
+
+  const TITLES = {
+    home:         { icon: "➕", label: "Ajouter un soin" },
+    rdv:          { icon: "🩺", label: "Rendez-vous" },
+    antiparasite: { icon: "🦟", label: "Antiparasitaire" },
+    vermifuge:    { icon: "🪱", label: "Vermifuge" },
+    treatment:    { icon: "💊", label: "Ajouter un traitement" },
+    protection:   { icon: "🛡️", label: "Protection antiparasitaire" },
+    observation:  { icon: "👁️", label: "Observation" }
+  };
+
+  function onReady(fn) {
+    document.readyState === "loading"
+      ? document.addEventListener("DOMContentLoaded", fn, { once: true })
+      : fn();
+  }
+
+  function qs(root, sel) {
+    return root ? root.querySelector(sel) : null;
+  }
+
+  function qsa(root, sel) {
+    return root ? Array.from(root.querySelectorAll(sel)) : [];
+  }
+
+  onReady(() => {
+
+    const root = document.querySelector("[data-ta-entry-root]");
+    if (!root) {
+      console.warn(LOG, "root not found");
+      return;
+    }
+
+    let state = root.getAttribute("data-entry-state") || "home";
+    let historyStack = [];
+
+    const screens = qsa(root, "[data-entry-screen]");
+    const titleEl = qs(root, "[data-ta-entry-title] span");
+
+    function render() {
+
+      if (!STATES.includes(state)) {
+        state = "home";
+      }
+
+      /* Vide la pile quand on revient à l'accueil */
+      if (state === "home") {
+        historyStack = [];
+      }
+
+      const t = TITLES[state] || TITLES.home;
+
+      if (titleEl) {
+        titleEl.textContent = `${t.icon} ${t.label}`;
+      }
+
+      screens.forEach(screen => {
+
+        const name = screen.getAttribute("data-entry-screen");
+        const active = name === state;
+
+        screen.hidden = !active;
+        screen.classList.toggle("is-active", active);
+
+      });
+
+      root.setAttribute("data-entry-state", state);
+
+      console.log(LOG, "screen →", state);
+
+      /* EVENT GLOBAL */
+      document.dispatchEvent(
+        new CustomEvent("ta:screen", {
+          detail: { state }
+        })
+      );
+
+      /* EVENT SPÉCIFIQUE */
+      document.dispatchEvent(
+        new CustomEvent(`ta:screen:${state}`)
+      );
+
+    }
+
+    function go(next) {
+
+      if (!STATES.includes(next)) return;
+
+      historyStack.push(state);
+      state = next;
+
+      render();
+
+    }
+
+    function goBack() {
+
+      if (historyStack.length > 0) {
+        state = historyStack.pop();
+      } else {
+        state = "home";
+      }
+
+      render();
+
+    }
+
+    root.addEventListener("click", (e) => {
+
+      /* Bouton retour → remonte dans l'historique */
+      const backBtn = e.target.closest("[data-entry-back]");
+      if (backBtn && root.contains(backBtn)) {
+        e.preventDefault();
+        goBack();
+        return;
+      }
+
+      /* Bouton navigation → avance vers l'écran cible */
+      const btn = e.target.closest("[data-entry-go]");
+      if (!btn) return;
+
+      e.preventDefault();
+
+      const next = btn.getAttribute("data-entry-go");
+
+      go(next);
+
+    });
+
+    render();
+
+  });
+
+})();

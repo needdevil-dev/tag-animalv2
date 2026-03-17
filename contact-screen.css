@@ -1,0 +1,154 @@
+/* ===============================================================
+   TAGANIMAL — ANIMAL-CARD.CSS
+   Carte identité de l'animal (preview universelle)
+
+   ORGANISATION :
+   1. Portrait & photo circulaire
+   2. Nom de l'animal
+   3. Badge âge
+   4. Responsive
+
+   DÉPENDANCE :
+   Requiert global-card.css (.ta-preview-action déjà défini)
+
+   SCOPE : .ta-fiche-public
+=============================================================== */
+
+
+/* ===============================================================
+   1. PORTRAIT & PHOTO CIRCULAIRE
+   Scope : .ta-preview-card--animal-identity
+=============================================================== */
+
+/* Container portrait */
+.ta-fiche-public .ta-animal-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+  padding-top: 8px;
+}
+
+/* Photo circulaire */
+.ta-fiche-public .ta-preview-card--animal-identity img {
+  max-width: 220px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 50%;
+
+  /* Mise en scène premium */
+  padding: 7px;
+  background: linear-gradient(135deg, #fffdf8, #fef5e7);
+  box-shadow:
+    0 14px 32px rgba(0,0,0,.14),
+    0 4px 12px rgba(0,0,0,.08),
+    0 0 0 3px rgba(218,165,32,.18),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  transition:
+    transform .3s cubic-bezier(.22,.68,0,1.2),
+    box-shadow .3s ease;
+}
+
+.ta-fiche-public .ta-preview-card--animal-identity img:hover {
+  transform: scale(1.03);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.18),
+    0 6px 16px rgba(0,0,0,.10),
+    0 0 0 4px rgba(218,165,32,.28),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+
+/* ===============================================================
+   2. NOM DE L'ANIMAL
+=============================================================== */
+
+.ta-fiche-public .ta-animal-identity__name {
+  margin: 16px 0 6px;
+}
+
+.ta-fiche-public .ta-animal-identity__name .ta-value {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  display: block;
+  line-height: 1.1;
+
+  /* Dégradé texte "encre chaleureuse" */
+  background: linear-gradient(135deg, #2d2416 0%, #5a3a16 60%, #7a4e20 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+
+/* ===============================================================
+   3. BADGE ÂGE
+   Style pastille pilule dorée
+=============================================================== */
+
+.ta-fiche-public .ta-animal-identity__age {
+  margin: 10px 0 20px;
+}
+
+.ta-fiche-public .ta-animal-identity__age .ta-age-value {
+  display: inline-block;
+  font-size: 1.0rem;
+  font-weight: 700;
+  color: #a06a00;
+
+  background: linear-gradient(135deg,
+    rgba(218,165,32,.12) 0%,
+    rgba(255,215,0,.09) 100%
+  );
+  padding: 7px 20px;
+  border-radius: 50px;
+  border: 1.5px solid rgba(218,165,32,.30);
+  box-shadow:
+    0 2px 8px rgba(218,165,32,.15),
+    inset 0 1px 0 rgba(255,255,255,.6);
+  letter-spacing: 0.3px;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    transform .2s cubic-bezier(.22,.68,0,1.2);
+}
+
+.ta-fiche-public .ta-animal-identity__age .ta-age-value:hover {
+  background: linear-gradient(135deg,
+    rgba(218,165,32,.18) 0%,
+    rgba(255,215,0,.14) 100%
+  );
+  border-color: rgba(218,165,32,.42);
+  transform: translateY(-1px);
+}
+
+
+/* ===============================================================
+   4. RESPONSIVE
+=============================================================== */
+
+@media (max-width: 393px) {
+
+  .ta-fiche-public .ta-preview-card--animal-identity img {
+    max-width: 190px;
+  }
+
+  .ta-fiche-public .ta-animal-identity__name .ta-value {
+    font-size: 1.9rem;
+  }
+
+  .ta-fiche-public .ta-animal-identity__age .ta-age-value {
+    font-size: 0.92rem;
+    padding: 6px 16px;
+  }
+}
+
+
+/* ===============================================================
+   FIN — animal-card.css
+   TagAnimal — Carnet de santé premium — Mars 2026
+=============================================================== */

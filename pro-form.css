@@ -1,0 +1,117 @@
+/* =========================================================
+   OBSERVATION — cartes catégories propres
+   1 seule grosse icône centrée + label coloré
+   ========================================================= */
+
+[data-ta-observation-root] .ta-observation-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+[data-ta-observation-root] .ta-observation-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  min-height: 122px;
+  padding: 18px 12px 16px;
+  text-align: center;
+
+  border-radius: 20px;
+  border: 1.5px solid var(--obs-border, rgba(170,130,70,.17));
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,240,227,.42));
+  box-shadow: 0 6px 18px rgba(27,15,6,.08);
+  color: var(--obs-ink-mid, #3D2810);
+
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease,
+    border-color .16s ease,
+    background .2s ease;
+}
+
+/* supprime toute icône CSS injectée */
+[data-ta-observation-root] .ta-observation-choice::before,
+[data-ta-observation-root] .ta-observation-choice::after {
+  content: none !important;
+  display: none !important;
+}
+
+[data-ta-observation-root] .ta-observation-choice:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(27,15,6,.14);
+}
+
+[data-ta-observation-root] .ta-observation-choice__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: color-mix(in srgb, currentColor 12%, white);
+  box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 14%, transparent);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+[data-ta-observation-root] .ta-observation-choice__label {
+  display: block;
+  font-size: .98rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: currentColor;
+}
+
+/* couleurs par carte */
+[data-ta-observation-root] .ta-observation-choice[data-observation-cat="appetit"] {
+  color: #B96F16;
+  border-color: rgba(185,111,22,.20);
+}
+[data-ta-observation-root] .ta-observation-choice[data-observation-cat="mobilite"] {
+  color: #3E7F63;
+  border-color: rgba(62,127,99,.20);
+}
+[data-ta-observation-root] .ta-observation-choice[data-observation-cat="digestion"] {
+  color: #8A5B2D;
+  border-color: rgba(138,91,45,.20);
+}
+[data-ta-observation-root] .ta-observation-choice[data-observation-cat="comportement"] {
+  color: #5A52C8;
+  border-color: rgba(90,82,200,.20);
+}
+[data-ta-observation-root] .ta-observation-choice[data-observation-cat="peau"] {
+  color: #B85C3D;
+  border-color: rgba(184,92,61,.20);
+}
+[data-ta-observation-root] .ta-observation-choice[data-observation-cat="respiration"] {
+  color: #2A77B8;
+  border-color: rgba(42,119,184,.20);
+}
+[data-ta-observation-root] .ta-observation-choice[data-observation-cat="sommeil"] {
+  color: #6D63C6;
+  border-color: rgba(109,99,198,.20);
+}
+[data-ta-observation-root] .ta-observation-choice[data-observation-cat="autre"] {
+  color: #A95A78;
+  border-color: rgba(169,90,120,.20);
+}
+
+/* état sélectionné */
+[data-ta-observation-root] .ta-observation-choice.is-selected,
+[data-ta-observation-root] .ta-observation-choice.is-active {
+  background: linear-gradient(180deg, rgba(255,255,255,1), rgba(255,248,238,.95));
+  box-shadow:
+    0 0 0 4px rgba(200,145,69,.08),
+    0 12px 28px rgba(27,15,6,.16);
+  border-color: currentColor;
+}
+
+[data-ta-observation-root] .ta-observation-choice.is-selected .ta-observation-choice__icon,
+[data-ta-observation-root] .ta-observation-choice.is-active .ta-observation-choice__icon {
+  transform: scale(1.06);
+}

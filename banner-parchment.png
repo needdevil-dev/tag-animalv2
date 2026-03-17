@@ -1,0 +1,1736 @@
+/* =========================================================
+ * TAGANIMAL — REMINDERS UNIFIED
+ * Fichier : reminders-card.js
+ * Version : 1.6.0
+ * Auteur  : TagAnimal
+ * =========================================================
+ *
+ * RÔLE :
+ * - Unifier la gestion JS des rappels Santé + Journal
+ * - Conserver les PHP/CSS existants sans réécriture côté vue
+ * - Gérer : badges, édition inline, sauvegarde, suppression,
+ *   reprogrammation rapide et ouverture d'une modale PHP pilotée en JS
+ *
+ * BLOCS GÉRÉS :
+ * - Santé   : [data-ta-health-block="reminders"]
+ * - Journal : #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]
+ *
+ * NOTE D'ARCHI :
+ * - Un seul moteur JS pilote plusieurs blocs
+ * - Chaque bloc conserve son état propre (snapshot, config, reload)
+ * - Les fichiers PHP/CSS restent séparés
+ * - La modale date est désormais rendue par PHP puis pilotée par JS
+ *
+ * HISTORIQUE :
+ * - 1.4.0 : modale date générée dynamiquement côté JS
+ * - 1.5.0 : modale date reconstruite proprement via partial PHP
+ * - 1.5.1 :  correction vu temps réel 
+ * - 1.6 ajout vermifuge et antiparasite a la logique 
+ * ========================================================= */
+(function () {
+  "use strict";
+
+  if (window.TARemindersUnified && window.TARemindersUnified.__loaded) {
+    return;
+  }
+
+  const LOG = "[TA_REMINDERS_UNIFIED]";
+
+	const REMINDER_WINDOWS = {
+	  default: {
+		warnBefore: 7,
+		softLate: 3,
+	  },
+	  vaccine: {
+		warnBefore: 30,
+		softLate: 3,
+	  },
+	  simpleCycle: {
+		warnBefore: 1,
+		softLate: 3,
+	  },
+	};
+
+	const SIMPLE_CYCLE_TYPES = new Set(["antiparasite", "vermifuge"]);
+	const CARE_CYCLE_TYPES = new Set(["vaccine"]);
+	const PROTECTION_TYPES = new Set(["antiparasite","vermifuge"]);
+  const blockSnapshots = new WeakMap();
+
+  const qs = (s, c) => (c || document).querySelector(s);
+  const qsa = (s, c) => Array.from((c || document).querySelectorAll(s));
+
+  function onReady(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      fn();
+    }
+  }
+
+  function normalizeType(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+
+  function isJournalBlock(block) {
+    if (!block) return false;
+    return block.matches('#ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]');
+  }
+
+  function getBlockKind(block) {
+    return isJournalBlock(block) ? "journal" : "health";
+  }
+
+  function getConfigForBlock(block) {
+    const kind = getBlockKind(block);
+    const cfg = kind === "journal"
+      ? (window.TA_JOURNAL || window.TA_HEALTH || {})
+      : (window.TA_HEALTH || {});
+
+    return {
+      kind,
+      ajaxUrl: cfg.ajax_url || "",
+      nonce: cfg.nonce || "",
+      postId: parseInt(cfg.post_id || "0", 10) || 0,
+    };
+  }
+
+  function getSnapshotForBlock(block) {
+    let snapshot = blockSnapshots.get(block);
+    if (!snapshot) {
+      snapshot = new Map();
+      blockSnapshots.set(block, snapshot);
+    }
+    return snapshot;
+  }
+
+  function typeOf(item) {
+    return normalizeType(item?.dataset?.type || item?.dataset?.kind || (item?.closest('#ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]') ? "appointment" : ""));
+  }
+
+function timingOf(item) {
+  const type = typeOf(item);
+
+  if (type === "vaccine") {
+    return REMINDER_WINDOWS.vaccine;
+  }
+
+  if (SIMPLE_CYCLE_TYPES.has(type)) {
+    return REMINDER_WINDOWS.simpleCycle;
+  }
+
+  return REMINDER_WINDOWS.default;
+}
+  function normalizedModeOf(item) {
+    const block = item?.closest('[data-ta-health-block="reminders"], #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]');
+    if (isJournalBlock(block)) {
+      return "direct_due";
+    }
+
+    const explicit = String(item?.dataset?.mode || "").trim();
+    if (explicit === "protection_cycle" || explicit === "care_cycle" || explicit === "direct_due") {
+      return explicit;
+    }
+
+    const type = typeOf(item);
+    if (PROTECTION_TYPES.has(type)) return "protection_cycle";
+    if (CARE_CYCLE_TYPES.has(type)) return "care_cycle";
+    return "direct_due";
+  }
+
+  function idOf(item) {
+    const mode = normalizedModeOf(item);
+
+    if (mode === "protection_cycle") {
+      return String(item?.dataset?.cycleId || "");
+    }
+
+    if (mode === "care_cycle") {
+      return String(item?.dataset?.careId || "");
+    }
+
+    return String(item?.dataset?.careId || item?.dataset?.id || "");
+  }
+
+  function adminInputOf(item) {
+    return qs("[data-ta-health-reminder-date]", item);
+  }
+
+  function freqInputOf(item) {
+    return qs("[data-ta-protection-frequency]", item)
+      || qs("[data-ta-frequency-select]", item);
+  }
+
+  function noticeOf(item) {
+    return qs("[data-ta-notice]", item);
+  }
+
+  function isYmd(value) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(value || "");
+  }
+
+  function rawToMs(value) {
+    if (!value) return 0;
+    const v = String(value).trim();
+    if (/^\d{13}$/.test(v)) return Number(v);
+    if (/^\d{10}$/.test(v)) return Number(v) * 1000;
+    if (isYmd(v)) {
+      const d = new Date(v + "T00:00:00");
+      return isNaN(d.getTime()) ? 0 : d.getTime();
+    }
+    return 0;
+  }
+
+  function rawToYmd(value) {
+    if (!value) return "";
+    const v = String(value).trim();
+    if (isYmd(v)) return v;
+    const ms = rawToMs(v);
+    if (!ms) return "";
+    const d = new Date(ms);
+    return [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, "0"),
+      String(d.getDate()).padStart(2, "0"),
+    ].join("-");
+  }
+
+  function ymdToUnix(value) {
+    const ms = rawToMs(value);
+    return ms ? Math.floor(ms / 1000) : 0;
+  }
+
+  function todayMs() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }
+
+  function todayYmd() {
+    return rawToYmd(Date.now());
+  }
+
+  function addDays(ymd, days) {
+    if (!isYmd(ymd) || !days) return ymd || "";
+    const dt = new Date(ymd + "T00:00:00");
+    dt.setDate(dt.getDate() + days);
+    return [
+      dt.getFullYear(),
+      String(dt.getMonth() + 1).padStart(2, "0"),
+      String(dt.getDate()).padStart(2, "0"),
+    ].join("-");
+  }
+
+  function addMonths(ymd, months) {
+    if (!isYmd(ymd) || !months) return "";
+    const [y, m, d] = ymd.split("-").map(Number);
+    const dt = new Date(y, m - 1 + months, d);
+    if (dt.getDate() !== d) dt.setDate(0);
+    return [
+      dt.getFullYear(),
+      String(dt.getMonth() + 1).padStart(2, "0"),
+      String(dt.getDate()).padStart(2, "0"),
+    ].join("-");
+  }
+
+  function formatFrDate(ymd) {
+    if (!isYmd(ymd)) return "";
+    const [y, m, d] = ymd.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  function formatLongFrDate(raw) {
+    const ms = rawToMs(raw);
+    if (!ms) return "";
+    return new Date(ms).toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  }
+
+  function diffDaysFromToday(rawDate) {
+    const ms = rawToMs(rawDate);
+    if (!ms) return null;
+    return Math.floor((ms - todayMs()) / 86400000);
+  }
+
+  function getReminderState(item) {
+    const d = diffDaysFromToday(item?.dataset?.rawDate || "");
+    if (d === null) return "none";
+
+    const { warnBefore, softLate } = timingOf(item);
+
+    if (d > warnBefore) return "planned";
+    if (d > 0) return "warning";
+    if (d === 0) return "today";
+    if (d >= -softLate) return "late-soft";
+    return "late-hard";
+  }
+
+  /* =========================================================
+   * RÈGLE MÉTIER V1.2 — LANGAGE UNIQUE DES 5 CAS
+   * =========================================================
+   *
+   * IMPORTANT :
+   * - L'état temporel est calculé à partir de la date :
+   *   planned / warning / today / late-soft / late-hard
+   * - La décision utilisateur est une action métier :
+   *   1. keep_due_date   = date prévue, on ne change pas la date
+   *   2. done_today      = fait aujourd'hui
+   *   3. done_other_date = fait à une autre date passée
+   *   4. reschedule      = pas fait, on reprogramme
+   *   5. stop            = on arrête / on annule / on supprime
+   *
+   * RÈGLE D'AFFICHAGE :
+   * - planned   : aucun bouton
+   * - warning   : on montre les 5 cas
+   * - today     : on montre 4 cas (pas de keep_due_date)
+   * - late-*    : on montre 4 cas (pas de keep_due_date)
+   *
+   * RÈGLE DE CÂBLAGE :
+   * - keep_due_date  -> reschedule SAME DATE (trace DB sans mutation métier)
+   * - done_today     -> confirm/finish avec today
+   * - done_other_date-> confirm/finish avec date choisie
+   * - reschedule     -> reschedule nouvelle date
+   * - stop           -> disable/delete selon le mode réel
+   */
+  function getActionPhase(item) {
+    const state = getReminderState(item);
+
+    switch (state) {
+      case "warning":
+        return "future-window";
+      case "today":
+        return "today";
+      case "late-soft":
+      case "late-hard":
+        return "late";
+      default:
+        return null;
+    }
+  }
+  function isSimpleCycleItem(item) {
+  return SIMPLE_CYCLE_TYPES.has(typeOf(item));
+}
+
+  function setBadgesForItem(item) {
+    const state = getReminderState(item);
+
+    item.classList.remove(
+      "is-planned",
+      "is-warning",
+      "is-today",
+      "is-late-soft",
+      "is-late-hard",
+      "is-next",
+      "is-late",
+      "is-ok"
+    );
+
+    if (state !== "none") {
+      item.classList.add(`is-${state}`);
+      item.dataset.reminderState = state;
+    } else {
+      delete item.dataset.reminderState;
+    }
+
+    const badges = qs(".ta-health-badges", item);
+    if (!badges) return;
+
+    const badgeLate = qs(".ta-badge-late", badges);
+    const badgeNext = qs(".ta-badge-next", badges);
+    const badgeToday = qs(".ta-badge-today", badges);
+
+    if (badgeLate) badgeLate.hidden = true;
+    if (badgeNext) badgeNext.hidden = true;
+    if (badgeToday) badgeToday.hidden = true;
+
+    if (state === "warning" && badgeNext) {
+      badgeNext.hidden = false;
+    }
+
+    if ((state === "late-soft" || state === "late-hard") && badgeLate) {
+      badgeLate.hidden = false;
+    }
+
+    if (state === "today" && badgeToday) {
+      badgeToday.hidden = false;
+    }
+  }
+
+
+
+
+
+
+
+
+  function getDecisionLabels(item) {
+    const block = item?.closest('[data-ta-health-block="reminders"], #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]');
+    const mode = normalizedModeOf(item);
+
+    if (isJournalBlock(block) || mode === "direct_due") {
+      return {
+        doneToday: "✅ Fait aujourd'hui",
+        doneOtherDate: "🗓️ Fait à une autre date",
+        reschedule: "📅 Pas fait, reprogrammer",
+        keepDueDate: "🕓 Garder la date prévue",
+        stop: "⛔ Annuler / stop",
+      };
+    }
+
+    if (mode === "protection_cycle") {
+      return {
+        doneToday: "✅ Donné aujourd'hui",
+        doneOtherDate: "🗓️ Donné à une autre date",
+        reschedule: "📅 Pas donné, reprogrammer",
+        keepDueDate: "🕓 Garder la date prévue",
+        stop: "⛔ Arrêter ce rappel",
+      };
+    }
+
+    // Boutons générés exclusivement par PHP. getDecisionLabels ne sert plus.
+    return {};
+  }
+
+  /*
+   * renderDecisionButtons SUPPRIMÉ : les boutons sont générés
+   * exclusivement par PHP. Le JS ne produit aucun HTML de bouton.
+   * refreshContextualActions() gère uniquement l'attribut hidden.
+   */
+
+
+
+function refreshContextualActions(block) {
+  /*
+   * Règle d'ownership : le nonce TA_HEALTH n'est injectmé
+   * par wp_localize_script QUE pour le propriétaire connecté.
+   * S'il est absent → visiteur public → boutons masqués.
+   *
+   * PHP a rendu les boutons. JS ne touche QU'À hidden.
+   */
+  const cfg      = getConfigForBlock(block);
+  const isOwner  = !!(cfg.nonce && cfg.postId);
+  const isEdit   = block.classList.contains("is-edit");
+
+  qsa("[data-ta-reminder-decisions]", block).forEach((host) => {
+    host.hidden = !isOwner || isEdit;
+  });
+}
+
+  function refreshCountBadge(block) {
+    if (!isJournalBlock(block)) return;
+
+    const badge = qs("[data-ta-journal-count]", block);
+    if (!badge) return;
+
+    const count = qsa(".ta-health-list__item", block).length;
+    badge.textContent = String(count);
+    badge.hidden = count <= 0;
+  }
+
+  function refreshEmptyState(block) {
+    const list = qs("[data-ta-health-reminders-list]", block);
+    const wrap = qs("[data-ta-health-reminders]", block) || block;
+    let empty = qs("[data-ta-health-reminders-empty]", block);
+    const allItems = qsa(".ta-health-list__item", block);
+    const hasItems = allItems.length > 0;
+    const btnEdit = qs("[data-ta-reminders-open]", block);
+
+    if (list) list.hidden = !hasItems;
+    if (btnEdit) btnEdit.hidden = !hasItems;
+
+    if (!hasItems) {
+      if (!empty) {
+        empty = document.createElement("p");
+        empty.className = isJournalBlock(block)
+          ? "ta-health-empty ta-rdv-empty-inline"
+          : "ta-health-empty";
+        empty.setAttribute("data-ta-health-reminders-empty", "");
+        empty.textContent = isJournalBlock(block)
+          ? "Aucun rendez-vous à venir"
+          : "Aucun rappel actif";
+        wrap.prepend(empty);
+      }
+      empty.hidden = false;
+      refreshCountBadge(block);
+      return;
+    }
+
+    if (empty) empty.hidden = true;
+    refreshCountBadge(block);
+  }
+
+  function refreshBadges(block) {
+    qsa(".ta-health-list__item", block).forEach(setBadgesForItem);
+    refreshEmptyState(block);
+  }
+
+  function setEditMode(block, enabled) {
+    qsa(".ta-health-list__item", block).forEach((item) => {
+      const readEl = qs(".ta-health-read", item);
+      const editEl = qs(".ta-health-edit-inline", item);
+      if (readEl) readEl.hidden = !!enabled;
+      if (editEl) editEl.hidden = !enabled;
+    });
+
+    const readActions = qs(".ta-health-actions-read", block);
+    const editActions = qs(".ta-health-edit", block);
+
+    if (readActions) readActions.hidden = !!enabled;
+    if (editActions) editActions.hidden = !enabled;
+
+    block.classList.toggle("is-edit", !!enabled);
+    refreshContextualActions(block);
+  }
+
+  function updateNotice(item) {
+    const notice = noticeOf(item);
+    if (!notice) return;
+
+    const block = item?.closest('[data-ta-health-block="reminders"], #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]');
+
+    if (isJournalBlock(block)) {
+      const dueYmd = adminInputOf(item)?.value || rawToYmd(item.dataset.rawDate || "");
+      notice.textContent = isYmd(dueYmd)
+        ? `Rendez-vous prévu le ${formatFrDate(dueYmd)}.`
+        : "";
+      return;
+    }
+
+    const mode = normalizedModeOf(item);
+    if (mode === "direct_due") {
+      notice.textContent = "";
+      return;
+    }
+
+    const adminYmd = adminInputOf(item)?.value || item.dataset.administeredAt || "";
+    const months = parseInt(freqInputOf(item)?.value || item.dataset.intervalMonths || "0", 10) || 0;
+
+    if (!isYmd(adminYmd) || months <= 0) {
+      notice.textContent = "";
+      return;
+    }
+
+    const dueYmd = addMonths(adminYmd, months);
+    if (!dueYmd) {
+      notice.textContent = "";
+      return;
+    }
+
+    const petName = item.dataset.petName || "";
+    const petPart = petName ? ` de ${petName}` : "";
+
+	if (mode === "protection_cycle") {
+	  const type = typeOf(item);
+	  const label = type === "vermifuge" ? "vermifuge" : "antiparasitaire";
+	  notice.textContent = `Prochain rappel ${label}${petPart} prévu le ${formatFrDate(dueYmd)}.`;
+	  return;
+	}
+
+    const type = typeOf(item);
+    const label = (type === "deworm" || type === "vermifuge") ? "vermifuge" : "vaccin";
+    notice.textContent = `Prochain rappel ${label}${petPart} prévu le ${formatFrDate(dueYmd)}.`;
+  }
+
+  function updateReadView(item, data) {
+    const block = item?.closest('[data-ta-health-block="reminders"], #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]');
+
+    if (isJournalBlock(block)) {
+      const dueYmd = data.due_at || "";
+      const dueUnix = dueYmd ? String(ymdToUnix(dueYmd)) : "";
+      const duePretty = dueYmd ? formatLongFrDate(dueYmd) : "";
+
+      item.dataset.rawDate = dueUnix;
+      item.dataset.rdvTs = dueUnix;
+
+      const dateMain = qs("[data-ta-journal-date-main]", item);
+      const dateShort = qs("[data-ta-journal-date-short]", item);
+      const daysAway = qs("[data-ta-journal-days-away]", item);
+
+      if (dateMain) {
+        dateMain.textContent = duePretty || "—";
+      }
+
+      if (dateShort) {
+        dateShort.textContent = dueYmd ? formatFrDate(dueYmd) : "—";
+      }
+
+      const days = diffDaysFromToday(dueUnix);
+      if (daysAway) {
+        if (days === null || days <= 7) {
+          daysAway.hidden = true;
+          daysAway.textContent = "";
+        } else {
+          daysAway.hidden = false;
+          daysAway.textContent = days > 1 ? `dans ${days} jours` : `dans ${days} jour`;
+        }
+      }
+
+      return;
+    }
+
+    const mode = normalizedModeOf(item);
+    const adminYmd = data.administered_at || "";
+    const dueYmd = data.due_at || "";
+    const months = parseInt(data.interval_months || "0", 10) || 0;
+
+    item.dataset.administeredAt = adminYmd;
+    item.dataset.intervalMonths = String(months || 0);
+    item.dataset.rawDate = dueYmd ? String(ymdToUnix(dueYmd)) : "";
+
+    const execEl = qs(".ta-vac-list__value--exec", item) || qs(".ta-health-list__value", item);
+    const dueEl = qs(".ta-health-list__value--due", item);
+    const freqEl = qs(".ta-ap-freq", item);
+
+    if (mode === "care_cycle") {
+      if (execEl) execEl.innerHTML = adminYmd ? formatFrDate(adminYmd) : '<span class="ta-ap-empty">—</span>';
+      if (dueEl) dueEl.textContent = dueYmd ? formatFrDate(dueYmd) : "—";
+      if (freqEl) freqEl.innerHTML = months > 0 ? `tous les ${months} mois` : '<span class="ta-ap-empty">—</span>';
+      return;
+    }
+
+    if (mode === "protection_cycle") {
+      const adminValueEl = qs(".ta-health-list__value", item);
+      if (adminValueEl) adminValueEl.innerHTML = adminYmd ? formatFrDate(adminYmd) : '<span class="ta-ap-empty">—</span>';
+      if (dueEl) dueEl.textContent = dueYmd ? formatFrDate(dueYmd) : "—";
+      if (freqEl) freqEl.innerHTML = months > 0 ? `tous les ${months} mois` : '<span class="ta-ap-empty">—</span>';
+      return;
+    }
+
+    const directValue = qs(".ta-health-read .ta-health-list__value", item);
+    if (directValue) {
+      const label = item.querySelector(".ta-health-sublabel")?.textContent?.trim() || "";
+      directValue.textContent = dueYmd
+        ? `${formatFrDate(dueYmd)}${label ? ` – ${label.replace(/^—\s*/, "")}` : ""}`
+        : "";
+    }
+  }
+
+  async function postAjax(block, payload) {
+    const cfg = getConfigForBlock(block);
+
+    if (!cfg.ajaxUrl || !cfg.nonce || !cfg.postId) {
+      throw new Error(`Config ${cfg.kind === "journal" ? "TA_JOURNAL" : "TA_HEALTH"} invalide`);
+    }
+
+    const body = new URLSearchParams();
+    Object.entries(payload).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) body.append(k, String(v));
+    });
+
+    const res = await fetch(cfg.ajaxUrl, {
+      method: "POST",
+      credentials: "same-origin",
+      body,
+    });
+
+    const text = await res.text();
+    let json = null;
+
+    try {
+      json = JSON.parse(text);
+    } catch (e) {
+      console.error(LOG, "Réponse JSON invalide", text);
+      throw e;
+    }
+
+    if (!res.ok) {
+      const message = json?.data?.message || `HTTP ${res.status}`;
+      throw new Error(message);
+    }
+
+    return json;
+  }
+
+  function takeSnapshot(block) {
+    const snapshot = getSnapshotForBlock(block);
+    snapshot.clear();
+
+    qsa(".ta-health-list__item", block).forEach((item) => {
+      const key = idOf(item);
+      if (!key) return;
+
+      snapshot.set(key, {
+        rawDate: item.dataset.rawDate || "",
+        administeredAt: item.dataset.administeredAt || "",
+        intervalMonths: item.dataset.intervalMonths || "",
+        dateValue: adminInputOf(item)?.value || "",
+        freqValue: freqInputOf(item)?.value || "",
+      });
+    });
+  }
+
+  function rollback(block) {
+    const snapshot = getSnapshotForBlock(block);
+
+    qsa(".ta-health-list__item", block).forEach((item) => {
+      const snap = snapshot.get(idOf(item));
+      if (!snap) return;
+
+      item.dataset.rawDate = snap.rawDate;
+      item.dataset.administeredAt = snap.administeredAt;
+      item.dataset.intervalMonths = snap.intervalMonths;
+      if (isJournalBlock(block)) {
+        item.dataset.rdvTs = snap.rawDate;
+      }
+
+      const dateInput = adminInputOf(item);
+      const freqInput = freqInputOf(item);
+
+      if (dateInput) dateInput.value = snap.dateValue;
+      if (freqInput) freqInput.value = snap.freqValue;
+
+      updateNotice(item);
+
+      if (isJournalBlock(block)) {
+        updateReadView(item, { due_at: rawToYmd(snap.rawDate) });
+      }
+    });
+
+    refreshBadges(block);
+    refreshContextualActions(block);
+  }
+
+  function payloadForSave(item) {
+    const block = item?.closest('[data-ta-health-block="reminders"], #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]');
+    const mode = normalizedModeOf(item);
+    const reminderId = idOf(item);
+    const type = typeOf(item);
+    const dateValue = adminInputOf(item)?.value || "";
+    const freqValue = freqInputOf(item)?.value || item.dataset.intervalMonths || "0";
+    const cfg = getConfigForBlock(block);
+
+    if (!reminderId) {
+      throw new Error("Identifiant rappel manquant");
+    }
+
+    if (mode === "protection_cycle") {
+      return {
+        action: "ta_protection_update_fields",
+        cycle_id: reminderId,
+        administered_at: dateValue,
+        interval_months: freqValue,
+        nonce: cfg.nonce,
+        post_id: cfg.postId,
+      };
+    }
+
+    if (mode === "care_cycle") {
+      return {
+        action: "ta_care_update",
+        care_id: reminderId,
+        type,
+        executed_at: dateValue,
+        reminder_delay_months: freqValue,
+        nonce: cfg.nonce,
+        post_id: cfg.postId,
+      };
+    }
+
+    return {
+      action: "ta_care_update",
+      care_id: reminderId,
+      type,
+      next_due_at: dateValue,
+      nonce: cfg.nonce,
+      post_id: cfg.postId,
+    };
+  }
+
+  function normalizeResponseData(item, json) {
+    const mode = normalizedModeOf(item);
+    const data = json?.data || {};
+
+    if (mode === "protection_cycle") {
+      return {
+        administered_at: rawToYmd(data.administered_at || adminInputOf(item)?.value || item.dataset.administeredAt || ""),
+        due_at: rawToYmd(data.due_at || data.next_due_at || item.dataset.rawDate || ""),
+        interval_months: parseInt(data.interval_months || freqInputOf(item)?.value || item.dataset.intervalMonths || "0", 10) || 0,
+      };
+    }
+
+    if (mode === "care_cycle") {
+      return {
+        administered_at: rawToYmd(data.executed_at || adminInputOf(item)?.value || item.dataset.administeredAt || ""),
+        due_at: rawToYmd(data.next_due_at || data.due_at || item.dataset.rawDate || ""),
+        interval_months: parseInt(data.interval_months || freqInputOf(item)?.value || item.dataset.intervalMonths || "0", 10) || 0,
+      };
+    }
+
+    return {
+      administered_at: "",
+      due_at: rawToYmd(data.next_due_at || data.due_at || adminInputOf(item)?.value || item.dataset.rawDate || ""),
+      interval_months: 0,
+    };
+  }
+
+  async function saveAll(block) {
+    const items = qsa(".ta-health-list__item", block);
+    const snapshot = getSnapshotForBlock(block);
+
+    for (const item of items) {
+      const itemId = idOf(item);
+      if (!itemId) continue;
+
+      const snap = snapshot.get(itemId);
+      const currentDate = adminInputOf(item)?.value || "";
+      const currentFreq = freqInputOf(item)?.value || "";
+      const mode = normalizedModeOf(item);
+
+      const changed = mode === "direct_due"
+        ? currentDate !== (snap?.dateValue || "")
+        : currentDate !== (snap?.dateValue || "") || currentFreq !== (snap?.freqValue || "");
+
+      if (!changed) continue;
+
+      if (isJournalBlock(block) && !isYmd(currentDate)) {
+        throw new Error("Date de rendez-vous invalide");
+      }
+
+      const payload = payloadForSave(item);
+      console.log(LOG, "save payload", payload);
+
+      const json = await postAjax(block, payload);
+      if (!json?.success) {
+        throw new Error(json?.data?.message || "Erreur d'enregistrement");
+      }
+
+      const normalized = normalizeResponseData(item, json);
+      updateReadView(item, normalized);
+      updateNotice(item);
+    }
+
+    takeSnapshot(block);
+    setEditMode(block, false);
+    refreshBadges(block);
+    refreshContextualActions(block);
+  }
+
+  async function deleteReminder(block, item) {
+    const mode = normalizedModeOf(item);
+    const reminderId = idOf(item);
+    const cfg = getConfigForBlock(block);
+
+    if (!reminderId) throw new Error("ID rappel manquant");
+
+    const payload = mode === "protection_cycle"
+      ? { action: "ta_protection_toggle_reminder", cycle_id: reminderId, enabled: 0, nonce: cfg.nonce, post_id: cfg.postId }
+      : { action: "ta_care_delete", care_id: reminderId, nonce: cfg.nonce, post_id: cfg.postId };
+
+    const json = await postAjax(block, payload);
+    if (!json?.success) {
+      throw new Error(json?.data?.message || "Erreur suppression");
+    }
+
+    item.remove();
+    refreshEmptyState(block);
+    takeSnapshot(block);
+    setEditMode(block, false);
+    refreshBadges(block);
+    refreshContextualActions(block);
+  }
+
+  async function confirmCareAtDate(item, block, effectiveYmd) {
+    const cfg = getConfigForBlock(block);
+
+    const json = await postAjax(block, {
+      action: "ta_care_confirm_vaccine",
+      care_id: idOf(item),
+      administered_at: effectiveYmd,
+      nonce: cfg.nonce,
+      post_id: cfg.postId,
+    });
+
+    if (!json?.success) throw new Error(json?.data?.message || "Erreur confirmation");
+
+    updateReadView(item, {
+      administered_at: effectiveYmd,
+      due_at: rawToYmd(json.data?.next_due_at || ""),
+      interval_months: parseInt(item.dataset.intervalMonths || "0", 10) || 0,
+    });
+
+    refreshBadges(block);
+    refreshContextualActions(block);
+  }
+
+  async function confirmProtectionAtDate(item, block, effectiveYmd) {
+    const cfg = getConfigForBlock(block);
+
+    const json = await postAjax(block, {
+      action: "ta_protection_confirm_given",
+      cycle_id: idOf(item),
+      administered_at: effectiveYmd,
+      nonce: cfg.nonce,
+      post_id: cfg.postId,
+    });
+
+    if (!json?.success) throw new Error(json?.data?.message || "Erreur confirmation");
+
+    updateReadView(item, {
+      administered_at: effectiveYmd,
+      due_at: rawToYmd(json.data?.due_at || json.data?.next_due_at || ""),
+      interval_months: parseInt(json.data?.interval_months || item.dataset.intervalMonths || "0", 10) || 0,
+    });
+
+    refreshBadges(block);
+    refreshContextualActions(block);
+  }
+
+  const reminderDateModalState = {
+    root: null,
+    opener: null,
+    resolver: null,
+    bound: false,
+  };
+
+  function getReminderDateModal() {
+    if (
+      reminderDateModalState.root &&
+      document.body.contains(reminderDateModalState.root)
+    ) {
+      return reminderDateModalState.root;
+    }
+
+    const modal = qs("[data-ta-reminder-modal]");
+    if (!modal) {
+      console.warn(LOG, "Modale PHP introuvable : [data-ta-reminder-modal]");
+      return null;
+    }
+
+    reminderDateModalState.root = modal;
+    return modal;
+  }
+
+  function getReminderDateModalParts(modal) {
+    return {
+      eyebrow: qs("[data-ta-reminder-modal-eyebrow]", modal),
+      title: qs("[data-ta-reminder-modal-title]", modal),
+      text: qs("[data-ta-reminder-modal-text]", modal),
+      label: qs("[data-ta-reminder-modal-label]", modal),
+      input: qs("[data-ta-reminder-modal-input]", modal),
+      chips: qs("[data-ta-reminder-modal-chips]", modal),
+      feedback: qs("[data-ta-reminder-modal-feedback]", modal),
+      confirm: qs("[data-ta-reminder-modal-confirm]", modal),
+      cancel: qs("[data-ta-reminder-modal-cancel]", modal),
+    };
+  }
+
+  function setModalFeedback(modal, message) {
+    const parts = getReminderDateModalParts(modal);
+    if (!parts.feedback) return;
+
+    const text = String(message || "").trim();
+    parts.feedback.textContent = text;
+    parts.feedback.hidden = !text;
+  }
+
+  function renderReminderDateModalChips(modal, chips) {
+    const parts = getReminderDateModalParts(modal);
+    if (!parts.chips) return;
+
+    const safeChips = Array.isArray(chips)
+      ? chips.filter((chip) => chip && isYmd(chip.value))
+      : [];
+
+    parts.chips.innerHTML = "";
+
+    if (!safeChips.length) {
+      parts.chips.hidden = true;
+      return;
+    }
+
+    safeChips.forEach((chip) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "ta-reminder-date-chip";
+      btn.setAttribute("data-ta-reminder-chip-value", chip.value);
+
+      const label = document.createElement("span");
+      label.className = "ta-reminder-date-chip__label";
+      label.textContent = String(chip.label || "").trim();
+
+      btn.appendChild(label);
+
+      if (chip.meta) {
+        const meta = document.createElement("span");
+        meta.className = "ta-reminder-date-chip__meta";
+        meta.textContent = String(chip.meta || "").trim();
+        btn.appendChild(meta);
+      }
+
+      parts.chips.appendChild(btn);
+    });
+
+    parts.chips.hidden = false;
+  }
+
+  function validateReminderDateModal(modal, options) {
+    const parts = getReminderDateModalParts(modal);
+    if (!parts.input) return "";
+
+    const value = String(parts.input.value || "").trim();
+    const min = String(options?.min || "").trim();
+    const max = String(options?.max || "").trim();
+
+    if (!isYmd(value)) {
+      setModalFeedback(modal, "Choisissez une date valide.");
+      return "";
+    }
+
+    if (isYmd(min) && value < min) {
+      setModalFeedback(
+        modal,
+        `La date doit être le ${formatFrDate(min)} ou après.`
+      );
+      return "";
+    }
+
+    if (isYmd(max) && value > max) {
+      setModalFeedback(
+        modal,
+        `La date doit être le ${formatFrDate(max)} ou avant.`
+      );
+      return "";
+    }
+
+    setModalFeedback(modal, "");
+    return value;
+  }
+
+  function resolveAndCloseReminderDateModal(result) {
+    const modal = getReminderDateModal();
+    if (modal) {
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      modal.classList.remove("is-open");
+    }
+
+    document.documentElement.classList.remove("ta-reminder-modal-open");
+    document.body.classList.remove("ta-reminder-modal-open");
+
+    const opener = reminderDateModalState.opener;
+    const resolver = reminderDateModalState.resolver;
+
+    reminderDateModalState.opener = null;
+    reminderDateModalState.resolver = null;
+
+    if (opener && typeof opener.focus === "function") {
+      opener.focus();
+    }
+
+    if (typeof resolver === "function") {
+      resolver(result || null);
+    }
+  }
+
+  function bindReminderDateModal() {
+    const modal = getReminderDateModal();
+    if (!modal || reminderDateModalState.bound) return;
+
+    reminderDateModalState.bound = true;
+
+    modal.addEventListener("click", function (e) {
+      const closeBtn = e.target.closest("[data-ta-reminder-modal-close]");
+      if (closeBtn) {
+        e.preventDefault();
+        resolveAndCloseReminderDateModal(null);
+        return;
+      }
+
+      const cancelBtn = e.target.closest("[data-ta-reminder-modal-cancel]");
+      if (cancelBtn) {
+        e.preventDefault();
+        resolveAndCloseReminderDateModal(null);
+        return;
+      }
+
+      const chip = e.target.closest("[data-ta-reminder-chip-value]");
+      if (chip) {
+        e.preventDefault();
+
+        const parts = getReminderDateModalParts(modal);
+        if (!parts.input) return;
+
+        parts.input.value = chip.dataset.taReminderChipValue || "";
+        setModalFeedback(modal, "");
+
+        qsa(".ta-reminder-date-chip", modal).forEach((node) => {
+          node.classList.toggle("is-selected", node === chip);
+        });
+
+        parts.input.focus();
+        return;
+      }
+
+      const confirmBtn = e.target.closest("[data-ta-reminder-modal-confirm]");
+      if (confirmBtn) {
+        e.preventDefault();
+
+        const options = modal.__taReminderModalOptions || {};
+        const ymd = validateReminderDateModal(modal, options);
+
+        if (!ymd) {
+          const parts = getReminderDateModalParts(modal);
+          if (parts.input) parts.input.focus();
+          return;
+        }
+
+        resolveAndCloseReminderDateModal(ymd);
+      }
+    });
+
+    modal.addEventListener("input", function (e) {
+      if (!e.target.matches("[data-ta-reminder-modal-input]")) return;
+
+      setModalFeedback(modal, "");
+
+      const currentValue = String(e.target.value || "").trim();
+      qsa(".ta-reminder-date-chip", modal).forEach((node) => {
+        node.classList.toggle(
+          "is-selected",
+          node.dataset.taReminderChipValue === currentValue
+        );
+      });
+    });
+
+    modal.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        resolveAndCloseReminderDateModal(null);
+        return;
+      }
+
+      if (e.key === "Enter" && e.target.matches("[data-ta-reminder-modal-input]")) {
+        e.preventDefault();
+        const confirmBtn = qs("[data-ta-reminder-modal-confirm]", modal);
+        if (confirmBtn) confirmBtn.click();
+      }
+    });
+  }
+
+  function openReminderDateModal(options) {
+    const modal = getReminderDateModal();
+    if (!modal) return Promise.resolve(null);
+
+    bindReminderDateModal();
+
+    const parts = getReminderDateModalParts(modal);
+    if (
+      !parts.title ||
+      !parts.text ||
+      !parts.label ||
+      !parts.input ||
+      !parts.confirm ||
+      !parts.cancel
+    ) {
+      console.warn(LOG, "Structure incomplète de la modale PHP");
+      return Promise.resolve(null);
+    }
+
+    if (typeof reminderDateModalState.resolver === "function") {
+      resolveAndCloseReminderDateModal(null);
+    }
+
+    const title = String(options?.title || "Choisir une date").trim();
+    const text = String(options?.text || "").trim();
+    const label = String(options?.label || "Date").trim();
+    const confirmText = String(options?.confirmText || "Confirmer").trim();
+    const cancelText = String(options?.cancelText || "Annuler").trim();
+    const eyebrowText = String(
+      options?.eyebrow || "Rappel TagAnimal"
+    ).trim();
+
+    let defaultValue = isYmd(options?.defaultValue || "")
+      ? String(options.defaultValue).trim()
+      : "";
+
+    const min = isYmd(options?.min || "") ? String(options.min).trim() : "";
+    const max = isYmd(options?.max || "") ? String(options.max).trim() : "";
+
+    if (defaultValue && min && defaultValue < min) {
+      defaultValue = min;
+    }
+
+    if (defaultValue && max && defaultValue > max) {
+      defaultValue = max;
+    }
+
+    modal.__taReminderModalOptions = {
+      min,
+      max,
+    };
+
+    if (parts.eyebrow) {
+      parts.eyebrow.textContent = eyebrowText;
+      parts.eyebrow.hidden = !eyebrowText;
+    }
+
+    parts.title.textContent = title;
+    parts.text.textContent = text;
+    parts.text.hidden = !text;
+    parts.label.textContent = label;
+    parts.confirm.textContent = confirmText;
+    parts.cancel.textContent = cancelText;
+
+    parts.input.value = defaultValue;
+    parts.input.min = min;
+    parts.input.max = max;
+
+    renderReminderDateModalChips(modal, options?.chips || []);
+    setModalFeedback(modal, "");
+
+    qsa(".ta-reminder-date-chip", modal).forEach((node) => {
+      node.classList.toggle(
+        "is-selected",
+        node.dataset.taReminderChipValue === defaultValue
+      );
+    });
+
+    reminderDateModalState.opener =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    modal.classList.add("is-open");
+
+    document.documentElement.classList.add("ta-reminder-modal-open");
+    document.body.classList.add("ta-reminder-modal-open");
+
+    return new Promise(function (resolve) {
+      reminderDateModalState.resolver = resolve;
+
+      window.requestAnimationFrame(function () {
+        parts.input.focus();
+
+        if (typeof parts.input.showPicker === "function") {
+          try {
+            parts.input.showPicker();
+          } catch (e) {}
+        }
+      });
+    });
+  }
+
+  async function finishDirectDue(item, block) {
+    const cfg = getConfigForBlock(block);
+    const json = await postAjax(block, {
+      action: "ta_care_finish",
+      care_id: idOf(item),
+      nonce: cfg.nonce,
+      post_id: cfg.postId,
+    });
+
+    if (!json?.success) throw new Error(json?.data?.message || "Erreur de clôture");
+
+    item.remove();
+    refreshEmptyState(block);
+    refreshBadges(block);
+    refreshContextualActions(block);
+  }
+
+  async function keepDueDate(item, block) {
+    const sameDate = rawToYmd(item.dataset.rawDate || "");
+    if (!isYmd(sameDate)) {
+      throw new Error("Date prévue introuvable");
+    }
+    await rescheduleToDate(item, block, sameDate);
+  }
+
+  async function doneAtDate(item, block, effectiveYmd) {
+    const mode = normalizedModeOf(item);
+
+    if (!isYmd(effectiveYmd)) {
+      throw new Error("Date d'exécution invalide");
+    }
+
+    if (effectiveYmd > todayYmd()) {
+      throw new Error("La date d'exécution ne peut pas être dans le futur");
+    }
+
+    if (mode === "care_cycle") {
+      await confirmCareAtDate(item, block, effectiveYmd);
+      return;
+    }
+
+    if (mode === "protection_cycle") {
+      await confirmProtectionAtDate(item, block, effectiveYmd);
+      return;
+    }
+
+    await finishDirectDue(item, block);
+  }
+
+  async function quickReschedule(item, block, days) {
+    const currentDue = rawToYmd(item.dataset.rawDate || "");
+    const nextDue = addDays(currentDue, days);
+    if (!isYmd(nextDue)) {
+      throw new Error("Nouvelle date impossible à calculer");
+    }
+    await rescheduleToDate(item, block, nextDue);
+  }
+
+  async function rescheduleToDate(item, block, ymd) {
+    if (!isYmd(ymd)) {
+      throw new Error("Format de date invalide");
+    }
+
+    const mode = normalizedModeOf(item);
+    const cfg = getConfigForBlock(block);
+
+    let json;
+
+    if (mode === "protection_cycle") {
+      json = await postAjax(block, {
+        action: "ta_protection_reschedule",
+        cycle_id: idOf(item),
+        mode: "date",
+        due_date: ymd,
+        source: "ui",
+        nonce: cfg.nonce,
+        post_id: cfg.postId,
+      });
+    } else {
+      json = await postAjax(block, {
+        action: "ta_care_reschedule",
+        care_id: idOf(item),
+        mode: "date",
+        due_date: ymd,
+        source: "ui",
+        nonce: cfg.nonce,
+        post_id: cfg.postId,
+      });
+    }
+
+    if (!json?.success) {
+      throw new Error(json?.data?.message || "Erreur reprogrammation");
+    }
+
+    const data = json?.data?.data || json?.data || {};
+    const nextDue = rawToYmd(data.next_due_at || data.due_at || ymd);
+
+    updateReadView(item, {
+      administered_at: item.dataset.administeredAt || "",
+      due_at: nextDue,
+      interval_months: parseInt(item.dataset.intervalMonths || "0", 10) || 0,
+    });
+
+    refreshBadges(block);
+    refreshContextualActions(block);
+  }
+
+  async function pickReschedule(item, block) {
+    const dueDate = rawToYmd(item.dataset.rawDate || "");
+    const today = todayYmd();
+
+    const safeDefault =
+      isYmd(dueDate) && dueDate >= today
+        ? dueDate
+        : today;
+
+    const chips = [
+      {
+        label: "Aujourd'hui",
+        value: today,
+        meta: formatFrDate(today),
+      },
+    ];
+
+    if (isYmd(dueDate) && dueDate >= today && dueDate !== today) {
+      chips.push({
+        label: "Date prévue",
+        value: dueDate,
+        meta: formatFrDate(dueDate),
+      });
+    }
+
+    const ymd = await openReminderDateModal({
+      eyebrow: isJournalBlock(block) ? "Rendez-vous TagAnimal" : "Rappel TagAnimal",
+      title: isJournalBlock(block)
+        ? "Reprogrammer le rendez-vous"
+        : "Reprogrammer le rappel",
+      text: isJournalBlock(block)
+        ? "Choisissez une nouvelle date pour ce rendez-vous."
+        : "Choisissez la nouvelle date prévue pour ce rappel.",
+      label: isJournalBlock(block)
+        ? "Nouvelle date du rendez-vous"
+        : "Nouvelle date du rappel",
+      confirmText: isJournalBlock(block)
+        ? "Reprogrammer le rendez-vous"
+        : "Reprogrammer le rappel",
+      defaultValue: safeDefault,
+      min: today,
+      chips: chips,
+    });
+
+    if (!ymd) return;
+    await rescheduleToDate(item, block, ymd);
+  }
+
+  async function pickDoneOtherDate(item, block) {
+    const dueDate = rawToYmd(item.dataset.rawDate || "");
+    const today = todayYmd();
+
+    const defaultDate =
+      isYmd(dueDate) && dueDate <= today
+        ? dueDate
+        : today;
+
+    const chips = [
+      {
+        label: "Aujourd'hui",
+        value: today,
+        meta: formatFrDate(today),
+      },
+    ];
+
+    if (isYmd(dueDate) && dueDate !== today) {
+      chips.push({
+        label: "Date prévue",
+        value: dueDate,
+        meta: formatFrDate(dueDate),
+      });
+    }
+
+    const ymd = await openReminderDateModal({
+      eyebrow: isJournalBlock(block) ? "Rendez-vous TagAnimal" : "Rappel TagAnimal",
+      title: isJournalBlock(block)
+        ? "Confirmer la date réelle du rendez-vous"
+        : "Confirmer la date réelle d'exécution",
+      text: isJournalBlock(block)
+        ? "Indiquez la date à laquelle le rendez-vous a réellement eu lieu."
+        : "Indiquez la date à laquelle l'action a réellement été effectuée.",
+      label: isJournalBlock(block)
+        ? "Date réelle du rendez-vous"
+        : "Date réelle d'exécution",
+      confirmText: isJournalBlock(block)
+        ? "Valider le rendez-vous"
+        : "Valider l'exécution",
+      defaultValue: defaultDate,
+      max: today,
+      chips: chips,
+    });
+
+    if (!ymd) return;
+    await doneAtDate(item, block, ymd);
+  }
+
+    function bindPreview(block) {
+      if (block.__taRemindersPreviewBound) return;
+      block.__taRemindersPreviewBound = true;
+    
+      function handleChange(e) {
+        const input = e.target.closest("[data-ta-health-reminder-date], [data-ta-protection-frequency], [data-ta-frequency-select]");
+        if (!input) return;
+    
+        const item = input.closest(".ta-health-list__item");
+        if (!item) return;
+    
+        const mode = normalizedModeOf(item);
+    
+        if (isJournalBlock(block)) {
+          const ymd = adminInputOf(item)?.value || "";
+          item.dataset.rawDate = ymd ? String(ymdToUnix(ymd)) : "";
+          item.dataset.rdvTs = item.dataset.rawDate || "";
+    
+          updateNotice(item);
+          updateReadView(item, { due_at: ymd });
+          refreshBadges(block);
+          refreshContextualActions(block);
+          return;
+        }
+    
+        if (mode === "direct_due") {
+          const ymd = adminInputOf(item)?.value || "";
+          item.dataset.rawDate = ymd ? String(ymdToUnix(ymd)) : "";
+    
+          updateReadView(item, {
+            administered_at: "",
+            due_at: ymd,
+            interval_months: 0,
+          });
+        } else {
+          const adminYmd = adminInputOf(item)?.value || "";
+          const months = parseInt(freqInputOf(item)?.value || item.dataset.intervalMonths || "0", 10) || 0;
+          const dueYmd = adminYmd && months > 0 ? addMonths(adminYmd, months) : "";
+    
+          item.dataset.rawDate = dueYmd ? String(ymdToUnix(dueYmd)) : "";
+    
+          updateReadView(item, {
+            administered_at: adminYmd,
+            due_at: dueYmd,
+            interval_months: months,
+          });
+        }
+    
+        updateNotice(item);
+        refreshBadges(block);
+        refreshContextualActions(block);
+      }
+    
+      block.addEventListener("input", handleChange);
+      block.addEventListener("change", handleChange);
+    }
+
+    async function reloadBlockFromServer(block) {
+      const response = await fetch(window.location.href, {
+        method: "GET",
+        credentials: "same-origin",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        cache: "no-store",
+      });
+    
+      if (!response.ok) {
+        throw new Error(`Impossible de recharger le bloc (${response.status})`);
+      }
+    
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+    
+      if (isJournalBlock(block)) {
+        const freshRoot = qs("[data-ta-journal-reminders-root]", doc);
+        const currentRoot = block.closest("[data-ta-journal-reminders-root]");
+    
+        if (!freshRoot || !currentRoot) {
+          throw new Error("Bloc rendez-vous introuvable dans la réponse HTML");
+        }
+    
+        currentRoot.replaceWith(freshRoot);
+      } else {
+        const freshBlock = qs('[data-ta-health-block="reminders"]', doc);
+    
+        if (!freshBlock || !block) {
+          throw new Error("Bloc santé rappels introuvable dans la réponse HTML");
+        }
+    
+        block.replaceWith(freshBlock);
+      }
+    
+      qsa('[data-ta-health-block="reminders"], #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]').forEach(initBlock);
+    }
+    
+    async function reloadJournalBlockFromServer(block) {
+      if (!isJournalBlock(block)) return;
+      return reloadBlockFromServer(block);
+    }
+
+    function bindJournalSavedRefresh(block) {
+      if (!isJournalBlock(block) || block.__taJournalSavedRefreshBound) return;
+      block.__taJournalSavedRefreshBound = true;
+        
+    const refresh = async () => {
+      try {
+        const liveBlock = qs('#ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]');
+        if (!liveBlock) return;
+        await reloadBlockFromServer(liveBlock);
+      } catch (err) {
+        console.error(LOG, err);
+      }
+    };
+        
+      document.addEventListener("ta:rdv:saved", refresh);
+      window.addEventListener("ta:rdv:saved", refresh);
+      document.addEventListener("ta:journal:refresh", refresh);
+      window.addEventListener("ta:journal:refresh", refresh);
+    }
+
+  function initBlock(block) {
+    if (!block || block.__taRemindersUnifiedBooted) return;
+    block.__taRemindersUnifiedBooted = true;
+
+    refreshBadges(block);
+    refreshContextualActions(block);
+    setEditMode(block, false);
+    bindPreview(block);
+    bindJournalSavedRefresh(block);
+
+    qsa(".ta-health-list__item", block).forEach(updateNotice);
+
+    block.addEventListener("click", async function (e) {
+      const editBtn = e.target.closest("[data-ta-reminders-open]");
+      const cancelBtn = e.target.closest("[data-ta-health-cancel]");
+      const saveBtn = e.target.closest("[data-ta-health-save]");
+      const deleteBtn = e.target.closest("[data-ta-health-clear]");
+      const actionBtn = e.target.closest("[data-ta-reminder-action]");
+
+      if (editBtn) {
+        e.preventDefault();
+        takeSnapshot(block);
+        setEditMode(block, true);
+        qsa(".ta-health-list__item", block).forEach(updateNotice);
+        return;
+      }
+
+      if (cancelBtn) {
+        e.preventDefault();
+        rollback(block);
+        setEditMode(block, false);
+        refreshBadges(block);
+        refreshContextualActions(block);
+        return;
+      }
+
+    if (saveBtn) {
+      e.preventDefault();
+      try {
+        await saveAll(block);
+        await reloadBlockFromServer(block);
+      } catch (err) {
+        console.error(LOG, err);
+        alert(err.message || "Erreur lors de l'enregistrement");
+        rollback(block);
+      }
+      return;
+    }
+
+    if (deleteBtn) {
+      e.preventDefault();
+      const item = deleteBtn.closest(".ta-health-list__item");
+      if (!item) return;
+    
+      const confirmLabel = isJournalBlock(block)
+        ? "Confirmer la suppression de ce rendez-vous ?"
+        : "Confirmer la suppression de ce rappel ?";
+    
+      if (!window.confirm(confirmLabel)) return;
+    
+      try {
+        await deleteReminder(block, item);
+        await reloadBlockFromServer(block);
+      } catch (err) {
+        console.error(LOG, err);
+        alert(err.message || "Erreur suppression");
+      }
+      return;
+    }
+    
+    if (actionBtn) {
+      e.preventDefault();
+      const item = actionBtn.closest(".ta-health-list__item");
+      if (!item) return;
+    
+      const action = actionBtn.dataset.taReminderAction || "";
+    
+try {
+  const isSimpleCycle = isSimpleCycleItem(item);
+
+  /*
+   * RÈGLE SIMPLE
+   * - antiparasite
+   * - vermifuge
+   *
+   * Avant J-1 : aucun bouton (géré par PHP + état temporel)
+   * À partir de J-1 :
+   * - case-done-today
+   * - case-stop
+   *
+   * Tous les autres cas sont volontairement ignorés.
+   */
+	  if (isSimpleCycle) {
+		if (action === "case-done-today") {
+		  await doneAtDate(item, block, todayYmd());
+		  await reloadBlockFromServer(block);
+		  return;
+		}
+
+		if (action === "case-stop") {
+		  await deleteReminder(block, item);
+		  await reloadBlockFromServer(block);
+		  return;
+		}
+
+		return;
+	  }
+
+	  if (action === "case-keep-due-date") {
+		await keepDueDate(item, block);
+		await reloadBlockFromServer(block);
+		return;
+	  }
+
+	  if (action === "case-done-today") {
+		await doneAtDate(item, block, todayYmd());
+		await reloadBlockFromServer(block);
+		return;
+	  }
+
+	  if (action === "case-done-other-date") {
+		await pickDoneOtherDate(item, block);
+		await reloadBlockFromServer(block);
+		return;
+	  }
+
+	  if (action === "case-reschedule") {
+		await pickReschedule(item, block);
+		await reloadBlockFromServer(block);
+		return;
+	  }
+
+	  if (action === "case-stop") {
+		await deleteReminder(block, item);
+		await reloadBlockFromServer(block);
+		return;
+	  }
+
+	  const delay = action.match(/^case-reschedule-plus-(\d+)$/);
+	  if (delay) {
+		await quickReschedule(item, block, parseInt(delay[1], 10));
+		await reloadBlockFromServer(block);
+		return;
+	  }
+	} catch (err) {
+	  console.error(LOG, err);
+	  alert(err.message || "Erreur réseau");
+	}
+    }
+    });
+
+    console.log(LOG, "ready", getBlockKind(block));
+  }
+
+  onReady(function () {
+    qsa('[data-ta-health-block="reminders"], #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]').forEach(initBlock);
+
+window.TARemindersUnified = {
+  refreshAll() {
+    qsa('[data-ta-health-block="reminders"], #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]').forEach((block) => {
+      refreshBadges(block);
+      refreshContextualActions(block);
+    });
+  },
+  setEditMode(kind, state) {
+    qsa('[data-ta-health-block="reminders"], #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]').forEach((block) => {
+      if (!kind || getBlockKind(block) === kind) {
+        setEditMode(block, !!state);
+      }
+    });
+  },
+  reloadJournal() {
+    const block = qs('#ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]');
+    if (!block) return Promise.resolve();
+    return reloadBlockFromServer(block);
+  },
+  reloadHealth() {
+    const block = qs('[data-ta-health-block="reminders"]');
+    if (!block) return Promise.resolve();
+    return reloadBlockFromServer(block);
+  },
+  reload(kind) {
+    const selector = kind === "journal"
+      ? '#ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]'
+      : '[data-ta-health-block="reminders"]';
+
+    const block = qs(selector);
+    if (!block) return Promise.resolve();
+    return reloadBlockFromServer(block);
+  },
+  bootAll() {
+    qsa('[data-ta-health-block="reminders"], #ta-journal-upcoming-rdv[data-ta-journal-block="upcoming-rdv"]').forEach(initBlock);
+  },
+  __loaded: true,
+};
+  });
+})();

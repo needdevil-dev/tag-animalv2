@@ -1,0 +1,107 @@
+/**
+ * TAGANIMAL — ScreenRouter
+ * STD UI : CARD <-> SCREEN exclusif
+ */
+(function () {
+  "use strict";
+
+  /* ======================================================
+   * READY
+   * ====================================================== */
+
+  function onReady(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      fn();
+    }
+  }
+
+  /* ======================================================
+   * HELPERS
+   * ====================================================== */
+
+  function getAllCards() {
+    return document.querySelectorAll("[data-ta-card]");
+  }
+
+  function getAllScreens() {
+    return document.querySelectorAll("[data-ta-screen]");
+  }
+
+  function closeAll() {
+    getAllScreens().forEach(screen => {
+      screen.hidden = true;
+    });
+
+    getAllCards().forEach(card => {
+      card.hidden = false;
+    });
+  }
+
+  function openModule(name) {
+    const screen = document.querySelector('[data-ta-screen="' + name + '"]');
+    const card   = document.querySelector('[data-ta-card="' + name + '"]');
+
+    if (!screen || !card) return;
+
+    closeAll();
+
+    card.hidden = true;
+    screen.hidden = false;
+    screen.scrollIntoView({ block: "start" });
+  }
+
+  /* ======================================================
+   * ROUTER (click)
+   * ====================================================== */
+
+  document.addEventListener(
+    "click",
+    function (e) {
+
+      const openBtn = e.target.closest("[data-ta-open]");
+      if (openBtn) {
+        e.preventDefault();
+        const name = openBtn.dataset.taOpen;
+        if (name) openModule(name);
+        return;
+      }
+
+      if (e.target.closest("[data-ta-close]")) {
+        e.preventDefault();
+        closeAll();
+        return;
+      }
+
+    },
+    true
+  );
+
+  /* ======================================================
+   * HASH ROUTING (reload post-save)
+   * ====================================================== */
+
+  onReady(function () {
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const target = document.querySelector(hash);
+    if (!target) return;
+
+    // État UI sûr
+    closeAll();
+
+    // Neutralise le scroll navigateur
+    window.scrollTo(0, 0);
+
+    // Scroll maîtrisé (après layout)
+    requestAnimationFrame(function () {
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
+  });
+
+})();

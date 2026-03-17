@@ -1,0 +1,71 @@
+/**
+ * =========================================================
+ * TAGANIMAL — CARE FINISH (Traitement terminé)
+ * =========================================================
+ * - Détecte clic sur bouton "Terminé"
+ * - Appelle AJAX ta_care_finish
+ * - Force refresh + retour automatique sur Traitements
+ */
+
+(() => {
+  "use strict";
+
+  const TA = window.TA_HEALTH || null;
+
+  if (!TA || !TA.ajax_url || !TA.nonce) {
+    console.error("[TA CARE FINISH] TA_HEALTH missing or invalid", TA);
+    return;
+  }
+
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("[data-ta-care-finish]");
+    if (!btn) return;
+
+    e.preventDefault();
+
+    const card = btn.closest("[data-ta-treatment-card]");
+    if (!card) return;
+
+    const careId = card.dataset.careId;
+    const postId = btn.dataset.postId;
+
+    if (!careId || !postId) return;
+
+    if (!confirm("Marquer ce traitement comme terminé ?")) return;
+
+    btn.disabled = true;
+
+    fetch(TA.ajax_url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+      },
+      body: new URLSearchParams({
+        action: "ta_care_finish",
+        care_id: careId,
+        post_id: postId,
+        nonce: TA.nonce
+      })
+    })
+      .then(r => r.json())
+      .then(json => {
+        if (!json || !json.success) {
+          alert(json?.data?.message || "Erreur");
+          btn.disabled = false;
+          return;
+        }
+
+        // 🧠 mémoriser l’intention d’ouverture du bloc traitement
+        sessionStorage.setItem("ta_open_health_treatment", "1");
+
+        // 🔄 refresh volontaire
+        window.location.reload();
+      })
+      .catch(err => {
+        console.error("[TA CARE FINISH] network error", err);
+        alert("Erreur réseau");
+        btn.disabled = false;
+      });
+  });
+
+})();

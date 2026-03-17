@@ -1,0 +1,633 @@
+/* =======================================================
+   TAGANIMAL — JOURNAL ENTRY WIZARD v2.1 · FIX COMPLET
+   Fichier : entry-journal.css
+
+   ⚠  RÉÉCRITURE sur base d'audit PHP complet.
+   ⚠  entry-global.css doit être chargé AVANT ce fichier.
+
+   STRUCTURE PHP RÉELLE (auditée) :
+   ─────────────────────────────────
+   Racine    : <section data-ta-entry-root="journal" data-entry-state="home">
+               (PAS de .ta-fiche-public comme parent garanti)
+   Écrans    : <div data-entry-screen="xxx"> — attr [hidden] géré par JS
+   Hub btns  : .ta-btn.ta-btn--primary[data-entry-go] dans .ta-form-actions
+   CTA cards : .ta-field-card.ta-journal-cta-card .ta-cta-icon + titles + btn
+   Motif RDV : .ta-vet-motif-grid > .ta-vet-motif-btn (icon/label/hint spans)
+   Obs cats  : .ta-observation-categories > .ta-observation-cat
+   Event     : .ta-event-types > .ta-event-type
+   Step hd   : .ta-form-step__hd / .ta-form-step__num / .ta-form-step__title
+   Progress  : .ta-form-progress-bar
+   Inputs    : .ta-input, .ta-form-input, .ta-textarea
+   Toggles   : .ta-vet-toggle, .ta-vet-delay-pill
+   Confirm   : .ta-vet-confirm-card, .ta-vet-confirm-row
+
+   SCOPE : [data-ta-entry-root="journal"] sans .ta-fiche-public
+
+   CORRECTIONS PRINCIPALES v2.1 :
+   - Suppression de toutes les dépendances .ta-fiche-public
+   - display:block !important pour écraser [hidden] UA
+   - font-size: 1rem+ sur boutons (lisibilité iPhone 15 Pro Max)
+   - Ciblage des vraies classes PHP (ta-btn, ta-form-actions…)
+   - Icônes motif RDV : font-size 2rem (ta-vet-motif-icon)
+   - CTA cards icon : font-size 2.4rem (ta-cta-icon)
+======================================================= */
+
+
+/* =======================================================
+   1. TOKENS  [data-ta-entry-root="journal"]
+======================================================= */
+
+[data-ta-entry-root="journal"] {
+
+  --j-font-display: 'Lora', 'Georgia', serif;
+  --j-font-ui:      'Nunito', system-ui, sans-serif;
+
+  /* Palette */
+  --j-paper:      #FEFCF7;
+  --j-parchment:  #F7F0E3;
+  --j-ink:        #1B0F06;
+  --j-ink-mid:    #3D2810;
+  --j-muted:      #8A7055;
+  --j-gold:       #C89145;
+  --j-gold-deep:  #A6732A;
+  --j-gold-light: rgba(200,145,69,.13);
+  --j-border:     rgba(170,130,70,.17);
+  --j-border-mid: rgba(170,130,70,.30);
+
+  /* Ombres */
+  --j-shadow-sm:   0 2px  8px rgba(27,15,6,.08), 0 0 0 1px rgba(170,130,70,.09);
+  --j-shadow-md:   0 4px 16px rgba(27,15,6,.11), 0 0 0 1px rgba(170,130,70,.12);
+  --j-shadow-lg:   0 8px 28px rgba(27,15,6,.14), 0 0 0 1px rgba(170,130,70,.15);
+  --j-shadow-gold:    0 4px 20px rgba(200,145,69,.35);
+  --j-shadow-gold-lg: 0 8px 32px rgba(200,145,69,.45);
+
+  /* Ease */
+  --j-ease:        cubic-bezier(.22,.68,0,1.18);
+  --j-ease-s:      cubic-bezier(.4,0,.2,1);
+  --j-ease-spring: cubic-bezier(.34,1.52,.64,1);
+  --j-dur-fast:    .13s;
+  --j-dur-mid:     .22s;
+
+  /* Rayons */
+  --j-r-sm: 8px; --j-r-md: 14px; --j-r-lg: 20px;
+  --j-r-xl: 28px; --j-r-pill: 100px;
+
+  /* Touch targets iPhone 15 Pro Max */
+  --j-touch:      48px;
+  --j-btn-h:      54px;
+  --j-btn-sm-h:   42px;
+  --j-input-h:    52px;
+  --j-type-btn-h: 80px;
+
+  /* Couleurs par type */
+  --j-obs:         #3D7A52;
+  --j-obs-bg:      rgba(61,122,82,.09);
+  --j-obs-border:  rgba(61,122,82,.28);
+  --j-obs-shadow:  rgba(61,122,82,.22);
+
+  --j-rdv:         #2E5F98;
+  --j-rdv-bg:      rgba(46,95,152,.09);
+  --j-rdv-border:  rgba(46,95,152,.27);
+  --j-rdv-shadow:  rgba(46,95,152,.22);
+
+  --j-event:       #B86E14;
+  --j-event-bg:    rgba(184,110,20,.09);
+  --j-event-border:rgba(184,110,20,.28);
+  --j-event-shadow:rgba(184,110,20,.22);
+
+  --j-free:        #B0394E;
+  --j-free-bg:     rgba(176,57,78,.09);
+  --j-free-border: rgba(176,57,78,.27);
+  --j-free-shadow: rgba(176,57,78,.22);
+}
+
+
+/* =======================================================
+   2. ROUTING D'ÉTAT
+   !important pour passer au-dessus du user-agent [hidden]
+======================================================= */
+
+[data-ta-entry-root="journal"] [data-entry-screen] {
+  display: none !important;
+}
+
+[data-ta-entry-root="journal"][data-entry-state="home"]        [data-entry-screen="home"],
+[data-ta-entry-root="journal"][data-entry-state="note"]        [data-entry-screen="note"],
+[data-ta-entry-root="journal"][data-entry-state="observation"] [data-entry-screen="observation"],
+[data-ta-entry-root="journal"][data-entry-state="appointment"] [data-entry-screen="appointment"],
+[data-ta-entry-root="journal"][data-entry-state="event"]       [data-entry-screen="event"],
+[data-ta-entry-root="journal"][data-entry-state="free"]        [data-entry-screen="free"] {
+  display: block !important;
+  animation: jPageIn var(--j-dur-mid) var(--j-ease-s) both;
+}
+
+/* Titre de section */
+[data-ta-entry-root="journal"] .ta-section-title {
+  display:        flex !important;
+  align-items:    center !important;
+  gap:            10px !important;
+  margin:         0 0 18px !important;
+  padding:        0 0 14px !important;
+  border-bottom:  1px solid var(--j-border) !important;
+  border-top: none !important; border-left: none !important; border-right: none !important;
+  background: none !important; box-shadow: none !important;
+  font-family:    var(--j-font-display) !important;
+  font-size:      0.90em !important;
+  font-style:     italic !important;
+  font-weight:    600 !important;
+  color:          var(--j-gold-deep) !important;
+  letter-spacing: .01em !important;
+  text-transform: none !important;
+}
+[data-ta-entry-root="journal"] .ta-section-title::before {
+  content: '◆'; font-size: .55em; color: var(--j-gold); opacity: .70;
+  flex-shrink: 0; font-style: normal;
+}
+
+
+/* =======================================================
+   3. FIELD CARD
+======================================================= */
+
+[data-ta-entry-root="journal"] .ta-field-card {
+  background:    var(--j-paper) !important;
+  border:        1.5px solid var(--j-border) !important;
+  border-radius: var(--j-r-lg) !important;
+  box-shadow:    var(--j-shadow-sm) !important;
+  padding:       18px !important;
+  margin-bottom: 14px !important;
+}
+
+[data-ta-entry-root="journal"] .ta-card-subtitle,
+[data-ta-entry-root="journal"] .ta-field-card-subtitle,
+[data-ta-entry-root="journal"] .ta-text { font-family: var(--j-font-ui); font-size: .84em; color: var(--j-muted); line-height: 1.55; font-style: italic; }
+
+
+/* =======================================================
+   4. GRILLES DE CHOIX
+======================================================= */
+
+/* Hub note (4 boutons en 2×2) */
+[data-ta-entry-root="journal"] [data-entry-screen="note"] .ta-form-actions:first-of-type {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px !important;
+  margin: 0 !important;
+}
+
+/* Observation categories */
+[data-ta-entry-root="journal"] .ta-observation-categories {
+  display: grid !important; grid-template-columns: repeat(2,1fr) !important; gap: 10px !important;
+}
+
+/* Event types */
+[data-ta-entry-root="journal"] .ta-event-types {
+  display: grid !important; grid-template-columns: repeat(2,1fr) !important; gap: 10px !important;
+}
+
+
+/* =======================================================
+   5. BOUTONS DE TYPE — PREMIUM MOBILE
+   PHP: .ta-btn.ta-btn--primary[data-entry-go] + .ta-observation-cat + .ta-event-type
+   L'emoji ET le texte sont INLINE dans le bouton (pas de wrapper).
+   Solution : flex column + font-size 1rem+ → lisible sur iPhone
+======================================================= */
+
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go],
+[data-ta-entry-root="journal"] .ta-observation-cat,
+[data-ta-entry-root="journal"] .ta-event-type {
+  position:        relative !important;
+  display:         flex !important;
+  flex-direction:  column !important;
+  align-items:     center !important;
+  justify-content: center !important;
+  text-align:      center !important;
+  overflow:        hidden !important;
+  gap:             0 !important;
+
+  height:          auto !important;
+  min-height:      var(--j-type-btn-h) !important;
+  padding:         16px 10px 14px !important;
+
+  background:    var(--j-paper) !important;
+  border-radius: var(--j-r-lg) !important;
+  border:        1.5px solid var(--j-border) !important;
+  box-shadow:    var(--j-shadow-sm) !important;
+
+  /* LISIBILITÉ MOBILE — clé du fix */
+  font-family:    var(--j-font-ui) !important;
+  font-size:      1rem !important;
+  font-weight:    800 !important;
+  letter-spacing: .01em !important;
+  line-height:    1.3 !important;
+  color:          var(--j-ink-mid) !important;
+  text-transform: none !important;
+  white-space:    normal !important;
+  word-break:     break-word !important;
+
+  transition:
+    transform    var(--j-dur-fast) var(--j-ease-spring),
+    box-shadow   var(--j-dur-fast) var(--j-ease-s),
+    background   var(--j-dur-mid)  var(--j-ease-s),
+    border-color var(--j-dur-fast) var(--j-ease-s) !important;
+  cursor: pointer !important;
+}
+
+/* Trait coloré en haut */
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]::before,
+[data-ta-entry-root="journal"] .ta-observation-cat::before,
+[data-ta-entry-root="journal"] .ta-event-type::before {
+  content: '' !important; position: absolute !important;
+  top: 0 !important; left: 18% !important; right: 18% !important;
+  height: 3px !important; border-radius: 0 0 4px 4px !important;
+  background: currentColor !important; opacity: .28 !important;
+  transition: opacity var(--j-dur-fast), left var(--j-dur-mid) var(--j-ease-spring), right var(--j-dur-mid) var(--j-ease-spring) !important;
+}
+
+/* Désactiver les ::after hérités (flèches globaux) */
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]::after,
+[data-ta-entry-root="journal"] .ta-observation-cat::after,
+[data-ta-entry-root="journal"] .ta-event-type::after { display: none !important; }
+
+/* Hover */
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:hover,
+[data-ta-entry-root="journal"] .ta-observation-cat:hover,
+[data-ta-entry-root="journal"] .ta-event-type:hover {
+  transform:    translateY(-4px) !important;
+  box-shadow:   var(--j-shadow-lg) !important;
+  border-color: var(--j-border-mid) !important;
+}
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:hover::before,
+[data-ta-entry-root="journal"] .ta-observation-cat:hover::before,
+[data-ta-entry-root="journal"] .ta-event-type:hover::before { left: 5% !important; right: 5% !important; opacity: .65 !important; }
+
+/* Active */
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:active,
+[data-ta-entry-root="journal"] .ta-observation-cat:active,
+[data-ta-entry-root="journal"] .ta-event-type:active {
+  transform: translateY(0) scale(.96) !important;
+  box-shadow: 0 1px 6px rgba(27,15,6,.10) !important;
+  transition-duration: .06s !important;
+}
+
+/* Stagger */
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:nth-child(1),
+[data-ta-entry-root="journal"] .ta-observation-cat:nth-child(1),
+[data-ta-entry-root="journal"] .ta-event-type:nth-child(1) { animation: jFadeUp .18s var(--j-ease-s) .04s both; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:nth-child(2),
+[data-ta-entry-root="journal"] .ta-observation-cat:nth-child(2),
+[data-ta-entry-root="journal"] .ta-event-type:nth-child(2) { animation: jFadeUp .18s var(--j-ease-s) .09s both; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:nth-child(3),
+[data-ta-entry-root="journal"] .ta-observation-cat:nth-child(3),
+[data-ta-entry-root="journal"] .ta-event-type:nth-child(3) { animation: jFadeUp .18s var(--j-ease-s) .14s both; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:nth-child(4),
+[data-ta-entry-root="journal"] .ta-observation-cat:nth-child(4),
+[data-ta-entry-root="journal"] .ta-event-type:nth-child(4) { animation: jFadeUp .18s var(--j-ease-s) .19s both; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:nth-child(5),
+[data-ta-entry-root="journal"] .ta-event-type:nth-child(5) { animation: jFadeUp .18s var(--j-ease-s) .24s both; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:nth-child(6),
+[data-ta-entry-root="journal"] .ta-event-type:nth-child(6) { animation: jFadeUp .18s var(--j-ease-s) .29s both; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:nth-child(7),
+[data-ta-entry-root="journal"] .ta-event-type:nth-child(7) { animation: jFadeUp .18s var(--j-ease-s) .34s both; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go]:nth-child(8),
+[data-ta-entry-root="journal"] .ta-event-type:nth-child(8) { animation: jFadeUp .18s var(--j-ease-s) .39s both; }
+
+/* ── COULEURS PAR TYPE ── */
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="observation"]                   { border-color: var(--j-obs-border) !important; color: var(--j-obs) !important; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="observation"]:hover              { background: var(--j-obs-bg) !important; border-color: var(--j-obs) !important; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="observation"].is-active          { background: var(--j-obs-bg) !important; border-color: var(--j-obs) !important; box-shadow: 0 0 0 3px rgba(61,122,82,.07), 0 6px 18px var(--j-obs-shadow) !important; font-weight: 900 !important; }
+
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="appointment"]                   { border-color: var(--j-rdv-border) !important; color: var(--j-rdv) !important; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="appointment"]:hover              { background: var(--j-rdv-bg) !important; border-color: var(--j-rdv) !important; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="appointment"].is-active          { background: var(--j-rdv-bg) !important; border-color: var(--j-rdv) !important; box-shadow: 0 0 0 3px rgba(46,95,152,.07), 0 6px 18px var(--j-rdv-shadow) !important; font-weight: 900 !important; }
+
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="event"]                         { border-color: var(--j-event-border) !important; color: var(--j-event) !important; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="event"]:hover                   { background: var(--j-event-bg) !important; border-color: var(--j-event) !important; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="event"].is-active               { background: var(--j-event-bg) !important; border-color: var(--j-event) !important; box-shadow: 0 0 0 3px rgba(184,110,20,.07), 0 6px 18px var(--j-event-shadow) !important; font-weight: 900 !important; }
+
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="free"]                          { border-color: var(--j-free-border) !important; color: var(--j-free) !important; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="free"]:hover                    { background: var(--j-free-bg) !important; border-color: var(--j-free) !important; }
+[data-ta-entry-root="journal"] .ta-btn[data-entry-go="free"].is-active                { background: var(--j-free-bg) !important; border-color: var(--j-free) !important; box-shadow: 0 0 0 3px rgba(176,57,78,.07), 0 6px 18px var(--j-free-shadow) !important; font-weight: 900 !important; }
+
+/* Observation cats (toutes vertes) */
+[data-ta-entry-root="journal"] .ta-observation-cat                  { border-color: var(--j-obs-border) !important; color: var(--j-obs) !important; }
+[data-ta-entry-root="journal"] .ta-observation-cat:hover            { background: var(--j-obs-bg) !important; border-color: var(--j-obs) !important; }
+[data-ta-entry-root="journal"] .ta-observation-cat.is-active        { background: var(--j-obs-bg) !important; border-color: var(--j-obs) !important; box-shadow: 0 0 0 3px rgba(61,122,82,.07), 0 6px 18px var(--j-obs-shadow) !important; font-weight: 900 !important; }
+
+/* Event types (tous ambre) */
+[data-ta-entry-root="journal"] .ta-event-type                       { border-color: var(--j-event-border) !important; color: var(--j-event) !important; }
+[data-ta-entry-root="journal"] .ta-event-type:hover                 { background: var(--j-event-bg) !important; border-color: var(--j-event) !important; }
+[data-ta-entry-root="journal"] .ta-event-type.is-active             { background: var(--j-event-bg) !important; border-color: var(--j-event) !important; box-shadow: 0 0 0 3px rgba(184,110,20,.07), 0 6px 18px var(--j-event-shadow) !important; font-weight: 900 !important; }
+
+
+/* =======================================================
+   6. CTA CARDS (observation-journal-card / appointments-journal-card)
+   Structure PHP : .ta-field-card.ta-journal-cta-card
+     .ta-field-card-hd > .ta-cta-icon + div(.ta-field-card-title + subtitle)
+     .ta-form-actions > .ta-btn
+======================================================= */
+
+[data-ta-entry-root="journal"] .ta-journal-cta-card {
+  background: var(--j-paper) !important; border: 1.5px solid var(--j-border) !important;
+  border-radius: var(--j-r-lg) !important; box-shadow: var(--j-shadow-sm) !important;
+  padding: 20px !important; overflow: hidden !important; position: relative !important;
+  transition: box-shadow var(--j-dur-fast), border-color var(--j-dur-fast) !important;
+}
+[data-ta-entry-root="journal"] .ta-journal-cta-card:hover {
+  box-shadow: var(--j-shadow-md) !important; border-color: var(--j-border-mid) !important;
+}
+
+[data-ta-entry-root="journal"] .ta-field-card-hd {
+  display: flex !important; align-items: center !important;
+  gap: 14px !important; margin-bottom: 16px !important;
+}
+
+/* GRANDE ICÔNE CTA — fix icône petite */
+[data-ta-entry-root="journal"] .ta-cta-icon {
+  font-size:       2.4rem !important;    /* ← fix principal taille icône */
+  line-height:     1 !important;
+  display:         flex !important;
+  align-items:     center !important;
+  justify-content: center !important;
+  width:           60px !important;
+  height:          60px !important;
+  border-radius:   16px !important;
+  flex-shrink:     0 !important;
+  transition:      transform var(--j-dur-fast) var(--j-ease-spring) !important;
+}
+[data-ta-entry-root="journal"] .ta-journal-cta-card--observation .ta-cta-icon { background: var(--j-obs-bg) !important; box-shadow: 0 0 0 1px var(--j-obs-border) !important; }
+[data-ta-entry-root="journal"] .ta-journal-cta-card--appointment .ta-cta-icon { background: var(--j-rdv-bg) !important; box-shadow: 0 0 0 1px var(--j-rdv-border) !important; }
+[data-ta-entry-root="journal"] .ta-journal-cta-card:hover .ta-cta-icon { transform: scale(1.10) !important; }
+
+[data-ta-entry-root="journal"] .ta-field-card-title {
+  font-family: var(--j-font-ui) !important; font-size: 1rem !important;
+  font-weight: 800 !important; color: var(--j-ink) !important;
+  margin-bottom: 4px !important; line-height: 1.2 !important;
+}
+
+[data-ta-entry-root="journal"] .ta-field-card-subtitle {
+  font-family: var(--j-font-ui) !important; font-size: .82em !important;
+  color: var(--j-muted) !important; line-height: 1.45 !important; font-style: italic !important;
+}
+
+/* Bouton dans CTA card */
+[data-ta-entry-root="journal"] .ta-journal-cta-card .ta-form-actions .ta-btn--primary {
+  width: 100% !important; height: var(--j-btn-h) !important;
+  min-height: var(--j-btn-h) !important; border-radius: var(--j-r-xl) !important;
+  font-family: var(--j-font-ui) !important; font-size: 0.96em !important;
+  font-weight: 800 !important; letter-spacing: .02em !important;
+  position: relative !important; overflow: hidden !important;
+  border: none !important;
+}
+[data-ta-entry-root="journal"] .ta-journal-cta-card .ta-btn--primary::before {
+  content: '' !important; position: absolute !important; inset: 0 !important;
+  background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.26) 45%, transparent 100%) !important;
+  transform: translateX(-100%) !important; transition: transform .50s ease !important;
+}
+[data-ta-entry-root="journal"] .ta-journal-cta-card .ta-btn--primary:hover::before { transform: translateX(100%) !important; }
+
+
+/* =======================================================
+   7. WIZARD RDV — PROGRESS BAR
+======================================================= */
+
+[data-ta-entry-root="journal"] .ta-form-progress-bar { padding: 0 0 18px !important; margin-bottom: 4px !important; }
+[data-ta-entry-root="journal"] .ta-form-progress-bar__track { height: 5px !important; background: var(--j-border) !important; border-radius: var(--j-r-pill) !important; overflow: hidden !important; margin-bottom: 10px !important; }
+[data-ta-entry-root="journal"] .ta-form-progress-bar__fill { height: 100% !important; background: linear-gradient(90deg, var(--j-rdv), #5A90D0) !important; border-radius: var(--j-r-pill) !important; transition: width .35s var(--j-ease-spring) !important; box-shadow: 0 0 8px rgba(46,95,152,.40) !important; }
+[data-ta-entry-root="journal"] .ta-form-progress-bar__labels { display: flex !important; justify-content: space-between !important; }
+[data-ta-entry-root="journal"] .ta-form-progress-bar__labels span { font-family: var(--j-font-ui) !important; font-size: .70em !important; font-weight: 700 !important; color: var(--j-muted) !important; letter-spacing: .04em !important; text-transform: uppercase !important; }
+
+
+/* =======================================================
+   8. WIZARD RDV — STEP HEADER
+======================================================= */
+
+[data-ta-entry-root="journal"] .ta-form-step { animation: jPageIn var(--j-dur-mid) var(--j-ease-s) both !important; }
+
+[data-ta-entry-root="journal"] .ta-form-step__hd {
+  display: flex !important; align-items: flex-start !important;
+  gap: 14px !important; margin-bottom: 20px !important;
+  padding-bottom: 16px !important; border-bottom: 1px solid var(--j-border) !important;
+}
+
+[data-ta-entry-root="journal"] .ta-form-step__num {
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  min-width: 40px !important; height: 40px !important; border-radius: 12px !important;
+  background: var(--j-rdv-bg) !important; border: 1.5px solid var(--j-rdv-border) !important;
+  font-family: var(--j-font-ui) !important; font-size: 1rem !important; font-weight: 900 !important;
+  color: var(--j-rdv) !important; flex-shrink: 0 !important;
+}
+[data-ta-entry-root="journal"] .ta-form-step__num span { font-size: .68em !important; font-weight: 600 !important; opacity: .60 !important; }
+
+[data-ta-entry-root="journal"] .ta-form-step__title {
+  font-family: var(--j-font-display) !important; font-size: 1.05rem !important;
+  font-weight: 600 !important; color: var(--j-ink) !important; margin: 0 0 4px !important;
+  line-height: 1.3 !important;
+}
+
+[data-ta-entry-root="journal"] .ta-form-step__subtitle {
+  font-family: var(--j-font-ui) !important; font-size: .82em !important;
+  color: var(--j-muted) !important; line-height: 1.5 !important;
+  font-style: italic !important; margin: 0 !important;
+}
+
+
+/* =======================================================
+   9. WIZARD RDV — MOTIF GRID (structure complète avec spans)
+======================================================= */
+
+/* Grilles motifs : masquées par défaut, visibles uniquement si .is-active
+   (posée par le wizard JS selon le type de praticien sélectionné)        */
+[data-ta-entry-root="journal"] .ta-vet-motif-grid {
+  display: none !important;
+  grid-template-columns: repeat(2,1fr) !important;
+  gap: 10px !important; margin-bottom: 16px !important;
+}
+
+[data-ta-entry-root="journal"] .ta-vet-motif-grid.is-active {
+  display: grid !important;
+}
+
+[data-ta-entry-root="journal"] .ta-vet-motif-btn {
+  position: relative !important; display: flex !important; flex-direction: column !important;
+  align-items: center !important; justify-content: center !important; gap: 6px !important;
+  text-align: center !important; overflow: hidden !important;
+  min-height: 90px !important; padding: 14px 8px 12px !important;
+  background: var(--j-paper) !important; border-radius: var(--j-r-lg) !important;
+  border: 1.5px solid var(--j-rdv-border) !important; box-shadow: var(--j-shadow-sm) !important;
+  color: var(--j-rdv) !important; cursor: pointer !important;
+  transition: transform var(--j-dur-fast) var(--j-ease-spring), box-shadow var(--j-dur-fast), background var(--j-dur-mid), border-color var(--j-dur-fast) !important;
+  animation: jFadeUp .18s var(--j-ease-s) both !important;
+}
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:nth-child(1){animation-delay:.04s}
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:nth-child(2){animation-delay:.09s}
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:nth-child(3){animation-delay:.14s}
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:nth-child(4){animation-delay:.19s}
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:nth-child(5){animation-delay:.24s}
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:nth-child(6){animation-delay:.29s}
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:nth-child(7){animation-delay:.34s}
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:nth-child(8){animation-delay:.39s}
+
+[data-ta-entry-root="journal"] .ta-vet-motif-btn::before {
+  content: '' !important; position: absolute !important; top: 0 !important; left: 20% !important; right: 20% !important;
+  height: 3px !important; border-radius: 0 0 4px 4px !important; background: currentColor !important;
+  opacity: .30 !important; transition: opacity var(--j-dur-fast), left var(--j-dur-mid) var(--j-ease-spring), right var(--j-dur-mid) var(--j-ease-spring) !important;
+}
+
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:hover { transform: translateY(-4px) !important; box-shadow: var(--j-shadow-md) !important; background: var(--j-rdv-bg) !important; border-color: var(--j-rdv) !important; }
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:hover::before { left: 6% !important; right: 6% !important; opacity: .60 !important; }
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:active { transform: scale(.96) !important; transition-duration: .06s !important; }
+[data-ta-entry-root="journal"] .ta-vet-motif-btn--urgent { border-color: rgba(212,32,32,.28) !important; color: #D42020 !important; }
+[data-ta-entry-root="journal"] .ta-vet-motif-btn--urgent:hover { background: rgba(212,32,32,.09) !important; border-color: #D42020 !important; }
+
+/* GRANDE ICÔNE MOTIF */
+[data-ta-entry-root="journal"] .ta-vet-motif-icon {
+  font-size:  2rem !important;      /* ← fix icônes petites */
+  line-height:1 !important;
+  display:    block !important;
+  transition: transform var(--j-dur-fast) var(--j-ease-spring) !important;
+}
+[data-ta-entry-root="journal"] .ta-vet-motif-btn:hover .ta-vet-motif-icon { transform: scale(1.15) !important; }
+
+[data-ta-entry-root="journal"] .ta-vet-motif-label { font-family: var(--j-font-ui) !important; font-size: .84em !important; font-weight: 800 !important; line-height: 1.2 !important; display: block !important; }
+[data-ta-entry-root="journal"] .ta-vet-motif-hint  { font-family: var(--j-font-ui) !important; font-size: .70em !important; font-weight: 600 !important; opacity: .60 !important; line-height: 1 !important; display: block !important; }
+[data-ta-entry-root="journal"] .ta-vet-motif-autre { margin-top: 12px !important; animation: jFadeUp var(--j-dur-fast) var(--j-ease-s) both !important; }
+
+
+/* =======================================================
+   10. TOGGLES + DELAY PILLS (wizard rappels)
+======================================================= */
+
+
+
+
+
+
+/* =======================================================
+   11. CONFIRM CARD
+======================================================= */
+
+[data-ta-entry-root="journal"] .ta-vet-confirm-card { background: var(--j-paper) !important; border: 1.5px solid var(--j-border) !important; border-radius: var(--j-r-lg) !important; box-shadow: var(--j-shadow-sm) !important; overflow: hidden !important; margin-bottom: 16px !important; }
+[data-ta-entry-root="journal"] .ta-vet-confirm-row { display: flex !important; justify-content: space-between !important; align-items: center !important; gap: 12px !important; padding: 11px 18px !important; border-bottom: 1px solid var(--j-border) !important; }
+[data-ta-entry-root="journal"] .ta-vet-confirm-row:last-child { border-bottom: none !important; }
+[data-ta-entry-root="journal"] .ta-vet-confirm-key { font-family: var(--j-font-ui) !important; font-size: .82em !important; font-weight: 700 !important; color: var(--j-muted) !important; flex-shrink: 0 !important; }
+[data-ta-entry-root="journal"] .ta-vet-confirm-val { font-family: var(--j-font-ui) !important; font-size: .88em !important; font-weight: 700 !important; color: var(--j-ink) !important; text-align: right !important; }
+[data-ta-entry-root="journal"] .ta-vet-confirm-separator { height: 1px !important; background: var(--j-border-mid) !important; margin: 2px 18px !important; }
+
+
+/* =======================================================
+   12. INTENSITÉ / DURÉE OBSERVATION
+======================================================= */
+
+[data-ta-entry-root="journal"] .ta-observation-level { display: flex !important; flex-direction: column !important; gap: 8px !important; margin-bottom: 14px !important; }
+[data-ta-entry-root="journal"] .ta-observation-level-item { min-height: var(--j-touch) !important; border-radius: var(--j-r-pill) !important; border: 1.5px solid var(--j-obs-border) !important; background: var(--j-paper) !important; color: var(--j-obs) !important; font-family: var(--j-font-ui) !important; font-size: .94em !important; font-weight: 700 !important; cursor: pointer !important; transition: all var(--j-dur-fast) !important; padding: 0 20px !important; }
+[data-ta-entry-root="journal"] .ta-observation-level-item:hover, [data-ta-entry-root="journal"] .ta-observation-level-item.is-active { background: var(--j-obs-bg) !important; border-color: var(--j-obs) !important; box-shadow: 0 3px 12px var(--j-obs-shadow) !important; }
+
+[data-ta-entry-root="journal"] .ta-observation-duration { display: grid !important; grid-template-columns: repeat(2,1fr) !important; gap: 8px !important; margin-bottom: 14px !important; }
+[data-ta-entry-root="journal"] .ta-observation-duration-item { min-height: 56px !important; border-radius: var(--j-r-lg) !important; border: 1.5px solid var(--j-obs-border) !important; background: var(--j-paper) !important; color: var(--j-obs) !important; font-family: var(--j-font-ui) !important; font-size: .86em !important; font-weight: 700 !important; cursor: pointer !important; transition: all var(--j-dur-fast) !important; }
+[data-ta-entry-root="journal"] .ta-observation-duration-item:hover, [data-ta-entry-root="journal"] .ta-observation-duration-item.is-active { background: var(--j-obs-bg) !important; border-color: var(--j-obs) !important; }
+
+
+/* =======================================================
+   13. INPUTS & LABELS
+======================================================= */
+
+[data-ta-entry-root="journal"] .ta-input,
+[data-ta-entry-root="journal"] .ta-form-input {
+  width: 100% !important; display: block !important;
+  height: var(--j-input-h) !important; padding: 0 16px !important;
+  font-family: var(--j-font-ui) !important; font-size: 1rem !important; /* iPhone lisible */
+  font-weight: 500 !important; color: var(--j-ink) !important;
+  background: var(--j-paper) !important; border: 1.5px solid var(--j-border) !important;
+  border-radius: var(--j-r-md) !important; box-shadow: var(--j-shadow-sm) !important;
+  appearance: none !important; -webkit-appearance: none !important;
+  transition: border-color var(--j-dur-fast), box-shadow var(--j-dur-fast) !important;
+  outline: none !important;
+}
+[data-ta-entry-root="journal"] .ta-textarea,
+[data-ta-entry-root="journal"] textarea.ta-input,
+[data-ta-entry-root="journal"] textarea.ta-form-input {
+  height: auto !important; min-height: 96px !important;
+  padding: 14px 16px !important; resize: vertical !important; line-height: 1.55 !important;
+}
+[data-ta-entry-root="journal"] select.ta-input,
+[data-ta-entry-root="journal"] select.ta-form-input {
+  padding-right: 36px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A7055' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important; background-position: right 12px center !important;
+}
+[data-ta-entry-root="journal"] .ta-input:focus, [data-ta-entry-root="journal"] .ta-form-input:focus { border-color: var(--j-gold) !important; box-shadow: 0 0 0 4px var(--j-gold-light), var(--j-shadow-sm) !important; }
+[data-ta-entry-root="journal"] .ta-input::placeholder, [data-ta-entry-root="journal"] .ta-form-input::placeholder { color: var(--j-muted) !important; font-style: italic !important; }
+
+[data-ta-entry-root="journal"] .ta-label, [data-ta-entry-root="journal"] .ta-form-label { display: block !important; font-family: var(--j-font-ui) !important; font-size: .75em !important; font-weight: 700 !important; letter-spacing: .06em !important; text-transform: uppercase !important; color: var(--j-muted) !important; margin-bottom: 7px !important; }
+[data-ta-entry-root="journal"] .ta-form-req { color: #D42020 !important; }
+[data-ta-entry-root="journal"] .ta-form-opt { font-weight: 500 !important; opacity: .60 !important; }
+[data-ta-entry-root="journal"] .ta-field-row--halves { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+[data-ta-entry-root="journal"] .ta-control, [data-ta-entry-root="journal"] .ta-field, [data-ta-entry-root="journal"] .ta-form-field { margin-bottom: 14px !important; display: block !important; }
+
+
+/* =======================================================
+   14. BOUTONS NAVIGATION GHOST / BACK
+======================================================= */
+
+[data-ta-entry-root="journal"] .ta-btn--ghost,
+[data-ta-entry-root="journal"] .ta-form-btn--ghost {
+  min-height: var(--j-btn-sm-h) !important; height: auto !important; padding: 0 20px !important;
+  border: 1.5px solid var(--j-border) !important; border-radius: var(--j-r-pill) !important;
+  background: transparent !important; color: var(--j-muted) !important;
+  font-family: var(--j-font-ui) !important; font-size: .84em !important; font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: color var(--j-dur-fast), border-color var(--j-dur-fast), transform var(--j-dur-fast) var(--j-ease-spring) !important;
+}
+[data-ta-entry-root="journal"] .ta-btn--ghost:hover,
+[data-ta-entry-root="journal"] .ta-form-btn--ghost:hover { color: var(--j-ink) !important; border-color: var(--j-border-mid) !important; transform: translateX(-3px) !important; }
+
+
+/* =======================================================
+   15. BOUTONS SUBMIT PRIMARY (hors grille de type)
+======================================================= */
+
+[data-ta-entry-root="journal"] .ta-form-actions .ta-btn--primary:not([data-entry-go]),
+[data-ta-entry-root="journal"] .ta-form-btn--primary,
+[data-ta-entry-root="journal"] .ta-form-btn--submit {
+  width: 100% !important; min-height: var(--j-btn-h) !important; height: auto !important;
+  padding: 0 24px !important; border-radius: var(--j-r-xl) !important; border: none !important;
+  font-family: var(--j-font-ui) !important; font-size: .96em !important; font-weight: 800 !important;
+  letter-spacing: .02em !important; cursor: pointer !important; position: relative !important;
+  overflow: hidden !important; box-shadow: var(--j-shadow-gold) !important;
+  transition: transform var(--j-dur-fast) var(--j-ease-spring), box-shadow var(--j-dur-fast) !important;
+}
+[data-ta-entry-root="journal"] .ta-form-btn--primary:hover, [data-ta-entry-root="journal"] .ta-form-btn--submit:hover { transform: translateY(-3px) !important; box-shadow: var(--j-shadow-gold-lg) !important; }
+[data-ta-entry-root="journal"] .ta-form-btn--primary::before, [data-ta-entry-root="journal"] .ta-form-btn--submit::before { content: '' !important; position: absolute !important; inset: 0 !important; background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.26) 45%, transparent 100%) !important; transform: translateX(-100%) !important; transition: transform .50s ease !important; }
+[data-ta-entry-root="journal"] .ta-form-btn--primary:hover::before, [data-ta-entry-root="journal"] .ta-form-btn--submit:hover::before { transform: translateX(100%) !important; }
+
+[data-ta-entry-root="journal"] .ta-form-btn__spinner { position: absolute !important; right: 16px !important; top: 50% !important; transform: translateY(-50%) !important; display: none !important; animation: jSpin 1s linear infinite !important; }
+[data-ta-entry-root="journal"] .ta-form-btn--submit.is-loading .ta-form-btn__label { opacity: .55 !important; }
+[data-ta-entry-root="journal"] .ta-form-btn--submit.is-loading .ta-form-btn__spinner { display: block !important; }
+
+/* Grand CTA sur home */
+[data-ta-entry-root="journal"] [data-entry-screen="home"] .ta-form-actions .ta-btn--primary { width: 100% !important; min-height: 56px !important; border-radius: var(--j-r-xl) !important; font-size: 1.02em !important; font-weight: 800 !important; letter-spacing: .03em !important; border: none !important; box-shadow: var(--j-shadow-gold) !important; cursor: pointer !important; transition: transform var(--j-dur-fast) var(--j-ease-spring), box-shadow var(--j-dur-fast) !important; }
+[data-ta-entry-root="journal"] [data-entry-screen="home"] .ta-btn--primary:hover { transform: translateY(-3px) !important; box-shadow: var(--j-shadow-gold-lg) !important; }
+
+/* Back global */
+[data-ta-entry-root="journal"] .ta-vet-global-back { display: flex !important; justify-content: center !important; margin-top: 16px !important; padding-top: 16px !important; border-top: 1px solid var(--j-border) !important; }
+[data-ta-entry-root="journal"] [data-entry-back], [data-ta-entry-root="journal"] [data-vet-back] { font-family: var(--j-font-ui) !important; font-size: .84em !important; font-weight: 600 !important; color: var(--j-muted) !important; transition: color var(--j-dur-fast), transform var(--j-dur-fast) var(--j-ease-spring) !important; }
+[data-ta-entry-root="journal"] [data-entry-back]:hover, [data-ta-entry-root="journal"] [data-vet-back]:hover { color: var(--j-ink) !important; transform: translateX(-3px) !important; }
+
+
+/* =======================================================
+   16. KEYFRAMES
+======================================================= */
+
+@keyframes jPageIn  { from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)} }
+@keyframes jFadeUp  { from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes jSpin    { from{transform:translateY(-50%) rotate(0deg)}to{transform:translateY(-50%) rotate(360deg)} }
+@keyframes jDotPulse{ 0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)} }
+@keyframes journalSavePulse { 0%{box-shadow:0 0 0 0 rgba(200,145,69,.55)}65%{box-shadow:0 0 0 14px rgba(200,145,69,.00)}100%{box-shadow:0 0 0 0 rgba(200,145,69,.00)} }
+.ta-journal-highlight { animation: journalSavePulse 1.5s ease 2 !important; }
+
+
+/* =======================================================
+   FIN — entry-journal.css v2.1
+   TagAnimal · Audit PHP complet · Fix mobile iPhone
+======================================================= */

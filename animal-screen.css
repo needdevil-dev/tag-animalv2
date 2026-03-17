@@ -1,0 +1,260 @@
+/* =========================================================
+ * TAGANIMAL — HISTORY JOURNAL CARD
+ * Fichier : assets/css/card/history/history-journal-card.css
+ * RÔLE    : spécialisation visuelle de l'historique Journal
+ * CIBLE   : #ta-journal-history / data-ta-journal-block="history"
+ * ========================================================= */
+
+#ta-journal-history {
+  --ta-his-accent: #C05465;
+  --ta-his-accent-2: #A84857;
+  --ta-his-accent-soft: rgba(192, 84, 101, .12);
+}
+
+/* =========================================================
+   1. TITRE / INTRO
+========================================================= */
+#ta-journal-history .ta-section-title span {
+  color: #4B2330;
+}
+
+#ta-journal-history .ta-info {
+  border: 1px solid rgba(192, 84, 101, .12);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(252,243,245,.98)),
+    radial-gradient(circle at top right, rgba(255,255,255,.88), transparent 46%);
+}
+
+/* =========================================================
+   2. PILLS / STATS JOURNAL
+========================================================= */
+#ta-journal-history .ta-journal-filter--observation.is-active {
+  background: linear-gradient(135deg, #4A7C59, #3D684A);
+  box-shadow: 0 10px 24px rgba(74, 124, 89, .20);
+}
+
+#ta-journal-history .ta-journal-filter--appointment.is-active {
+  background: linear-gradient(135deg, #3A6EA8, #2F5B8B);
+  box-shadow: 0 10px 24px rgba(58, 110, 168, .20);
+}
+
+#ta-journal-history .ta-journal-filter--event.is-active {
+  background: linear-gradient(135deg, #C47820, #A86117);
+  box-shadow: 0 10px 24px rgba(196, 120, 32, .22);
+}
+
+#ta-journal-history .ta-journal-filter--note.is-active {
+  background: linear-gradient(135deg, #C05465, #A84857);
+  box-shadow: 0 10px 24px rgba(192, 84, 101, .20);
+}
+
+#ta-journal-history .ta-journal-stat--obs .ta-journal-stat-value {
+  color: #4A7C59;
+}
+
+#ta-journal-history .ta-journal-stat--rdv .ta-journal-stat-value {
+  color: #3A6EA8;
+}
+
+#ta-journal-history .ta-journal-stat--event .ta-journal-stat-value {
+  color: #C47820;
+}
+
+#ta-journal-history .ta-journal-stat--note .ta-journal-stat-value {
+  color: #C05465;
+}
+
+/* =========================================================
+   3. CARTES PAR TYPE JOURNAL
+========================================================= */
+#ta-journal-history .ta-history--observation {
+  border-left: 4px solid #4A7C59 !important;
+  border-color: rgba(74, 124, 89, .14);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.99), rgba(240,247,242,.92)),
+    linear-gradient(135deg, rgba(74,124,89,.08), transparent 56%);
+}
+
+#ta-journal-history .ta-history--appointment {
+  border-left: 4px solid #3A6EA8 !important;
+  border-color: rgba(58, 110, 168, .14);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.99), rgba(234,242,251,.92)),
+    linear-gradient(135deg, rgba(58,110,168,.08), transparent 56%);
+}
+
+#ta-journal-history .ta-history--event {
+  border-left: 4px solid #C47820 !important;
+  border-color: rgba(196, 120, 32, .14);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.99), rgba(252,245,236,.92)),
+    linear-gradient(135deg, rgba(196,120,32,.08), transparent 56%);
+}
+
+#ta-journal-history .ta-history--note {
+  border-left: 4px solid #C05465 !important;
+  border-color: rgba(192, 84, 101, .14);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.99), rgba(252,243,245,.92)),
+    linear-gradient(135deg, rgba(192,84,101,.08), transparent 56%);
+}
+
+#ta-journal-history .ta-history--observation:hover,
+#ta-journal-history .ta-history--observation:focus-visible {
+  box-shadow: 0 16px 34px rgba(74, 124, 89, .14);
+}
+
+#ta-journal-history .ta-history--appointment:hover,
+#ta-journal-history .ta-history--appointment:focus-visible {
+  box-shadow: 0 16px 34px rgba(58, 110, 168, .14);
+}
+
+#ta-journal-history .ta-history--event:hover,
+#ta-journal-history .ta-history--event:focus-visible {
+  box-shadow: 0 16px 34px rgba(196, 120, 32, .16);
+}
+
+#ta-journal-history .ta-history--note:hover,
+#ta-journal-history .ta-history--note:focus-visible {
+  box-shadow: 0 16px 34px rgba(192, 84, 101, .15);
+}
+
+/* =========================================================
+   4. ICONES / TYPES / TAGS
+========================================================= */
+#ta-journal-history .ta-history--observation .ta-journal-ico {
+  color: #3D684A;
+  background: rgba(74, 124, 89, .10);
+  border: 1px solid rgba(74, 124, 89, .16);
+}
+
+#ta-journal-history .ta-history--appointment .ta-journal-ico {
+  color: #2F5B8B;
+  background: rgba(58, 110, 168, .10);
+  border: 1px solid rgba(58, 110, 168, .16);
+}
+
+#ta-journal-history .ta-history--event .ta-journal-ico {
+  color: #9D5A12;
+  background: rgba(196, 120, 32, .10);
+  border: 1px solid rgba(196, 120, 32, .16);
+}
+
+#ta-journal-history .ta-history--note .ta-journal-ico {
+  color: #A84857;
+  background: rgba(192, 84, 101, .10);
+  border: 1px solid rgba(192, 84, 101, .16);
+}
+
+#ta-journal-history .ta-history--observation .ta-journal-type {
+  color: #3D684A;
+}
+
+#ta-journal-history .ta-history--appointment .ta-journal-type {
+  color: #2F5B8B;
+}
+
+#ta-journal-history .ta-history--event .ta-journal-type {
+  color: #9D5A12;
+}
+
+#ta-journal-history .ta-history--note .ta-journal-type {
+  color: #A84857;
+}
+
+#ta-journal-history .ta-history--observation .ta-journal-tag {
+  background: rgba(74, 124, 89, .10);
+  border-color: rgba(74, 124, 89, .14);
+  color: #3D684A;
+}
+
+#ta-journal-history .ta-history--appointment .ta-journal-tag {
+  background: rgba(58, 110, 168, .10);
+  border-color: rgba(58, 110, 168, .14);
+  color: #2F5B8B;
+}
+
+#ta-journal-history .ta-history--event .ta-journal-tag {
+  background: rgba(196, 120, 32, .10);
+  border-color: rgba(196, 120, 32, .14);
+  color: #9D5A12;
+}
+
+#ta-journal-history .ta-history--note .ta-journal-tag {
+  background: rgba(192, 84, 101, .10);
+  border-color: rgba(192, 84, 101, .14);
+  color: #A84857;
+}
+
+/* Niveaux observation */
+#ta-journal-history .ta-level-1 {
+  background: rgba(107, 174, 107, .14);
+  border-color: rgba(107, 174, 107, .18);
+  color: #4E9350;
+}
+
+#ta-journal-history .ta-level-2 {
+  background: rgba(168, 196, 90, .14);
+  border-color: rgba(168, 196, 90, .18);
+  color: #7D9B2D;
+}
+
+#ta-journal-history .ta-level-3 {
+  background: rgba(240, 180, 41, .14);
+  border-color: rgba(240, 180, 41, .18);
+  color: #AF7A00;
+}
+
+#ta-journal-history .ta-level-4 {
+  background: rgba(224, 123, 57, .14);
+  border-color: rgba(224, 123, 57, .18);
+  color: #B45D1C;
+}
+
+#ta-journal-history .ta-level-5 {
+  background: rgba(192, 57, 43, .14);
+  border-color: rgba(192, 57, 43, .18);
+  color: #B33528;
+}
+
+/* Badge visible en santé */
+#ta-journal-history .ta-badge--info {
+  background: rgba(58, 110, 168, .10);
+  border-color: rgba(58, 110, 168, .18);
+  color: #2F5B8B;
+}
+
+/* =========================================================
+   5. MODAL JOURNAL
+========================================================= */
+#ta-journal-modal .ta-journal-modal-ico {
+  color: #A84857;
+  background: rgba(192, 84, 101, .10);
+  border: 1px solid rgba(192, 84, 101, .15);
+}
+
+#ta-journal-modal .ta-journal-modal-type {
+  color: #A84857;
+}
+
+#ta-journal-modal .ta-journal-chip {
+  background: rgba(192, 84, 101, .08);
+  border-color: rgba(192, 84, 101, .14);
+  color: #8E3B49;
+}
+
+#ta-journal-history .ta-journal-history-item:focus-visible {
+  box-shadow:
+    0 16px 34px rgba(192, 84, 101, .14),
+    0 0 0 4px rgba(192, 84, 101, .10);
+}
+
+/* =========================================================
+   6. PETITS ÉCRANS
+========================================================= */
+@media (max-width: 479px) {
+  #ta-journal-history .ta-journal-history-item {
+    padding-left: 16px;
+    padding-right: 12px;
+  }
+}

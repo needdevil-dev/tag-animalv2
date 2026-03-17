@@ -1,0 +1,834 @@
+/* =======================================================
+   TAGANIMAL — ENTRY GLOBAL v2 · Carnet de Santé Premium
+   Fichier : entry-global.css
+
+   Refonte complète mobile-first.
+   Esthétique : carnet de santé premium — papier ivoire,
+   typographie élégante, animations tactiles, effet "wow".
+
+   ⚠  Tous les sélecteurs JS/PHP sont préservés à l'identique.
+      Seul le visuel change.
+
+   DÉPENDANCE POLICE :
+   Ajouter dans functions.php (ou via @import en HEAD) :
+   https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=Nunito:wght@500;600;700;800;900&display=swap
+
+   ORGANISATION :
+   1.  Tokens design — palette & typo
+   2.  Step wizard — affichage / masquage
+   3.  Grille de types — layout
+   4.  Bouton de type — redesign premium
+   5.  Input de recherche
+   6.  Résultats de recherche
+   7.  Formulaire d'entrée
+   8.  Boutons de navigation
+   9.  Message feedback
+   10. Keyframes
+   11. Responsive
+======================================================= */
+
+
+/* =======================================================
+   0. IMPORT POLICES (fallback si non chargées via WP)
+======================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=Nunito:wght@500;600;700;800;900&display=swap');
+
+
+/* =======================================================
+   1. TOKENS DESIGN — palette carnet de santé
+======================================================= */
+
+.ta-fiche-public {
+
+  /* ── Typographie ── */
+  --entry-font-display: 'Lora', 'Georgia', serif;
+  --entry-font-ui:      'Nunito', system-ui, sans-serif;
+
+  /* ── Palette ivoire / encre ── */
+  --entry-parchment:    #F7F0E3;
+  --entry-parchment-d:  #EDE0C8;
+  --entry-paper:        #FEFCF7;
+  --entry-ink:          #1B0F06;
+  --entry-ink-mid:      #3D2810;
+  --entry-muted:        #8A7055;
+  --entry-gold:         #C89145;
+  --entry-gold-deep:    #A6732A;
+  --entry-gold-light:   rgba(200,145,69,.13);
+  --entry-gold-subtle:  rgba(200,145,69,.08);
+  --entry-border:       rgba(170,130,70,.17);
+  --entry-border-mid:   rgba(170,130,70,.32);
+  --entry-border-hover: rgba(200,145,69,.55);
+
+  /* ── Ombres ── */
+  --entry-shadow-xs: 0 1px  4px rgba(27,15,6,.06);
+  --entry-shadow-sm: 0 2px  8px rgba(27,15,6,.08), 0 0 0 1px rgba(170,130,70,.09);
+  --entry-shadow-md: 0 4px 16px rgba(27,15,6,.11), 0 0 0 1px rgba(170,130,70,.12);
+  --entry-shadow-lg: 0 8px 28px rgba(27,15,6,.14), 0 0 0 1px rgba(170,130,70,.14);
+  --entry-shadow-active: 0 1px 6px rgba(27,15,6,.10);
+  --entry-shadow-gold:   0 4px 20px rgba(200,145,69,.35);
+  --entry-shadow-gold-lg:0 8px 32px rgba(200,145,69,.45);
+
+  /* ── Courbes d'animation ── */
+  --entry-ease:        cubic-bezier(.22,.68,0,1.18);
+  --entry-ease-s:      cubic-bezier(.4,0,.2,1);
+  --entry-ease-out:    cubic-bezier(0,0,.2,1);
+  --entry-ease-spring: cubic-bezier(.34,1.52,.64,1);
+
+  /* ── Durées ── */
+  --entry-dur-fast:  .13s;
+  --entry-dur-mid:   .22s;
+  --entry-dur-slow:  .36s;
+
+  /* ── Touch targets ── */
+  --entry-touch-min: 44px;
+  --entry-btn-h:     52px;
+  --entry-btn-sm-h:  40px;
+  --entry-input-h:   50px;
+
+  /* ── Rayons ── */
+  --entry-r-sm:   8px;
+  --entry-r-md:   14px;
+  --entry-r-lg:   20px;
+  --entry-r-xl:   28px;
+  --entry-r-pill: 100px;
+
+  /* ── Espacements ── */
+  --entry-gap-xs: 6px;
+  --entry-gap-sm: 10px;
+  --entry-gap-md: 16px;
+  --entry-gap-lg: 24px;
+}
+
+
+/* =======================================================
+   2. STEP WIZARD — AFFICHAGE / MASQUAGE
+======================================================= */
+
+/* Animation "page suivante" */
+.ta-fiche-public .ta-entry-step:not([hidden]),
+.ta-fiche-public [data-ta-pros-step]:not([hidden]),
+.ta-fiche-public [data-entry-screen]:not([hidden]) {
+  animation: entryPageIn var(--entry-dur-mid) var(--entry-ease-out) both;
+}
+
+/* ── Titre de section "en-tête de chapitre" ── */
+.ta-fiche-public .ta-entry-step > .ta-section-title:first-child,
+.ta-fiche-public [data-ta-pros-step] > .ta-section-title:first-child {
+  display:        flex;
+  align-items:    center;
+  gap:            10px;
+  margin:         0 0 18px;
+  padding-bottom: 14px;
+  border-bottom:  1px solid var(--entry-border);
+
+  font-family:    var(--entry-font-display);
+  font-size:      0.85em;
+  font-weight:    600;
+  font-style:     italic;
+  letter-spacing: .01em;
+  color:          var(--entry-gold-deep);
+
+  background:  none;
+  border-top:  none;
+  border-left: none;
+  border-right:none;
+  box-shadow:  none;
+  text-transform: none;
+}
+
+/* Filet décoratif avant le titre */
+.ta-fiche-public .ta-entry-step > .ta-section-title:first-child::before,
+.ta-fiche-public [data-ta-pros-step] > .ta-section-title:first-child::before {
+  content:    '◆';
+  font-size:  0.55em;
+  color:      var(--entry-gold);
+  opacity:    .70;
+  flex-shrink:0;
+}
+
+
+/* =======================================================
+   3. GRILLE DE TYPES — LAYOUT
+======================================================= */
+
+.ta-fiche-public .ta-entry-type-grid,
+.ta-fiche-public .ta-pros-type-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+
+/* =======================================================
+   4. BOUTON DE TYPE — REDESIGN PREMIUM
+   ─────────────────────────────────────
+   Esthétique "onglet de carnet" :
+   • Fond papier avec élévation subtile
+   • Trait coloré en haut (currentColor)
+   • Icône dans un carré arrondi teinté
+   • Hover : lift + fill léger couleur
+   • Active : ring coloré + fond doux
+======================================================= */
+
+.ta-fiche-public .ta-entry-type-btn,
+.ta-fiche-public .ta-pro-type-btn {
+
+  /* Layout interne */
+  position:        relative;
+  display:         flex !important;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             8px;
+  text-align:      center;
+  line-height:     1.3;
+  overflow:        hidden;
+
+  /* Dimensions tactiles */
+  height:          auto !important;
+  min-height:      90px !important;
+  padding:         16px 8px 13px !important;
+
+  /* Apparence */
+  border-radius: var(--entry-r-lg) !important;
+  border:        1.5px solid var(--entry-border) !important;
+  background:    var(--entry-paper) !important;
+  box-shadow:    var(--entry-shadow-sm) !important;
+
+  /* Typographie Nunito */
+  font-family:    var(--entry-font-ui) !important;
+  font-size:      0.76em !important;
+  font-weight:    700 !important;
+  letter-spacing: .015em;
+  color:          var(--entry-ink-mid);
+
+  /* Animations */
+  animation: entryFadeUp var(--entry-dur-mid) var(--entry-ease-s) both;
+  transition:
+    transform    var(--entry-dur-fast) var(--entry-ease-spring),
+    box-shadow   var(--entry-dur-fast) var(--entry-ease-s),
+    background   var(--entry-dur-mid)  var(--entry-ease-s),
+    border-color var(--entry-dur-fast) var(--entry-ease-s) !important;
+  cursor: pointer;
+}
+
+/* ── Trait supérieur coloré (currentColor) ── */
+.ta-fiche-public .ta-entry-type-btn::before,
+.ta-fiche-public .ta-pro-type-btn::before {
+  content:      '';
+  position:     absolute;
+  top:          0;
+  left:         20%;
+  right:        20%;
+  height:       3px;
+  border-radius:0 0 4px 4px;
+  background:   currentColor;
+  opacity:      .28;
+  transition:
+    opacity var(--entry-dur-fast),
+    left    var(--entry-dur-mid) var(--entry-ease-spring),
+    right   var(--entry-dur-mid) var(--entry-ease-spring);
+}
+
+.ta-fiche-public .ta-entry-type-btn:hover::before,
+.ta-fiche-public .ta-pro-type-btn:hover::before {
+  left:    6%;
+  right:   6%;
+  opacity: .65;
+}
+
+/* ── Icône / emoji dans carré arrondi teinté ── */
+.ta-fiche-public .ta-entry-type-btn .btn-icon,
+.ta-fiche-public .ta-pro-type-btn   .btn-emoji {
+  font-size:       1.55rem;
+  line-height:     1;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  width:           42px;
+  height:          42px;
+  border-radius:   13px;
+  /* Teinte automatique via currentColor */
+  background:      color-mix(in srgb, currentColor 11%, white);
+  /* Fallback navigateurs anciens */
+  box-shadow:      0 0 0 1px color-mix(in srgb, currentColor 15%, transparent);
+  flex-shrink:     0;
+  transition:
+    transform var(--entry-dur-fast) var(--entry-ease-spring),
+    background var(--entry-dur-fast);
+}
+
+/* ── Hover — lift + glow + icon pop ── */
+.ta-fiche-public .ta-entry-type-btn:hover,
+.ta-fiche-public .ta-pro-type-btn:hover {
+  transform:   translateY(-5px) !important;
+  box-shadow:  var(--entry-shadow-lg) !important;
+  border-color:var(--entry-border-mid) !important;
+}
+
+.ta-fiche-public .ta-entry-type-btn:hover .btn-icon,
+.ta-fiche-public .ta-pro-type-btn:hover   .btn-emoji {
+  transform: scale(1.14);
+  background: color-mix(in srgb, currentColor 18%, white);
+}
+
+/* ── Appui — squeeze physique ── */
+.ta-fiche-public .ta-entry-type-btn:active,
+.ta-fiche-public .ta-pro-type-btn:active {
+  transform:           translateY(-1px) scale(.96) !important;
+  box-shadow:          var(--entry-shadow-active) !important;
+  transition-duration: .07s !important;
+}
+
+/* ── Stagger d'apparition ── */
+.ta-fiche-public .ta-entry-type-btn:nth-child(1),
+.ta-fiche-public .ta-pro-type-btn:nth-child(1)  { animation-delay: .04s; }
+.ta-fiche-public .ta-entry-type-btn:nth-child(2),
+.ta-fiche-public .ta-pro-type-btn:nth-child(2)  { animation-delay: .09s; }
+.ta-fiche-public .ta-entry-type-btn:nth-child(3),
+.ta-fiche-public .ta-pro-type-btn:nth-child(3)  { animation-delay: .14s; }
+.ta-fiche-public .ta-entry-type-btn:nth-child(4),
+.ta-fiche-public .ta-pro-type-btn:nth-child(4)  { animation-delay: .19s; }
+.ta-fiche-public .ta-entry-type-btn:nth-child(5),
+.ta-fiche-public .ta-pro-type-btn:nth-child(5)  { animation-delay: .24s; }
+.ta-fiche-public .ta-entry-type-btn:nth-child(6),
+.ta-fiche-public .ta-pro-type-btn:nth-child(6)  { animation-delay: .29s; }
+.ta-fiche-public .ta-entry-type-btn:nth-child(7),
+.ta-fiche-public .ta-pro-type-btn:nth-child(7)  { animation-delay: .34s; }
+.ta-fiche-public .ta-entry-type-btn:nth-child(8),
+.ta-fiche-public .ta-pro-type-btn:nth-child(8)  { animation-delay: .39s; }
+
+
+/* =======================================================
+   5. INPUT DE RECHERCHE
+======================================================= */
+
+.ta-fiche-public .ta-entry-search,
+.ta-fiche-public [data-ta-pros-search].ta-input,
+.ta-fiche-public [data-ta-entry-search].ta-input {
+
+  height:       var(--entry-input-h) !important;
+  padding-left: 50px !important;
+
+  font-family: var(--entry-font-ui);
+  font-size:   0.95em !important;
+  font-weight: 500;
+  color:       var(--entry-ink);
+
+  background-color:    var(--entry-paper) !important;
+  background-image:    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23C89145' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") !important;
+  background-repeat:   no-repeat !important;
+  background-position: 16px center !important;
+
+  border:        1.5px solid var(--entry-border) !important;
+  border-radius: var(--entry-r-xl) !important;
+  box-shadow:    var(--entry-shadow-sm) !important;
+
+  transition:
+    border-color var(--entry-dur-fast),
+    box-shadow   var(--entry-dur-fast) !important;
+}
+
+.ta-fiche-public .ta-entry-search::placeholder,
+.ta-fiche-public [data-ta-pros-search].ta-input::placeholder,
+.ta-fiche-public [data-ta-entry-search].ta-input::placeholder {
+  color:       var(--entry-muted);
+  font-style:  italic;
+  font-weight: 500;
+}
+
+.ta-fiche-public .ta-entry-search:focus,
+.ta-fiche-public [data-ta-pros-search].ta-input:focus,
+.ta-fiche-public [data-ta-entry-search].ta-input:focus {
+  border-color: var(--entry-gold) !important;
+  box-shadow:   0 0 0 4px var(--entry-gold-light), var(--entry-shadow-sm) !important;
+  outline:      none !important;
+}
+
+/* Texte d'aide */
+.ta-fiche-public .ta-entry-search-hint {
+  margin-top:  8px;
+  font-family: var(--entry-font-ui);
+  font-size:   0.78em;
+  color:       var(--entry-muted);
+  line-height: 1.5;
+  padding-left: 4px;
+}
+
+
+/* =======================================================
+   6. RÉSULTATS DE RECHERCHE
+======================================================= */
+
+.ta-fiche-public .ta-entry-results,
+.ta-fiche-public [data-ta-pros-search-results] {
+  display:        flex !important;
+  flex-direction: column;
+  gap:            7px;
+  margin-top:     14px;
+  animation:      entryFadeUp var(--entry-dur-fast) var(--entry-ease-s) both;
+}
+
+/* ── Résultat individuel — "fiche de rendez-vous" ── */
+.ta-fiche-public .ta-entry-results .ta-btn,
+.ta-fiche-public [data-ta-pros-search-results] .ta-btn {
+  position:      relative;
+  display:       flex !important;
+  flex-direction:column;
+  align-items:   flex-start !important;
+  height:        auto !important;
+  min-height:    var(--entry-touch-min) !important;
+  padding:       13px 44px 13px 18px !important;
+  border-radius: var(--entry-r-md) !important;
+  background:    var(--entry-paper) !important;
+  border:        1.5px solid var(--entry-border) !important;
+  text-align:    left;
+  gap:           3px;
+  box-shadow:    var(--entry-shadow-sm);
+  overflow:      hidden;
+  transition:
+    background   var(--entry-dur-fast) var(--entry-ease-s),
+    border-color var(--entry-dur-fast) var(--entry-ease-s),
+    transform    var(--entry-dur-fast) var(--entry-ease-spring),
+    box-shadow   var(--entry-dur-fast) var(--entry-ease-s) !important;
+}
+
+/* Barre d'accentuation gauche */
+.ta-fiche-public .ta-entry-results .ta-btn::before,
+.ta-fiche-public [data-ta-pros-search-results] .ta-btn::before {
+  content:       '';
+  position:      absolute;
+  left:          0;
+  top:           0;
+  bottom:        0;
+  width:         3px;
+  background:    linear-gradient(to bottom, var(--entry-gold), var(--entry-gold-deep));
+  opacity:       .35;
+  transition:    opacity var(--entry-dur-fast), width var(--entry-dur-fast);
+  border-radius: 0 2px 2px 0;
+}
+
+.ta-fiche-public .ta-entry-results .ta-btn:hover,
+.ta-fiche-public [data-ta-pros-search-results] .ta-btn:hover {
+  background:    var(--entry-parchment) !important;
+  border-color:  var(--entry-gold) !important;
+  transform:     translateX(4px) !important;
+  box-shadow:    var(--entry-shadow-md) !important;
+}
+
+.ta-fiche-public .ta-entry-results .ta-btn:hover::before,
+.ta-fiche-public [data-ta-pros-search-results] .ta-btn:hover::before {
+  opacity: 1;
+  width:   4px;
+}
+
+/* Flèche animée */
+.ta-fiche-public .ta-entry-results .ta-btn::after,
+.ta-fiche-public [data-ta-pros-search-results] .ta-btn::after {
+  content:    '→';
+  position:   absolute;
+  right:      14px;
+  top:        50%;
+  transform:  translateY(-50%) translateX(-6px);
+  font-size:  1.1rem;
+  color:      var(--entry-gold);
+  opacity:    0;
+  transition:
+    opacity   var(--entry-dur-fast),
+    transform var(--entry-dur-fast) var(--entry-ease-spring);
+}
+
+.ta-fiche-public .ta-entry-results .ta-btn:hover::after,
+.ta-fiche-public [data-ta-pros-search-results] .ta-btn:hover::after {
+  opacity:   1;
+  transform: translateY(-50%) translateX(0);
+}
+
+.ta-fiche-public .ta-entry-results .ta-btn strong,
+.ta-fiche-public [data-ta-pros-search-results] .ta-btn strong {
+  font-family: var(--entry-font-ui);
+  font-size:   0.90em;
+  font-weight: 800;
+  color:       var(--entry-ink);
+}
+
+.ta-fiche-public .ta-entry-results .ta-btn .ta-text--status,
+.ta-fiche-public [data-ta-pros-search-results] .ta-btn .ta-text--status {
+  font-family: var(--entry-font-ui);
+  font-size:   0.78em;
+  color:       var(--entry-muted);
+}
+
+/* ── Empty state ── */
+.ta-fiche-public .ta-entry-empty-search,
+.ta-fiche-public [data-ta-pros-search-empty] {
+  margin-top:    14px;
+  text-align:    center;
+  padding:       28px 16px 24px;
+  border:        1.5px dashed var(--entry-border-mid);
+  border-radius: var(--entry-r-lg);
+  background:    var(--entry-paper);
+  animation:     entryFadeUp var(--entry-dur-fast) var(--entry-ease-s) both;
+}
+
+.ta-fiche-public .ta-entry-empty-search::before,
+.ta-fiche-public [data-ta-pros-search-empty]::before {
+  content:       '🔍';
+  display:       block;
+  font-size:     2.6rem;
+  margin-bottom: 12px;
+  animation:     entryFloatIcon 2.4s ease-in-out infinite;
+}
+
+.ta-fiche-public .ta-entry-empty-search .ta-text,
+.ta-fiche-public [data-ta-pros-search-empty] .ta-text {
+  font-family:   var(--entry-font-ui);
+  font-size:     0.88em;
+  color:         var(--entry-muted);
+  margin-bottom: 14px;
+  line-height:   1.5;
+}
+
+
+/* =======================================================
+   7. FORMULAIRE D'ENTRÉE
+======================================================= */
+
+.ta-fiche-public .ta-entry-form,
+.ta-fiche-public .ta-pros-form {
+  animation: entryPageIn var(--entry-dur-mid) var(--entry-ease-s) both;
+}
+
+/* Inputs dans le formulaire */
+.ta-fiche-public .ta-entry-form .ta-input,
+.ta-fiche-public .ta-pros-form  .ta-input {
+  height:        var(--entry-input-h) !important;
+  padding-left:  16px !important;
+  padding-right: 16px !important;
+  border-radius: var(--entry-r-md) !important;
+  border:        1.5px solid var(--entry-border) !important;
+  background:    var(--entry-paper) !important;
+  font-family:   var(--entry-font-ui);
+  font-size:     0.94em !important;
+  font-weight:   500;
+  color:         var(--entry-ink);
+  box-shadow:    var(--entry-shadow-sm);
+  transition:
+    border-color var(--entry-dur-fast),
+    box-shadow   var(--entry-dur-fast) !important;
+}
+
+.ta-fiche-public .ta-entry-form .ta-input:focus,
+.ta-fiche-public .ta-pros-form  .ta-input:focus {
+  border-color: var(--entry-gold) !important;
+  box-shadow:   0 0 0 4px var(--entry-gold-light), var(--entry-shadow-sm) !important;
+  outline:      none !important;
+}
+
+/* Champ rempli */
+.ta-fiche-public .ta-entry-form .ta-input:not(:placeholder-shown),
+.ta-fiche-public .ta-pros-form  .ta-input:not(:placeholder-shown) {
+  background:   var(--entry-paper) !important;
+  border-color: rgba(200,145,69,.42) !important;
+}
+
+/* Labels */
+.ta-fiche-public .ta-entry-form label,
+.ta-fiche-public .ta-pros-form  label {
+  font-family:    var(--entry-font-ui);
+  font-size:      0.76em;
+  font-weight:    700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color:          var(--entry-muted);
+  margin-bottom:  6px;
+  display:        block;
+}
+
+/* Textarea */
+.ta-fiche-public .ta-entry-form textarea.ta-input,
+.ta-fiche-public .ta-pros-form  textarea.ta-input {
+  height:      auto !important;
+  min-height:  100px;
+  padding-top: 12px !important;
+  resize:      vertical;
+  line-height: 1.55;
+}
+
+/* ── Bouton submit — premium gold CTA ── */
+.ta-fiche-public .ta-entry-submit,
+.ta-fiche-public [data-ta-pros-save] {
+  position:       relative;
+  overflow:       hidden;
+  width:          100% !important;
+  height:         var(--entry-btn-h) !important;
+  min-height:     var(--entry-btn-h) !important;
+  border-radius:  var(--entry-r-xl) !important;
+  font-family:    var(--entry-font-ui) !important;
+  font-size:      0.96em !important;
+  font-weight:    800 !important;
+  letter-spacing: .04em;
+  box-shadow:     var(--entry-shadow-gold) !important;
+  transition:
+    transform  var(--entry-dur-fast) var(--entry-ease-spring),
+    box-shadow var(--entry-dur-fast) !important;
+}
+
+.ta-fiche-public .ta-entry-submit:not(:disabled):hover,
+.ta-fiche-public [data-ta-pros-save]:not(:disabled):hover {
+  transform:  translateY(-3px) !important;
+  box-shadow: var(--entry-shadow-gold-lg) !important;
+}
+
+.ta-fiche-public .ta-entry-submit:not(:disabled):active,
+.ta-fiche-public [data-ta-pros-save]:not(:disabled):active {
+  transform: translateY(0) scale(.98) !important;
+}
+
+/* Shimmer */
+.ta-fiche-public .ta-entry-submit:not(:disabled)::before,
+.ta-fiche-public [data-ta-pros-save]:not(:disabled)::before {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background: linear-gradient(
+    105deg,
+    transparent          0%,
+    rgba(255,255,255,.28) 45%,
+    rgba(255,255,255,.08) 55%,
+    transparent          100%
+  );
+  transform:  translateX(-100%);
+  transition: transform .55s ease;
+}
+
+.ta-fiche-public .ta-entry-submit:not(:disabled):hover::before,
+.ta-fiche-public [data-ta-pros-save]:not(:disabled):hover::before {
+  transform: translateX(100%);
+}
+
+
+/* =======================================================
+   8. BOUTONS DE NAVIGATION
+======================================================= */
+
+.ta-fiche-public .ta-entry-back,
+.ta-fiche-public [data-ta-pros-back-type],
+.ta-fiche-public [data-ta-pros-back-search],
+.ta-fiche-public [data-ta-pros-cancel] {
+  height:        var(--entry-btn-sm-h) !important;
+  min-height:    var(--entry-btn-sm-h) !important;
+  font-family:   var(--entry-font-ui) !important;
+  font-size:     0.82em;
+  font-weight:   600;
+  color:         var(--entry-muted);
+  opacity:       1;
+  transition:
+    color     var(--entry-dur-fast),
+    transform var(--entry-dur-fast) var(--entry-ease-spring) !important;
+}
+
+.ta-fiche-public .ta-entry-back::before,
+.ta-fiche-public [data-ta-pros-back-type]::before,
+.ta-fiche-public [data-ta-pros-back-search]::before,
+.ta-fiche-public [data-ta-pros-cancel]::before {
+  content:     '← ';
+  font-size:   0.9em;
+  opacity:     .70;
+}
+
+.ta-fiche-public .ta-entry-back:hover,
+.ta-fiche-public [data-ta-pros-back-type]:hover,
+.ta-fiche-public [data-ta-pros-back-search]:hover,
+.ta-fiche-public [data-ta-pros-cancel]:hover {
+  color:     var(--entry-ink);
+  transform: translateX(-3px);
+}
+
+/* Zone de retour centrée */
+.ta-fiche-public .ta-entry-back-zone,
+.ta-fiche-public .ta-pros-back {
+  margin-top:      6px;
+  display:         flex !important;
+  justify-content: center !important;
+  width:           100%;
+}
+
+.ta-fiche-public .ta-entry-back-zone .ta-btn,
+.ta-fiche-public .ta-pros-back .ta-btn {
+  min-width:   120px;
+  max-width:   240px;
+  font-family: var(--entry-font-ui) !important;
+  font-size:   0.82em;
+  font-weight: 600;
+  height:      var(--entry-btn-sm-h) !important;
+  min-height:  var(--entry-btn-sm-h) !important;
+  color:       var(--entry-muted);
+  opacity:     1;
+  transition:  color var(--entry-dur-fast), transform var(--entry-dur-fast) !important;
+}
+
+.ta-fiche-public .ta-entry-back-zone .ta-btn:hover,
+.ta-fiche-public .ta-pros-back .ta-btn:hover {
+  color:     var(--entry-ink);
+  transform: translateX(-3px);
+}
+
+
+/* =======================================================
+   9. MESSAGE FEEDBACK — style "cachet" / tampon
+======================================================= */
+
+.ta-fiche-public .ta-entry-message,
+.ta-fiche-public .ta-pros-message {
+  display:       block;
+  font-family:   var(--entry-font-ui);
+  font-size:     0.84em;
+  font-weight:   700;
+  padding:       11px 20px;
+  border-radius: var(--entry-r-pill);
+  opacity:       0;
+  transition:    opacity var(--entry-dur-mid);
+  text-align:    center;
+  min-height:    0;
+  letter-spacing:.03em;
+}
+
+.ta-fiche-public .ta-entry-message:not(:empty),
+.ta-fiche-public .ta-pros-message:not(:empty) {
+  opacity:   1;
+  animation: entryStampIn var(--entry-dur-slow) var(--entry-ease-spring) both;
+}
+
+/* Succès */
+.ta-fiche-public .ta-entry-message.is-success,
+.ta-fiche-public .ta-pros-message.is-success {
+  background: rgba(22,163,74,.12);
+  color:      #0c6b2e;
+  border:     1.5px solid rgba(22,163,74,.28);
+}
+
+/* Erreur */
+.ta-fiche-public .ta-entry-message.is-error,
+.ta-fiche-public .ta-pros-message.is-error {
+  background: rgba(220,38,38,.10);
+  color:      #b71c1c;
+  border:     1.5px solid rgba(220,38,38,.24);
+}
+
+
+/* =======================================================
+   10. KEYFRAMES
+======================================================= */
+
+/* Glissement "nouvelle page" */
+@keyframes entryPageIn {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+/* Montée douce (grille de boutons) */
+@keyframes entryFadeUp {
+  from { opacity: 0; transform: translateY(14px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+
+/* Tampon / cachet pour les messages */
+@keyframes entryStampIn {
+  0%   { transform: scale(.65) rotate(-3deg); opacity: 0; }
+  55%  { transform: scale(1.07) rotate(.8deg); }
+  78%  { transform: scale(.97); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Icône flottante (empty state) */
+@keyframes entryFloatIcon {
+  0%, 100% { transform: translateY(0);    }
+  50%       { transform: translateY(-8px); }
+}
+
+/* Pulse or sur save réussi */
+@keyframes entryGoldRing {
+  0%   { box-shadow: 0 0 0 0    rgba(200,145,69,.55); }
+  70%  { box-shadow: 0 0 0 14px rgba(200,145,69,.00); }
+  100% { box-shadow: 0 0 0 0    rgba(200,145,69,.00); }
+}
+
+/* Apparition message feedback */
+@keyframes entryMessagePop {
+  0%   { transform: scale(.85); opacity: 0; }
+  70%  { transform: scale(1.04); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+
+/* =======================================================
+   11. RESPONSIVE
+======================================================= */
+
+/* ── Mobile (< 600 px) — 2 colonnes larges et lisibles ── */
+@media (max-width: 599px) {
+  .ta-fiche-public .ta-entry-type-grid,
+  .ta-fiche-public .ta-pros-type-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Boutons plus grands sur mobile : zone tactile confortable */
+  .ta-fiche-public .ta-entry-type-btn,
+  .ta-fiche-public .ta-pro-type-btn {
+    min-height:  100px !important;
+    padding:     16px 10px 14px !important;
+  }
+
+  /* Label plus lisible : taille & wrapping */
+  .ta-fiche-public .ta-entry-type-btn,
+  .ta-fiche-public .ta-pro-type-btn {
+    font-size:   0.84em !important;   /* +0.08em vs défaut */
+    word-break:  break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+  }
+
+  /* Icône légèrement plus grande */
+  .ta-fiche-public .ta-entry-type-btn .btn-icon,
+  .ta-fiche-public .ta-pro-type-btn   .btn-emoji {
+    width:     46px;
+    height:    46px;
+    font-size: 1.65rem;
+    border-radius: 14px;
+  }
+}
+
+/* ── Très petits écrans (< 360 px) ── */
+@media (max-width: 359px) {
+  .ta-fiche-public .ta-entry-type-btn,
+  .ta-fiche-public .ta-pro-type-btn {
+    min-height:  88px !important;
+    padding:     12px 8px 10px !important;
+    font-size:   0.80em !important;
+  }
+
+  .ta-fiche-public .ta-entry-type-btn .btn-icon,
+  .ta-fiche-public .ta-pro-type-btn   .btn-emoji {
+    width:     38px;
+    height:    38px;
+    font-size: 1.40rem;
+    border-radius: 11px;
+  }
+}
+
+/* ── Tablette et desktop (≥ 600 px) — 4 colonnes ── */
+@media (min-width: 600px) {
+  .ta-fiche-public .ta-entry-type-grid,
+  .ta-fiche-public .ta-pros-type-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+
+/* =======================================================
+   FIN — entry-global.css v2
+   TagAnimal · Carnet de Santé Premium
+======================================================= */

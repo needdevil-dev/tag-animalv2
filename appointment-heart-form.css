@@ -1,0 +1,171 @@
+/* =========================================================
+ * TAGANIMAL — vaccine-form.css  (thème couleur uniquement)
+ * =========================================================
+ * Dépend de : global-form.css  (chargé avant)
+ *
+ * CE FICHIER NE FAIT QUE COLORER.
+ * Il surcharge les 5 tokens d'accent + ajoute
+ * la palette beige/vert propre au vaccin.
+ * Zéro layout, zéro comportement ici.
+ *
+ * TABLE DES MATIÈRES :
+ *   1.  Surcharge des tokens d'accent (--ta-form-accent-*)
+ *   2.  Palette locale (--vax-*)
+ *   3.  Typographie vaccin (Sora + DM Sans)
+ *   4.  Couleur des inputs au focus
+ *   5.  Couleur des boutons
+ *   6.  Couleur de la barre de progression
+ *   7.  Couleur du fond du formulaire
+ *   8.  Couleur des chips / raccourcis
+ *   9.  Alerte amber (rappel passé)
+ *   10. Toast vaccin
+ * ========================================================= */
+
+
+/* ─────────────────────────────────────────────────────────
+   1. SURCHARGE DES TOKENS D'ACCENT
+   ─────────────────────────────────────────────────────────
+   Ces 5 variables pilotent TOUT le global-form.css.
+   Modifier uniquement ces lignes pour changer la couleur
+   de l'ensemble : bulles progress, boutons, focus, freq…
+   ───────────────────────────────────────────────────────── */
+.vax-form {
+  --ta-form-accent:        #2D5016;            /* vert forêt */
+  --ta-form-accent-dark:   #1E3A0E;            /* vert sombre (active) */
+  --ta-form-accent-light:  #EBF2E5;            /* vert pâle (backgrounds) */
+  --ta-form-accent-border: #A8C98A;            /* vert moyen (bordures) */
+  --ta-form-accent-shadow: rgba(45,80,22,.25); /* ombre colorée des btns */
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   2. PALETTE LOCALE
+   ─────────────────────────────────────────────────────────
+   Couleurs spécifiques au domaine vaccin non couvertes
+   par les tokens globaux.
+   ───────────────────────────────────────────────────────── */
+.vax-form {
+  /* Fond beige chaud — spécifique vaccin */
+  --vax-bg:       #F5F2ED;
+  --vax-surface:  #FFFFFF;
+  --vax-border:   #E8E3DB;
+  --vax-border-hi:#D4CEC4;
+
+  /* Encre chaude */
+  --vax-ink-1: #1A1714;
+  --vax-ink-2: #4A443C;
+  --vax-ink-3: #8C857A;
+
+  /* Vert — variantes secondaires */
+  --vax-green-success: #1E6B2E;
+  --vax-green-sbg:     #E8F5EC;
+  --vax-green-sbdr:    #7DC992;
+
+  /* Amber — alerte rappel passé */
+  --vax-amber:     #8B5E04;
+  --vax-amber-bg:  #FFF8E6;
+  --vax-amber-bdr: #F5D06A;
+
+  /* Rouge erreur local */
+  --vax-red:    #C0392B;
+  --vax-red-bg: #FFF0EE;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   3. TYPOGRAPHIE VACCIN
+   ─────────────────────────────────────────────────────────
+   Sora pour les titres/labels, DM Sans pour le corps.
+   ───────────────────────────────────────────────────────── */
+.vax-form {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--vax-ink-2);
+}
+
+.vax-form .ta-form-label,
+.vax-form .ta-form-progress__lbl,
+.vax-form .ta-form-freq__n,
+.vax-form .ta-form-preview__title,
+.vax-form .ta-form-btn,
+.vax-form .ta-form-step__title {
+  font-family: 'Sora', sans-serif;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   4. FOND & INPUTS — TEINTE BEIGE
+   ─────────────────────────────────────────────────────────
+   On remplace le fond gris neutre du global par le beige
+   propre à l'identité vaccin.
+   ───────────────────────────────────────────────────────── */
+.vax-form .ta-form-input {
+  background: var(--vax-bg);
+  border-color: var(--vax-border);
+  color: var(--vax-ink-1);
+}
+.vax-form .ta-form-input::placeholder { color: var(--vax-ink-3); }
+.vax-form .ta-form-input:focus {
+  background: var(--vax-surface);
+  /* border-color et box-shadow pilotés par --ta-form-accent */
+}
+
+.vax-form .ta-form-chip,
+.vax-form .ta-form-shortcut {
+  background: var(--vax-bg);
+  border-color: var(--vax-border-hi);
+  color: var(--vax-ink-2);
+}
+
+.vax-form .ta-form-freq__card {
+  background: var(--vax-bg);
+  border-color: var(--vax-border);
+}
+
+.vax-form .ta-form-preview[data-state="reminder"] {
+  border-color: var(--vax-green-sbdr);
+  background: var(--vax-green-sbg);
+}
+
+/* Date du prochain rappel — vert succès */
+.vax-form .ta-form-preview__date { color: var(--vax-green-success); }
+
+
+/* ─────────────────────────────────────────────────────────
+   5. COULEUR DES BOUTONS
+   ─────────────────────────────────────────────────────────
+   Les tokens --ta-form-accent-* suffisent pour .ta-form-btn.
+   Ici on cible uniquement le bouton ghost pour l'adapter
+   à la palette beige.
+   ───────────────────────────────────────────────────────── */
+.vax-form .ta-form-btn--ghost {
+  border-color: var(--vax-border-hi);
+  color: var(--vax-ink-3);
+}
+.vax-form .ta-form-btn--ghost:active {
+  background: var(--vax-bg);
+  color: var(--vax-ink-2);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   6. ALERTE AMBER (rappel passé)
+   ─────────────────────────────────────────────────────────
+   Variante spécifique vaccin non présente dans le global.
+   ───────────────────────────────────────────────────────── */
+.vax-form .ta-form-alert--vaccine-past {
+  background: var(--vax-amber-bg);
+  border-color: var(--vax-amber-bdr);
+  color: var(--vax-amber);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   7. TOAST VACCIN
+   ─────────────────────────────────────────────────────────
+   Le fond du toast reprend l'encre chaude au lieu du noir.
+   ───────────────────────────────────────────────────────── */
+.vax-form .ta-form-toast {
+  background: var(--vax-ink-1);
+}
+.vax-form .ta-form-toast--error   { background: var(--vax-red); }
+.vax-form .ta-form-toast--success { background: var(--vax-green-success); }

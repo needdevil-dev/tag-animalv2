@@ -1,0 +1,1010 @@
+/* ==========================================================
+   TAGANIMAL – ACTIVATION ONBOARDING
+   CSS nettoyé et unifié - Mobile-first
+   ========================================================== */
+
+
+/* ==========================================================
+   1. VARIABLES GLOBALES
+   ========================================================== */
+
+:root {
+  /* Couleurs marque */
+  --ta-primary: #F39A36;
+  --ta-primary-dark: #D88426;
+  --ta-bg: #fdf8f1;
+
+  /* Neutres */
+  --ta-white: #ffffff;
+  --ta-text: #2b2b2b;
+  --ta-muted: #6b7280;
+  --ta-border: #e5e7eb;
+
+  /* États */
+  --ta-success: #16a34a;
+  --ta-error: #dc2626;
+
+  /* Layout */
+  --ta-radius: 14px;
+  --ta-radius-sm: 10px;
+  --ta-shadow: 0 4px 16px rgba(0,0,0,.08);
+
+  /* Champs */
+  --ta-field-h: 44px;
+
+  /* Animations */
+  --ta-anim: 160ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --ta-anim: 0ms; }
+}
+
+
+/* ==========================================================
+   2. RESET MINIMAL & BASE
+   ========================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--ta-bg);
+  color: var(--ta-text);
+  font-family: "Nunito", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+
+/* ==========================================================
+   3. CONTAINER PRINCIPAL
+   ========================================================== */
+
+.ta-activation {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+@media (min-width: 768px) {
+  .ta-activation {
+    max-width: 720px;
+    padding: 24px;
+  }
+}
+
+
+/* ==========================================================
+   4. GESTION DES ÉCRANS (wizard)
+   ========================================================== */
+
+[data-ta-screen] {
+  display: none;
+}
+
+[data-ta-screen].is-active {
+  display: block;
+}
+
+
+/* ==========================================================
+   5. CARD DE BASE
+   ========================================================== */
+
+.ta-card {
+  background: var(--ta-white);
+  border-radius: var(--ta-radius);
+  padding: 20px 18px;
+  box-shadow: var(--ta-shadow);
+}
+
+
+/* ==========================================================
+   6. ÉTAPE 0 – INTRO / WELCOME
+   ========================================================== */
+
+.ta-screen-welcome {
+  text-align: center;
+}
+
+.ta-intro-title {
+  margin: 0 0 12px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--ta-primary);
+}
+
+@media (min-width: 768px) {
+  .ta-intro-title {
+    font-size: 1.6rem;
+  }
+}
+
+.ta-intro-text {
+  font-size: 1rem;
+  line-height: 1.55;
+  margin-bottom: 18px;
+}
+
+.ta-intro-points {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.ta-intro-points li {
+  font-size: .95rem;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.ta-intro-note {
+  font-size: .9rem;
+  color: var(--ta-muted);
+  margin-bottom: 22px;
+}
+
+
+/* ==========================================================
+   7. ÉTAPE 1 – CONTACT MINIMUM VITAL
+   ========================================================== */
+
+.ta-step-hint {
+  font-size: .95rem;
+  line-height: 1.5;
+  color: var(--ta-muted);
+  margin: 0 0 20px;
+  text-align: center;
+  padding: 0 8px;
+}
+
+@media (min-width: 768px) {
+  .ta-step-hint {
+    font-size: 1rem;
+  }
+}
+
+.ta-owner-block #ta_owner_phone {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+
+.ta-optional {
+  font-weight: 500;
+  font-size: .8rem;
+  color: var(--ta-muted);
+  margin-left: 6px;
+}
+
+.ta-owner-block .ta-row,
+.ta-owner-block .ta-row-2 {
+  margin-bottom: 16px;
+}
+
+.ta-owner-block .ta-row-2:last-of-type {
+  margin-bottom: 20px;
+}
+
+.ta-owner-block label {
+  margin-bottom: 6px;
+}
+
+.ta-owner-block small,
+.ta-owner-block .ta-help {
+  display: block;
+  margin-top: 4px;
+}
+
+.ta-owner-block .ta-screen-actions {
+  margin-top: 24px;
+}
+
+/* Bloc contact de secours */
+.ta-emergency-box {
+  margin-top: 22px;
+  padding: 16px 16px 18px;
+  border-radius: var(--ta-radius-sm);
+  background: #f8fafc;
+  border: 1px solid var(--ta-border);
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .ta-emergency-box {
+    padding: 18px 20px 20px;
+  }
+}
+
+.ta-emergency-box::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  border-radius: 10px 0 0 10px;
+  background: var(--ta-primary);
+  opacity: .85;
+}
+
+.ta-checkbox {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.ta-checkbox input {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.ta-emergency-box .ta-help {
+  margin: 6px 0 0 28px;
+  font-size: .85rem;
+  color: var(--ta-muted);
+}
+
+.ta-emergency-fields {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--ta-border);
+}
+
+.ta-emergency-fields[hidden] {
+  display: none;
+}
+
+
+/* ==========================================================
+   8. ÉTAPE 2 – PRÉSENTER VOTRE ANIMAL
+   ========================================================== */
+
+/* Hero */
+.ta-pet-step .ta-step-hero {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.ta-pet-step .ta-step-hero h2 {
+  margin: 0 0 10px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--ta-primary);
+}
+
+@media (min-width: 768px) {
+  .ta-pet-step .ta-step-hero h2 {
+    font-size: 1.6rem;
+  }
+}
+
+.ta-pet-step .ta-step-hero .ta-helper {
+  font-size: .95rem;
+  color: var(--ta-muted);
+  line-height: 1.55;
+  margin: 0;
+  padding: 0 8px;
+}
+
+/* Photo block */
+.ta-pet-step .ta-photo-block {
+  margin: 22px 0 26px;
+  padding: 18px;
+  border-radius: var(--ta-radius);
+  background: #fff;
+  border: 1px solid var(--ta-border);
+  box-shadow: var(--ta-shadow);
+}
+
+.ta-pet-step .ta-photo-block h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ta-text);
+}
+
+.ta-pet-step .ta-photo-block .ta-helper {
+  margin-bottom: 14px;
+}
+
+.ta-pet-step .ta-photo-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .ta-pet-step .ta-photo-layout {
+    grid-template-columns: 260px 1fr;
+    align-items: center;
+  }
+}
+
+.ta-pet-step .ta-photo-preview {
+  width: 100%;
+  max-width: 260px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f3f4f6;
+  border: 1px solid var(--ta-border);
+}
+
+@media (min-width: 768px) {
+  .ta-pet-step .ta-photo-preview {
+    margin: 0;
+  }
+}
+
+.ta-pet-step .ta-photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ta-pet-step .ta-photo-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.ta-activation .ta-file-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 768px) {
+  .ta-pet-step .ta-photo-controls {
+    align-items: flex-start;
+  }
+  
+  .ta-pet-step .ta-photo-controls .button {
+    width: auto;
+  }
+}
+
+.ta-pet-step .ta-photo-controls .button {
+  width: 100%;
+}
+
+.ta-pet-step .ta-photo-filename {
+  font-size: .85rem;
+  color: var(--ta-muted);
+  word-break: break-word;
+}
+
+.ta-pet-step .ta-photo-status {
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--ta-muted);
+}
+
+/* Identification block */
+.ta-pet-step .ta-identification-block {
+  padding: 18px;
+  border-radius: var(--ta-radius);
+  background: #fff;
+  border: 1px solid var(--ta-border);
+  box-shadow: var(--ta-shadow);
+}
+
+.ta-pet-step .ta-identification-block .ta-row,
+.ta-pet-step .ta-identification-block .ta-row-2 {
+  margin-bottom: 16px;
+}
+
+/* Nom + confidentialité */
+.ta-pet-step .ta-field-inline {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ta-pet-step .ta-field-inline input[type="text"] {
+  flex: 1;
+}
+
+.ta-pet-step .ta-name-privacy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: #f9fafb;
+  border: 1px solid var(--ta-border);
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--ta-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ta-pet-step .ta-name-privacy input {
+  margin: 0;
+}
+
+.ta-pet-step .ta-name-privacy:hover {
+  border-color: var(--ta-primary);
+  color: var(--ta-primary);
+}
+
+.ta-pet-step .ta-screen-actions {
+  margin-top: 26px;
+}
+
+
+/* ==========================================================
+   9. ÉTAPE 3 – COMPORTEMENT
+   ========================================================== */
+
+.ta-behavior-step {
+  margin-top: 0;
+}
+
+.ta-behavior-step .ta-behavior-block {
+  margin-top: 0;
+}
+
+.ta-behavior-step .ta-helper {
+  font-size: .95rem;
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+
+.ta-behavior-step .ta-behavior-note {
+  margin-top: 14px;
+  font-size: .9rem;
+  color: var(--ta-muted);
+  text-align: center;
+}
+
+.ta-behavior-step .ta-behavior {
+  margin-top: 12px;
+}
+
+.ta-behavior-step .ta-behavior-groups {
+  display: grid;
+  gap: .9rem;
+}
+
+@media (max-width: 640px) {
+  .ta-behavior-step .ta-behavior-groups {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ta-behavior-step .ta-behavior-group {
+  padding: .95rem;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: #fff;
+  box-shadow: 0 8px 20px -18px rgba(0,0,0,.45);
+}
+
+@media (max-width: 640px) {
+  .ta-behavior-step .ta-behavior-group {
+    padding: 12px;
+  }
+}
+
+/* Couleurs par catégorie */
+.ta-behavior-group[data-category="positif"] {
+  --c: #16a34a;
+  border-color: var(--c);
+  background: #f0fdf4;
+}
+
+.ta-behavior-group[data-category="attention"] {
+  --c: #f97316;
+  border-color: var(--c);
+  background: #fff7ed;
+}
+
+.ta-behavior-group[data-category="vigilance"] {
+  --c: #ef4444;
+  border-color: var(--c);
+  background: #fef2f2;
+}
+
+.ta-behavior-step .ta-behavior-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 800;
+  font-size: .95rem;
+  color: var(--c);
+}
+
+.ta-behavior-step .ta-behavior-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 28%, #fff);
+}
+
+/* Options (chips) */
+.ta-behavior-step .ta-behavior-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+}
+
+.ta-behavior-step .ta-behavior-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: .45rem .75rem;
+  border-radius: 999px;
+  border: 1px solid var(--ta-border);
+  background: #fff;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+@media (max-width: 640px) {
+  .ta-behavior-step .ta-behavior-option {
+    padding: .5rem .8rem;
+  }
+}
+
+.ta-behavior-step .ta-behavior-option:hover {
+  border-color: var(--c);
+  transform: translateY(-1px);
+}
+
+.ta-behavior-step .ta-behavior-option input {
+  margin: 0;
+}
+
+.ta-behavior-step .ta-behavior-option input[type="checkbox"] {
+  margin-top: 1px;
+}
+
+.ta-behavior-step .ta-behavior-option input:checked + span {
+  font-weight: 700;
+  color: var(--c);
+}
+
+.ta-behavior-step .ta-behavior-option:has(input:checked) {
+  border-color: var(--c);
+  background: color-mix(in srgb, var(--c) 8%, white);
+}
+
+/* Texte libre */
+.ta-behavior-step textarea#ta_notes {
+  min-height: 110px;
+}
+
+
+/* ==========================================================
+   10. ÉTAPE 4 – SANTÉ (TAGANIMAL HEART)
+   ========================================================== */
+
+.ta-health-step {
+  padding-bottom: .5rem;
+}
+
+.ta-health-step .ta-heart-intro {
+  background: linear-gradient(180deg, #fff, #fff7f2);
+  border: 1px solid var(--ta-border);
+}
+
+.ta-health-step .ta-heart-intro h2 {
+  margin-bottom: .4rem;
+}
+
+.ta-health-step .ta-heart-points {
+  margin: .6rem 0 .8rem;
+  padding-left: 0;
+  list-style: none;
+}
+
+.ta-health-step .ta-heart-points li {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  font-size: .95rem;
+  margin: .35rem 0;
+}
+
+@media (max-width: 640px) {
+  .ta-health-step .ta-heart-points li {
+    font-size: .92rem;
+  }
+}
+
+.ta-health-step .ta-reminders-block {
+  margin-top: .8rem;
+  background: #fff;
+  border: 1px solid var(--ta-border);
+}
+
+.ta-health-step .ta-reminders-block h3 {
+  margin-bottom: .6rem;
+  font-size: 1rem;
+}
+
+.ta-health-step .ta-row-3 {
+  display: grid;
+  gap: .75rem;
+}
+
+@media (min-width: 768px) {
+  .ta-health-step .ta-row-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ta-health-step .ta-reminder {
+  padding: .7rem .7rem .8rem;
+  border-radius: 14px;
+  border: 1px solid var(--ta-border);
+  background: #fafafa;
+  box-shadow: 0 4px 14px rgba(0,0,0,.04);
+}
+
+@media (max-width: 640px) {
+  .ta-health-step .ta-reminder {
+    padding: .75rem;
+  }
+}
+
+.ta-health-step .ta-reminder label {
+  font-weight: 600;
+  font-size: .9rem;
+}
+
+.ta-health-step .ta-reminder input[type="date"],
+.ta-health-step .ta-reminder select {
+  width: 100%;
+  margin-top: .3rem;
+}
+
+.ta-health-step .ta-reminder select {
+  margin-top: .35rem;
+}
+
+.ta-health-step .ta-reminder:focus-within {
+  border-color: var(--ta-primary);
+  box-shadow: 0 6px 18px -8px rgba(244,162,76,.35);
+}
+
+.ta-health-step .ta-muted {
+  font-size: .9rem;
+  color: var(--ta-muted);
+}
+
+.ta-health-step .ta-screen-actions {
+  margin-top: .9rem;
+}
+
+.ta-health-step .ta-health-actions {
+  margin-top: .9rem;
+}
+
+.ta-health-step .ta-health-actions .ta-screen-actions {
+  margin-top: 0;
+}
+
+.ta-health-step .button-secondary {
+  background: transparent;
+  border: 1px dashed var(--ta-border);
+  color: var(--ta-muted);
+}
+
+
+/* ==========================================================
+   11. ÉTAPE 5 – CONSENTEMENTS & ACTIVATION
+   ========================================================== */
+
+.ta-consent-step {
+  padding-bottom: .6rem;
+}
+
+.ta-consent-step .ta-consents {
+  border: 1px solid var(--ta-border);
+  background: #fff;
+}
+
+.ta-consent-step .ta-password-block {
+  border: 1px solid var(--ta-border);
+  background: #fff;
+  margin-bottom: .8rem;
+}
+
+.ta-consent-step .ta-password-block .ta-row-2 {
+  display: grid;
+  gap: .9rem;
+}
+
+@media (min-width: 768px) {
+  .ta-consent-step .ta-password-block .ta-row-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+.ta-consent-step .ta-password-strength,
+.ta-consent-step .ta-password-match {
+  margin-top: .4rem;
+  font-size: .85rem;
+  color: var(--ta-muted);
+}
+
+.ta-consent-step .ta-consents h2 {
+  margin-bottom: .4rem;
+}
+
+.ta-consent-step .ta-consent-item {
+  display: flex;
+  gap: .65rem;
+  align-items: flex-start;
+  margin: .7rem 0;
+  font-size: .95rem;
+}
+
+@media (max-width: 640px) {
+  .ta-consent-step .ta-consent-item {
+    font-size: .92rem;
+  }
+}
+
+.ta-consent-step .ta-consent-item input[type="checkbox"] {
+  margin-top: .25rem;
+  flex-shrink: 0;
+}
+
+.ta-consent-step .ta-help {
+  font-size: .85rem;
+  color: var(--ta-muted);
+  line-height: 1.45;
+}
+
+.ta-consent-step .ta-email-prefs {
+  margin: .6rem 0 .8rem 1.6rem;
+  padding-left: .6rem;
+  border-left: 2px dashed var(--ta-border);
+}
+
+@media (max-width: 640px) {
+  .ta-consent-step .ta-email-prefs {
+    margin-left: 1.2rem;
+  }
+}
+
+.ta-consent-step .ta-consent-rgpd {
+  margin-top: .9rem;
+  padding-top: .6rem;
+  border-top: 1px solid var(--ta-border);
+}
+
+.ta-consent-step .ta-consent-rgpd strong {
+  color: var(--ta-text);
+}
+
+.ta-consent-step .ta-summary-actions {
+  margin-top: .8rem;
+  justify-content: flex-end;
+}
+
+.ta-consent-step .ta-summary-actions .button-primary {
+  font-size: 1rem;
+  padding: .6rem 1rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,.12);
+}
+
+.ta-consent-step .button-primary:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+
+/* ==========================================================
+   12. ÉTAPE 6 – SUCCÈS / ACCÈS À LA FICHE
+   ========================================================== */
+
+.ta-success-step {
+  padding-bottom: .6rem;
+}
+
+.ta-success-step .ta-success-intro {
+  border: 1px solid var(--ta-border);
+  background: #fff;
+  text-align: center;
+}
+
+.ta-success-step .ta-success-choices {
+  display: grid;
+  gap: .9rem;
+  margin-top: .8rem;
+}
+
+@media (min-width: 768px) {
+  .ta-success-step .ta-success-choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.ta-success-step .ta-success-choice {
+  border-radius: var(--ta-radius);
+  border: 1px solid var(--ta-border);
+  background: #fff;
+  padding: 18px;
+  box-shadow: var(--ta-shadow);
+  display: grid;
+  gap: .6rem;
+}
+
+.ta-success-step .ta-success-choice .button {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .ta-success-step .ta-success-choice .button {
+    width: auto;
+    justify-self: flex-start;
+  }
+}
+
+
+
+/* ==========================================================
+   12. ACTIONS / BOUTONS (SCOPÉ ONBOARDING)
+   ========================================================== */
+
+.ta-activation .ta-screen-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.ta-activation .button {
+  appearance: none;
+  border: none;
+  border-radius: var(--ta-radius-sm);
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--ta-anim), box-shadow var(--ta-anim);
+}
+
+.ta-activation .button:active {
+  transform: scale(.98);
+}
+
+/* 🔥 UNE SEULE COULEUR POUR TOUS */
+.ta-activation .button,
+.ta-activation .button-primary,
+.ta-activation .button-secondary {
+  background: var(--ta-primary);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(243,154,54,.35);
+}
+
+/* Hover */
+.ta-activation .button:hover {
+  background: var(--ta-primary-dark);
+}
+
+/* Forcer la couleur sur TOUS les types de boutons */
+.ta-activation button.button,
+.ta-activation a.button,
+.ta-activation input.button {
+  background: var(--ta-primary);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(243,154,54,.35);
+}
+
+.ta-activation button.button:hover,
+.ta-activation a.button:hover,
+.ta-activation input.button:hover {
+  background: var(--ta-primary-dark);
+}
+
+
+
+/* ==========================================================
+   13. FORMULAIRES – BASE
+   ========================================================== */
+
+label {
+  font-size: .9rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
+input:not([type="checkbox"]),
+select,
+textarea {
+  width: 100%;
+  height: var(--ta-field-h);
+  padding: 0 12px;
+  border-radius: var(--ta-radius-sm);
+  border: 1px solid var(--ta-border);
+  font-size: 16px;
+  background: #fff;
+}
+
+textarea {
+  min-height: 96px;
+  padding: 10px 12px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--ta-primary);
+}
+
+
+/* ==========================================================
+   14. GRILLES SIMPLES
+   ========================================================== */
+
+.ta-row {
+  display: grid;
+  gap: 14px;
+}
+
+.ta-row-2 {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 768px) {
+  .ta-row-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+
+/* ==========================================================
+   15. UTILITAIRES
+   ========================================================== */
+
+.ta-muted {
+  color: var(--ta-muted);
+}
+
+.ta-hide {
+  display: none !important;
+}
+
+.mt {
+  margin-top: 16px;
+}

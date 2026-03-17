@@ -1,0 +1,16 @@
+{
+  "name": "TagAnimal",
+  "short_name": "TagAnimal",
+  "start_url": "/nfc/",
+  "display": "standalone",
+  "background_color": "#f6f2ee",
+  "theme_color": "#ff8a00",
+
+  "icons": [
+    {
+      "src": "/wp-content/plugins/taganimal-fiches/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

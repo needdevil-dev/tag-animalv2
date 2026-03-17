@@ -1,0 +1,25 @@
+/* =========================================================
+ * TAGANIMAL — Treatment Cards (loader)
+ * Rôle : charge le module d’ajout de traitement.
+ * ========================================================= */
+(function () {
+  "use strict";
+
+  const currentScript = document.currentScript;
+  if (!currentScript) return;
+
+  const loader = (window.TA_HEALTH_LOADER = window.TA_HEALTH_LOADER || {});
+
+  function load(relativePath) {
+    const url = new URL(relativePath, currentScript.src).href;
+    if (loader[url]) return;
+    loader[url] = true;
+    const script = document.createElement("script");
+    script.src = url;
+    script.async = false;
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
+  load("./treatment-add.js");
+})();

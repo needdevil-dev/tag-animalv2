@@ -1,0 +1,167 @@
+/* =========================================================
+ * TAGANIMAL — vermifuge-form.css  (thème couleur uniquement)
+ * =========================================================
+ * Dépend de : global-form.css  (chargé avant)
+ *
+ * CE FICHIER NE FAIT QUE COLORER.
+ * Palette : violet indigo (#5B21B6) — traitement interne.
+ * Zéro layout, zéro comportement ici.
+ *
+ * TABLE DES MATIÈRES :
+ *   1.  Surcharge des tokens d'accent (--ta-form-accent-*)
+ *   2.  Palette locale (--vm-*)
+ *   3.  Typographie vermifuge
+ *   4.  Fond & inputs — teinte lavande
+ *   5.  Bouton ghost adapté
+ *   6.  Aperçu — état reminder
+ *   7.  Alerte rappel passé
+ *   8.  Toast vermifuge
+ * ========================================================= */
+
+
+/* ─────────────────────────────────────────────────────────
+   1. SURCHARGE DES TOKENS D'ACCENT
+   ─────────────────────────────────────────────────────────
+   Ces 5 variables pilotent TOUT le global-form.css.
+   Modifier uniquement ces lignes pour changer la couleur
+   de l'ensemble : bulles progress, boutons, focus, freq…
+   ───────────────────────────────────────────────────────── */
+.vm-form {
+  --ta-form-accent:        #5B21B6;              /* violet indigo */
+  --ta-form-accent-dark:   #3D1580;              /* indigo sombre (active) */
+  --ta-form-accent-light:  #EDE9FE;              /* lavande pâle (backgrounds) */
+  --ta-form-accent-border: #A78BFA;              /* violet moyen (bordures) */
+  --ta-form-accent-shadow: rgba(91,33,182,.22);  /* ombre colorée des btns */
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   2. PALETTE LOCALE
+   ─────────────────────────────────────────────────────────
+   Couleurs spécifiques au domaine vermifuge non couvertes
+   par les tokens globaux.
+   ───────────────────────────────────────────────────────── */
+.vm-form {
+  /* Fond légèrement teinté lavande — spécifique vermifuge */
+  --vm-bg:       #F5F3FF;
+  --vm-surface:  #FFFFFF;
+  --vm-border:   #DDD6FE;
+  --vm-border-hi:#C4B5FD;
+
+  /* Encre violette froide */
+  --vm-ink-1: #1E1333;
+  --vm-ink-2: #3B2A5E;
+  --vm-ink-3: #8B7AAA;
+
+  /* Violet — variantes succès */
+  --vm-violet-success: #4C1D95;
+  --vm-violet-sbg:     #EDE9FE;
+  --vm-violet-sbdr:    #8B5CF6;
+
+  /* Amber — alerte rappel passé */
+  --vm-amber:     #8B5E04;
+  --vm-amber-bg:  #FFF8E6;
+  --vm-amber-bdr: #F5D06A;
+
+  /* Rouge erreur local */
+  --vm-red:    #C0392B;
+  --vm-red-bg: #FFF0EE;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   3. TYPOGRAPHIE VERMIFUGE
+   ─────────────────────────────────────────────────────────
+   DM Sans pour le corps, Sora pour les titres/labels.
+   ───────────────────────────────────────────────────────── */
+.vm-form {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--vm-ink-2);
+}
+
+.vm-form .ta-form-label,
+.vm-form .ta-form-progress__lbl,
+.vm-form .ta-form-freq__n,
+.vm-form .ta-form-preview__title,
+.vm-form .ta-form-btn,
+.vm-form .ta-form-step__title {
+  font-family: 'Sora', sans-serif;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   4. FOND & INPUTS — TEINTE LAVANDE
+   ─────────────────────────────────────────────────────────
+   On remplace le fond gris neutre du global par la teinte
+   propre à l'identité vermifuge.
+   ───────────────────────────────────────────────────────── */
+.vm-form .ta-form-input {
+  background: var(--vm-bg);
+  border-color: var(--vm-border);
+  color: var(--vm-ink-1);
+}
+.vm-form .ta-form-input::placeholder { color: var(--vm-ink-3); }
+.vm-form .ta-form-input:focus {
+  background: var(--vm-surface);
+  /* border-color et box-shadow pilotés par --ta-form-accent */
+}
+
+.vm-form .ta-form-chip,
+.vm-form .ta-form-shortcut {
+  background: var(--vm-bg);
+  border-color: var(--vm-border-hi);
+  color: var(--vm-ink-2);
+}
+
+.vm-form .ta-form-freq__card {
+  background: var(--vm-bg);
+  border-color: var(--vm-border);
+}
+
+.vm-form .ta-form-preview[data-state="reminder"] {
+  border-color: var(--vm-violet-sbdr);
+  background: var(--vm-violet-sbg);
+}
+
+/* Date du prochain rappel — violet succès */
+.vm-form .ta-form-preview__date { color: var(--vm-violet-success); }
+
+
+/* ─────────────────────────────────────────────────────────
+   5. BOUTON GHOST ADAPTÉ
+   ─────────────────────────────────────────────────────────
+   Adapté à la palette lavande.
+   ───────────────────────────────────────────────────────── */
+.vm-form .ta-form-btn--ghost {
+  border-color: var(--vm-border-hi);
+  color: var(--vm-ink-3);
+}
+.vm-form .ta-form-btn--ghost:active {
+  background: var(--vm-bg);
+  color: var(--vm-ink-2);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   6. ALERTE RAPPEL PASSÉ
+   ─────────────────────────────────────────────────────────
+   Variante amber — rappel dont la date calculée est déjà
+   dépassée, affiché à l'étape Date.
+   ───────────────────────────────────────────────────────── */
+.vm-form .ta-form-alert--vm-past {
+  background: var(--vm-amber-bg);
+  border-color: var(--vm-amber-bdr);
+  color: var(--vm-amber);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   7. TOAST VERMIFUGE
+   ─────────────────────────────────────────────────────────
+   Le fond du toast reprend l'encre violette au lieu du noir.
+   ───────────────────────────────────────────────────────── */
+.vm-form .ta-form-toast {
+  background: var(--vm-ink-1);
+}
+.vm-form .ta-form-toast--error   { background: var(--vm-red); }
+.vm-form .ta-form-toast--success { background: var(--vm-violet-success); }

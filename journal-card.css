@@ -1,0 +1,160 @@
+/* ===============================================================
+   TAGANIMAL — PRO-CARD.CSS
+   Carte "Mon Équipe" — liste preview des professionnels
+
+   ORGANISATION :
+   1. Wrapper card
+   2. Liste preview des pros
+   3. Item pro (icône + info + téléphone)
+   4. Item "X autres"
+   5. Responsive
+
+   DÉPENDANCE :
+   Requiert global-card.css
+   SUPPRIMÉ de ce fichier (déjà dans global-card.css) :
+   ✗ .ta-card-status          → global-card.css §4
+   ✗ .ta-card-empty           → global-card.css §6
+   ✗ .ta-pros-card__icon      → global-card.css §3 (alias)
+   ✗ .ta-pros-card__header    → global-card.css §2 (alias)
+
+   SCOPE : .ta-fiche-public [data-ta-card="pros"]
+=============================================================== */
+
+
+/* ===============================================================
+   1. WRAPPER CARD
+=============================================================== */
+
+.ta-fiche-public .ta-preview-card--pros .ta-field-card {
+  padding-bottom: 20px;
+}
+
+/* Tokens d'animation spécifiques à ce module */
+.ta-fiche-public [data-ta-card="pros"] {
+  --pros-ease:   cubic-bezier(.22,.68,0,1.2);
+  --pros-ease-s: cubic-bezier(.4,0,.2,1);
+}
+
+
+/* ===============================================================
+   2. LISTE PREVIEW DES PROS
+=============================================================== */
+
+.ta-fiche-public .ta-pros-card__list {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+
+/* ===============================================================
+   3. ITEM PRO (icône + info + bouton téléphone)
+=============================================================== */
+
+.ta-fiche-public .ta-pros-card__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.75);
+  border: 1px solid rgba(180,150,100,.18);
+  border-radius: 12px;
+  transition:
+    background .15s var(--pros-ease-s),
+    box-shadow .15s var(--pros-ease-s);
+}
+
+.ta-fiche-public .ta-pros-card__item:hover {
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 2px 10px rgba(80,60,30,.14);
+}
+
+/* Nom + sous-titre */
+.ta-fiche-public .ta-pros-card__item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ta-fiche-public .ta-pros-card__item-info strong {
+  font-size: 0.88em;
+  font-weight: 700;
+  color: var(--ta-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* .ta-card-subtitle pour la clinique — stylistiquement géré par global.css */
+
+/* Bouton téléphone circulaire vert */
+.ta-fiche-public .ta-pros-card__phone {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(22,163,74,.12);
+  border: 1px solid rgba(22,163,74,.25);
+  border-radius: 50%;
+  font-size: 1rem;
+  text-decoration: none;
+  transition:
+    background .15s var(--pros-ease-s),
+    transform  .15s var(--pros-ease);
+}
+
+.ta-fiche-public .ta-pros-card__phone:hover {
+  background: rgba(22,163,74,.22);
+  transform: scale(1.12);
+}
+
+
+/* ===============================================================
+   4. ITEM "+ X AUTRES" (overflow)
+=============================================================== */
+
+.ta-fiche-public .ta-pros-card__item--more {
+  justify-content: center;
+  background: transparent;
+  border: 1px dashed rgba(180,150,100,.30);
+  font-size: 0.78em;
+  font-weight: 600;
+  color: var(--ta-muted);
+  letter-spacing: .04em;
+}
+
+.ta-fiche-public .ta-pros-card__item--more:hover {
+  background: rgba(243,154,54,.04);
+  box-shadow: none;
+}
+
+
+/* ===============================================================
+   5. RESPONSIVE
+=============================================================== */
+
+@media (max-width: 393px) {
+
+  .ta-fiche-public .ta-pros-card__item {
+    padding: 9px 10px;
+  }
+
+  .ta-fiche-public .ta-pros-card__phone {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+}
+
+
+/* ===============================================================
+   FIN — pro-card.css
+   TagAnimal — Carnet de santé premium — Mars 2026
+=============================================================== */

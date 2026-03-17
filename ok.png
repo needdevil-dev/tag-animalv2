@@ -1,0 +1,303 @@
+/**
+ * journal-deeplink.js
+ * ====================
+ * Gestion des deep-links sécurisés depuis les emails de rappel vaccin.
+ *
+ * FLOW :
+ *   1. Détecte le param GET ta_deeplink= au chargement de page
+ *   2. Nettoie immédiatement l'URL (history.replaceState)
+ *   3. Envoie le token à ta_deeplink_resolve (validation HMAC côté PHP)
+ *   4. Si valide → exécute l'action retournée par PHP
+ *
+ * ACTIONS SUPPORTÉES :
+ *   journal_rdv        → Ouvre wizard RDV, pré-remplit type + date
+ *   view_journal       → Ouvre le journal de vie
+ *   vaccine_confirm    → AJAX ta_care_confirm_vaccine + reload
+ *   vaccine_reschedule → Scroll + highlight card vaccin
+ */
+(function () {
+  "use strict";
+
+  const TA = window.TA_HEALTH || null;
+  if (!TA || !TA.ajax_url || !TA.nonce || !TA.post_id) return;
+  if (window.__TA_DEEPLINK_BOOTED__) return;
+  window.__TA_DEEPLINK_BOOTED__ = true;
+
+  const params   = new URLSearchParams(window.location.search);
+  const rawToken = params.get("ta_deeplink") || "";
+  if (!rawToken) return;
+
+  // Nettoyage immédiat — avant toute action async
+  (function cleanUrl() {
+    const clean = new URL(window.location.href);
+    clean.searchParams.delete("ta_deeplink");
+    window.history.replaceState({}, "", clean.toString());
+  })();
+
+  /* ── Helpers ─────────────────────────────────────────────────────── */
+
+  function waitFor(selector, timeout = 3000) {
+    return new Promise((resolve, reject) => {
+      const el = document.querySelector(selector);
+      if (el) return resolve(el);
+      const obs = new MutationObserver(() => {
+        const found = document.querySelector(selector);
+        if (found) { obs.disconnect(); resolve(found); }
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+      setTimeout(() => { obs.disconnect(); reject(new Error(`Timeout: "${selector}"`)); }, timeout);
+    });
+  }
+
+  /**
+   * Attend qu'un élément déjà dans le DOM devienne visible (hidden retiré).
+   * Nécessaire ici car tous les screens du journal-entry router sont
+   * pré-rendus en PHP et simplement cachés/affichés via l'attribut hidden.
+   */
+  function waitForVisible(selector, timeout = 3000) {
+    return new Promise((resolve, reject) => {
+      const el = document.querySelector(selector);
+      if (el && !el.hidden) return resolve(el);
+
+      const obs = new MutationObserver(() => {
+        const found = document.querySelector(selector);
+        if (found && !found.hidden) { obs.disconnect(); resolve(found); }
+      });
+      obs.observe(document.body, {
+        attributes:    true,
+        attributeFilter: ["hidden", "style", "class"],
+        subtree:       true,
+        childList:     true,
+      });
+      setTimeout(() => { obs.disconnect(); reject(new Error(`waitForVisible timeout: "${selector}"`)); }, timeout);
+    });
+  }
+
+  function openScreen(name) {
+    const btn = document.querySelector(`[data-ta-open="${name}"]`);
+    if (btn) { btn.click(); return true; }
+    return false;
+  }
+
+  function showToast(message, type = "info") {
+    const p = {
+      success: { bg: "#EAFAF1", border: "#27AE60", color: "#1E8449" },
+      error:   { bg: "#FEF2F2", border: "#EF4444", color: "#B91C1C" },
+      info:    { bg: "#EBF4FF", border: "#4A90D9", color: "#2C6FAC" },
+    }[type] || { bg: "#EBF4FF", border: "#4A90D9", color: "#2C6FAC" };
+
+    const t = document.createElement("div");
+    t.setAttribute("role", "status");
+    t.setAttribute("aria-live", "polite");
+    t.style.cssText = `position:fixed;top:20px;left:50%;transform:translateX(-50%);
+      z-index:99999;background:${p.bg};border:2px solid ${p.border};color:${p.color};
+      padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;
+      box-shadow:0 4px 20px rgba(0,0,0,.12);max-width:90vw;text-align:center;
+      transition:opacity .4s ease;`;
+    t.textContent = message;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 400); }, 4500);
+  }
+
+  /* ── Étape 1 : validation AJAX du token ─────────────────────────── */
+
+  async function resolveToken(token) {
+    const res = await fetch(TA.ajax_url, {
+      method:  "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        action:      "ta_deeplink_resolve",
+        nonce:       TA.nonce,
+        post_id:     TA.post_id,
+        ta_deeplink: token,
+      }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  /* ── Étape 2 : dispatch de l'action retournée par PHP ────────────── */
+
+  async function dispatch({ action, care_id, prefill_type = "veterinaire", prefill_date = "" }) {
+    switch (action) {
+      case "journal_rdv":        return handleJournalRdv(prefill_type, prefill_date);
+      case "view_journal":       return handleViewJournal();
+      case "vaccine_confirm":    return handleVaccineConfirm(care_id);
+      case "vaccine_reschedule": return handleVaccineReschedule(care_id);
+      default: console.warn("[TA deeplink] action inconnue :", action);
+    }
+  }
+
+  /* ── Actions ─────────────────────────────────────────────────────── */
+
+  async function handleJournalRdv(prefillType, prefillDate) {
+    /*
+     * Chemin de navigation exact du journal-entry router :
+     *
+     *   [data-entry-screen="home"]
+     *     → clic [data-entry-go="note"]
+     *   [data-entry-screen="note"]
+     *     → clic [data-entry-go="appointment"]
+     *   [data-entry-screen="appointment"] / [data-ta-appointment-root="journal"]
+     *     → clic [data-ta-type="veterinaire"]   ← avance automatiquement vers datetime
+     *   [data-appointment-screen="datetime"]
+     *     → pré-remplir [data-appointment-date]
+     */
+
+    // 1. Ouvrir le module journal via ScreenRouter
+    if (!openScreen("journal")) {
+      console.warn("[TA deeplink] [data-ta-open=journal] introuvable");
+      return;
+    }
+
+    try {
+      // 2. Attendre que le home screen du journal-entry soit visible
+      const homeScreen = await waitForVisible('[data-entry-screen="home"]');
+
+      // 3. Clic sur "Ajouter une entrée" → navigue vers note.php
+      const goNoteBtn = homeScreen.querySelector('[data-entry-go="note"]');
+      if (!goNoteBtn) throw new Error('[data-entry-go="note"] introuvable dans home');
+      goNoteBtn.click();
+
+      // 4. Attendre que note.php soit visible
+      const noteScreen = await waitForVisible('[data-entry-screen="note"]');
+
+      // 5. Clic sur "Rendez-vous" → navigue vers appointment.php (le wizard)
+      const goApptBtn = noteScreen.querySelector('[data-entry-go="appointment"]');
+      if (!goApptBtn) throw new Error('[data-entry-go="appointment"] introuvable dans note');
+      goApptBtn.click();
+
+      // 6. Attendre que le wizard appointment soit visible
+      const wizard = await waitForVisible('[data-ta-appointment-root="journal"]');
+
+      // 7. Le wizard s'ouvre sur data-appointment-screen="type"
+      //    Trouver et cliquer le bon type de RDV
+      //    → journal-appointment.js gère le clic et appelle next() vers datetime
+      const typeBtn = wizard.querySelector(`[data-ta-type="${prefillType}"]`);
+      if (!typeBtn) {
+        console.warn(`[TA deeplink] Type de RDV "${prefillType}" introuvable, wizard ouvert`);
+        showToast("📅 Sélectionnez le type de rendez-vous", "info");
+        return;
+      }
+      typeBtn.click();
+
+      // 8. Attendre que l'écran datetime soit visible (journal-appointment.js appelle show(1))
+      await waitForVisible('[data-appointment-screen="datetime"]');
+
+      // 9. Pré-remplir la date si fournie (YYYY-MM-DD)
+      if (prefillDate) {
+        const dateInput = wizard.querySelector("[data-appointment-date]");
+        if (dateInput) {
+          dateInput.value = prefillDate;
+          // Déclenche updateReminderPreview() dans journal-appointment.js
+          dateInput.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+
+      // 10. Scroll vers le wizard pour que le formulaire soit visible
+      wizard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      showToast("📅 Rendez-vous vétérinaire — choisissez la date et l'heure", "info");
+
+    } catch (err) {
+      console.error("[TA deeplink] handleJournalRdv :", err.message);
+      // Fallback gracieux : le journal est ouvert, l'utilisateur peut naviguer manuellement
+      showToast("📅 Journal ouvert — ajoutez votre rendez-vous vétérinaire", "info");
+    }
+  }
+
+  function handleViewJournal() {
+    openScreen("journal");
+    setTimeout(() => {
+      document.querySelector("[data-ta-screen='journal']")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 200);
+  }
+
+  async function handleVaccineConfirm(careId) {
+    if (!careId) return;
+    if (!window.confirm("Confirmer que le vaccin a bien été administré ?")) return;
+
+    showToast("⏳ Enregistrement en cours…", "info");
+    try {
+      const res = await fetch(TA.ajax_url, {
+        method:  "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action:      "ta_care_confirm_vaccine",
+          nonce:       TA.nonce,
+          post_id:     TA.post_id,
+          care_id:     careId,
+          executed_at: new Date().toISOString().slice(0, 10),
+        }),
+      }).then((r) => r.json());
+
+      if (res.success) {
+        showToast("✅ Vaccin enregistré dans le carnet de santé !", "success");
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        showToast("❌ Erreur lors de l'enregistrement. Réessayez depuis le carnet de santé.", "error");
+        openScreen("health");
+      }
+    } catch (err) {
+      console.error("[TA deeplink] vaccine_confirm :", err);
+      showToast("❌ Erreur réseau.", "error");
+      openScreen("health");
+    }
+  }
+
+  async function handleVaccineReschedule(careId) {
+    openScreen("health");
+    if (!careId) return;
+    try {
+      const card = await waitFor(`[data-care-id="${careId}"]`, 4000);
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      const btn = card.querySelector(
+        '[data-care-action="reschedule"], [data-action="reschedule"], .ta-btn--reschedule'
+      );
+      if (btn) {
+        await new Promise((r) => setTimeout(r, 300));
+        btn.click();
+      } else {
+        const prev = card.style.cssText;
+        card.style.outline        = "2px solid #8B5CF6";
+        card.style.outlineOffset  = "4px";
+        card.style.borderRadius   = "12px";
+        setTimeout(() => { card.style.cssText = prev; }, 4000);
+        showToast("📋 Retrouvez votre vaccin ci-dessous pour modifier la date", "info");
+      }
+    } catch (err) {
+      console.warn("[TA deeplink] handleVaccineReschedule :", err.message);
+    }
+  }
+
+  /* ── Boot ────────────────────────────────────────────────────────── */
+
+  async function boot() {
+    try {
+      const result = await resolveToken(rawToken);
+
+      if (!result.success) {
+        const code = result.data?.code || "invalid_token";
+        console.warn("[TA deeplink] Token refusé :", code);
+        if (code === "invalid_token") {
+          showToast("⚠️ Ce lien a expiré. Retrouvez vos rappels dans le carnet de santé.", "error");
+          setTimeout(() => openScreen("health"), 1000);
+        }
+        return;
+      }
+
+      await dispatch(result.data);
+    } catch (err) {
+      console.error("[TA deeplink] Erreur validation token :", err);
+      // Fail silencieux — l'utilisateur est sur la page et peut agir normalement
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();

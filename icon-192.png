@@ -1,0 +1,322 @@
+/* TAGANIMAL — fiche-public.js (v3.3, clean)
+   - Login progressif (#login / ?ta_login=1)
+   - Fix grid contacts si builder casse le CSS
+   - Injection des actions contact : Appeler + "Je suis là" (SMS) UNIQUEMENT
+   - Normalisation téléphone: tel/sms => +E.164 (+336..., +4122..., etc.)
+*/
+(function () {
+  "use strict";
+
+  /* ---------- tiny helpers ---------- */
+  function onReady(fn){ if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",fn,{once:true});} else {fn();} }
+  function qsa(sel,root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+
+  var isIOS = (function(){
+    var ua = navigator.userAgent || "";
+    var pf = navigator.platform  || "";
+    var touchMac = /Mac/.test(pf) && "ontouchend" in document;
+    return /iP(hone|od|ad)/.test(pf) || /iPhone|iPad|iPod/.test(ua) || touchMac;
+  })();
+
+  function defaultCC(){
+    var lang = String(document.documentElement.lang || "").toLowerCase();
+    if (lang.indexOf("fr") === 0) return "33";
+    if (lang.indexOf("be") === 0) return "32";
+    if (lang.indexOf("ch") === 0) return "41";
+    if (lang.indexOf("it") === 0) return "39";
+    if (lang.indexOf("es") === 0) return "34";
+    if (lang.indexOf("de") === 0) return "49";
+    if (lang.indexOf("nl") === 0) return "31";
+    return "33";
+  }
+
+  function parseJsonList(str){
+    if (!str) return [];
+    try { var arr = JSON.parse(str); return Array.isArray(arr) ? arr.map(String).map(function(s){return s.toLowerCase();}) : []; }
+    catch(_){ return []; }
+  }
+  
+    /* ---------- Inline SVG icons ---------- */
+  function svgIcon(name){
+    // 18x18, stroke-based for call/gps; WA filled circle
+    if (name === "call") {
+      return '' +
+        '<svg class="ta-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+          '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg>';
+    }
+
+    if (name === "gps") {
+      return '' +
+        '<svg class="ta-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+          '<path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>' +
+        '</svg>';
+    }
+
+    if (name === "wa") {
+      // Simple WA-like bubble with phone glyph (brand-neutral; no external asset)
+      return '' +
+        '<svg class="ta-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+          '<path d="M20.2 11.6a8.2 8.2 0 0 1-12.4 7.1L4 20l1.4-3.6A8.2 8.2 0 1 1 20.2 11.6z" fill="currentColor" opacity="0.14"/>' +
+          '<path d="M8.6 7.7c.3-.3.7-.3 1 0l1.3 1.3c.3.3.3.7.1 1l-.6 1c.7 1.2 1.7 2.2 2.9 2.9l1-.6c.3-.2.7-.1 1 .1l1.3 1.3c.3.3.3.7 0 1-.7.7-1.8 1-2.8.7-3.3-1-6-3.7-7-7-.3-1 .1-2.1.7-2.8z" fill="currentColor"/>' +
+          '<path d="M20.2 11.6a8.2 8.2 0 0 1-12.4 7.1L4 20l1.4-3.6A8.2 8.2 0 1 1 20.2 11.6z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>' +
+        '</svg>';
+    }
+
+    return "";
+  }
+
+
+  function toPlusE164FromAny(phone, cc) {
+    if (!phone) return "";
+    var d = String(phone).replace(/[^\d+]/g, "");
+    if (d.charAt(0) === "+") return d; // déjà OK
+    d = d.replace(/[^\d]/g, "");
+    if (!d) return "";
+    if (d.indexOf("00") === 0) d = d.slice(2);
+    var ccUse = (cc && /^\d{1,3}$/.test(cc)) ? cc : defaultCC();
+    if (d.charAt(0) === "0") d = ccUse + d.slice(1);
+    return /^\d{7,16}$/.test(d) ? ("+" + d) : "";
+  }
+
+  // Lien SMS compatible iOS/Android
+  function buildSmsLink(phonePlus, body){
+    if (!phonePlus) return "#";
+    var sep = isIOS ? "&" : "?";
+    return "sms:" + phonePlus + sep + "body=" + encodeURIComponent(body || "");
+  }
+
+  // Message pour “Je suis là”
+  function buildLocateMessage(opts){
+    opts = opts || {};
+    var petName = opts.petName || "cet animal";
+    var tag     = opts.tag ? " (tag " + opts.tag + ")" : "";
+    var out = [];
+    out.push("Bonjour, j’ai retrouvé " + petName + tag + ".");
+    if (opts.mapsUrl) out.push("Je suis ici : " + opts.mapsUrl);
+    if (opts.accuracy) out.push("Précision ~" + Math.round(opts.accuracy) + " m");
+    if (opts.pageUrl) out.push("Fiche : " + opts.pageUrl);
+    return out.join("\n");
+  }
+
+  function buildWhatsappMessage(opts){
+    opts = opts || {};
+    var petName = opts.petName || "cet animal";
+    var tag     = opts.tag ? " (tag " + opts.tag + ")" : "";
+    var pageUrl = opts.pageUrl ? ("\nFiche : " + opts.pageUrl) : "";
+    return "Bonjour, j’ai retrouvé " + petName + tag + "." + pageUrl;
+  }
+
+  function openSms(href){
+    try { window.location.href = href; } catch(_){}
+    setTimeout(function(){
+      var a = document.createElement("a"); a.href = href; a.style.display="none"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }, 40);
+  }
+
+  /* ---------- UI Fix: contacts grid si builder casse ---------- */
+  function fixContactsGrid(){
+    var wrap = document.querySelector(".ta-fiche-public #ta-contacts .ta-cards");
+    if (!wrap) return;
+    if (window.matchMedia("(min-width:980px)").matches){
+      wrap.style.display="grid";
+      wrap.style.gridTemplateColumns="minmax(0,1fr) minmax(0,1fr)";
+      wrap.style.gap="16px";
+    } else {
+      wrap.style.removeProperty("display");
+      wrap.style.removeProperty("grid-template-columns");
+      wrap.style.removeProperty("gap");
+    }
+  }
+
+  /* ---------- Login progressive enhancement ---------- */
+  function enhanceLogin(){
+    // On cible soit [data-login-open], soit un lien vers #login
+    var link = document.querySelector("[data-login-open]") || document.querySelector('a[href*="#login"], a[href*="ta_login=1"]');
+    var form = document.getElementById("login");
+    if (link && form){
+      link.addEventListener("click", function(ev){
+        // si c’est un lien #login pur, on ne bloque pas la navigation serveur
+        if (this.hash === "#login") ev.preventDefault();
+        form.style.display = "block";
+        try { document.getElementById("ta_email").focus(); } catch(_){}
+        try {
+          var url = (this.href || location.href).split("#")[0];
+          if (url.indexOf("ta_login=1") === -1) {
+            url += (url.indexOf("?") === -1 ? "?ta_login=1" : "&ta_login=1");
+          }
+          if (history && history.replaceState) history.replaceState(null, "", url + "#login");
+        } catch(_){}
+      }, {passive:false});
+    }
+    // Auto-display si ?ta_login=1 ou #login
+    if (form && (location.search.indexOf("ta_login=1") !== -1 || location.hash === "#login")){
+      form.style.display = "block";
+    }
+  }
+
+  /* ---------- Injection des actions de contact (Call + SMS only) ---------- */
+  function injectContactActions(){
+var root = document.querySelector(".ta-fiche-public");
+var isOwner = root && root.getAttribute("data-ta-owner") === "1";
+var view    = root && root.getAttribute("data-ta-view");
+
+if (isOwner && view !== "finder") {
+  return;
+}
+
+    var cards = qsa(".bc-card[data-role], .ta-contact-card[data-role], [data-role].bc-card, [data-role].ta-contact-card");
+    cards.forEach(function(card){
+      if (card.hasAttribute("data-actions-disabled")) {
+        return;
+      }
+      var phone   = String(card.getAttribute("data-phone") || "").trim();
+      var ccRaw   = String(card.getAttribute("data-cc") || "").trim();
+
+      // Préférences : on lit data-actions (canon), ou data-prefs (legacy).
+      var actions = parseJsonList(card.getAttribute("data-actions") || card.getAttribute("data-prefs") || "");
+      var hasActions = actions.length > 0;
+      var allowCall = hasActions ? (actions.indexOf("call") !== -1 || actions.indexOf("phone") !== -1) : true; // défaut: call autorisé
+      var allowSms = hasActions ? (actions.indexOf("sms") !== -1 || actions.indexOf("phone") !== -1) : true;
+      var allowWhatsapp = hasActions ? (actions.indexOf("whatsapp") !== -1) : true;
+
+      // Normalisation téléphone pour tel:/sms:
+      var plusE164 = toPlusE164FromAny(phone, ccRaw) || phone;
+
+      var actionsWrap = document.createElement("div");
+      actionsWrap.className = "row-actions";
+
+      // Appeler
+      if (phone && allowCall){
+        var aCall = document.createElement("a");
+        aCall.className = "ta-btn ta-btn--action ta-btn--sm ico-call";
+        aCall.href = "tel:" + (plusE164 || phone);
+        aCall.innerHTML = svgIcon("call") + "<span>Appeler</span>";
+        aCall.setAttribute("aria-label","Appeler le propriétaire");
+        actionsWrap.appendChild(aCall);
+      }
+
+      // Je suis là (SMS + géoloc) — TOUJOURS si on a un numéro
+      // WhatsApp — si autorisé et numéro convertible
+      if (phone && allowWhatsapp){
+        var waDigits = String(plusE164 || phone).replace(/[^\d]/g, "");
+        if (waDigits){
+          var waLink = document.createElement("a");
+          waLink.className = "ta-btn ta-btn--action ta-btn--sm ico-wa";
+
+          var waHref = "https://wa.me/" + waDigits;
+          var waMsg = buildWhatsappMessage({
+            petName: card.getAttribute("data-pet") || "cet animal",
+            tag:     card.getAttribute("data-tag") || "",
+            pageUrl: window.location.href.split("#")[0]
+          });
+          if (waMsg){
+            waHref += "?text=" + encodeURIComponent(waMsg);
+          }
+          waLink.href = waHref;
+          waLink.target = "_blank";
+          waLink.rel = "noopener";
+          waLink.innerHTML = svgIcon("wa") + "<span>WhatsApp</span>";
+          waLink.setAttribute("aria-label","Contacter via WhatsApp");
+          actionsWrap.appendChild(waLink);
+        }
+      }
+
+      // Je suis là (SMS + géoloc) — uniquement si le SMS est autorisé
+      if (phone && allowSms){
+        var btnHere = document.createElement("button");
+        btnHere.type = "button";
+        btnHere.className = "ta-btn ta-btn--action ta-btn--sm ico-gps";
+        btnHere.innerHTML = svgIcon("gps") + "<span>Je suis là</span>";
+        btnHere.setAttribute("aria-label","Partager ma position et prévenir le propriétaire");
+        btnHere.addEventListener("click", function(){
+          var ok = window.confirm("Pour aider le propriétaire, nous allons partager votre position (une seule fois) et préparer un SMS. Continuer ?");
+          if (!ok) return;
+
+          var pageUrl = window.location.href.split("#")[0];
+
+          if (!("geolocation" in navigator)){
+            var bodyNoGeo = buildLocateMessage({ petName: card.getAttribute("data-pet") || "cet animal", tag: card.getAttribute("data-tag") || "", mapsUrl: "", accuracy: null, pageUrl: pageUrl });
+            openSms(buildSmsLink(plusE164 || phone, bodyNoGeo));
+            return;
+          }
+          navigator.geolocation.getCurrentPosition(
+            function(pos){
+              var c = pos && pos.coords ? pos.coords : {};
+              var mapsUrl = (typeof c.latitude === "number" && typeof c.longitude === "number")
+                ? ("https://maps.google.com/?q=" + c.latitude + "," + c.longitude) : "";
+              var body = buildLocateMessage({
+                petName: card.getAttribute("data-pet") || "cet animal",
+                tag:     card.getAttribute("data-tag") || "",
+                mapsUrl: mapsUrl,
+                accuracy: c.accuracy,
+                pageUrl: pageUrl
+              });
+              openSms(buildSmsLink(plusE164 || phone, body));
+            },
+            function(){
+              var bodyNoGeo = buildLocateMessage({ petName: card.getAttribute("data-pet") || "cet animal", tag: card.getAttribute("data-tag") || "", mapsUrl: "", accuracy: null, pageUrl: pageUrl });
+              openSms(buildSmsLink(plusE164 || phone, bodyNoGeo));
+            },
+            { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+          );
+        });
+        actionsWrap.appendChild(btnHere);
+      }
+
+      // Injection (remplace si déjà présent)
+      var host =
+  card.querySelector("[data-actions-slot]") ||
+  card.querySelector(".bc-card-bd") ||
+  card;
+
+      var old  = host.querySelector(".row-actions");
+      if (old) old.remove();
+      host.appendChild(actionsWrap);
+    });
+  }
+
+/* ---------- Finder scroll to block ---------- */
+function initScrollTo(){
+
+  document.addEventListener("click", function(e){
+
+    var btn = e.target.closest("[data-ta-scroll-to]");
+    if (!btn) return;
+
+    var id = btn.getAttribute("data-ta-scroll-to");
+    if (!id) return;
+
+    var target = document.getElementById(id);
+    if (!target) {
+      console.warn("[TA] scroll target not found:", id);
+      return;
+    }
+
+    e.preventDefault();
+
+    var header = document.querySelector(".ta-app-header, .site-header");
+    var offset = header ? header.offsetHeight + 12 : 12;
+
+    var y = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+    window.scrollTo({ top: y, behavior: "smooth" });
+
+  }, false); // ⚠️ PAS en capture
+}
+
+
+
+  /* ---------- Boot ---------- */
+onReady(function(){
+  enhanceLogin();
+  injectContactActions();
+
+  initScrollTo(); // 👈 AJOUT ICI
+
+  fixContactsGrid();
+  window.addEventListener("resize", fixContactsGrid);
+});
+
+})();

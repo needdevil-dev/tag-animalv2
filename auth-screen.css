@@ -1,0 +1,92 @@
+/* ===============================================================
+   TAGANIMAL — OWNER-CARD.CSS
+   Carte paramètres propriétaire (notifications, consentements)
+
+   ORGANISATION :
+   1. Card wrapper
+   2. Icône décorative
+   3. Texte descriptif
+   4. Responsive
+
+   DÉPENDANCE :
+   Requiert global-card.css (.ta-preview-action déjà défini)
+
+   SCOPE : .ta-fiche-public [data-ta-card="owner"]
+=============================================================== */
+
+
+/* ===============================================================
+   1. CARD WRAPPER
+=============================================================== */
+
+/* Le .ta-block et .ta-block-bd gèrent le cadre (global.css). */
+
+.ta-fiche-public [data-ta-card="owner"] .ta-field-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 16px;
+}
+
+
+/* ===============================================================
+   2. ICÔNE DÉCORATIVE
+   Rendu automatique via ::before sur le .ta-field-card
+=============================================================== */
+
+.ta-fiche-public [data-ta-card="owner"] .ta-field-card::before {
+  content: '⚙️';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #fff7eb, #fde9c6);
+  border: 2px solid rgba(243,154,54,.30);
+  border-radius: 12px;
+  font-size: 1.4rem;
+  box-shadow: 0 3px 10px rgba(243,154,54,.18);
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+
+/* ===============================================================
+   3. TEXTE DESCRIPTIF
+=============================================================== */
+
+/* Wrapper texte (adjacent à l'icône) */
+.ta-fiche-public [data-ta-card="owner"] .ta-field-card .ta-text {
+  font-size: 0.90em;
+  line-height: 1.6;
+  color: var(--ta-muted);
+  flex: 1;
+  min-width: 0;
+}
+
+
+/* ===============================================================
+   4. RESPONSIVE
+=============================================================== */
+
+@media (max-width: 393px) {
+
+  .ta-fiche-public [data-ta-card="owner"] .ta-field-card {
+    gap: 10px;
+    padding: 14px 12px;
+  }
+
+  .ta-fiche-public [data-ta-card="owner"] .ta-field-card::before {
+    width: 38px;
+    height: 38px;
+    font-size: 1.2rem;
+    border-radius: 10px;
+  }
+}
+
+
+/* ===============================================================
+   FIN — owner-card.css
+   TagAnimal — Carnet de santé premium — Mars 2026
+=============================================================== */

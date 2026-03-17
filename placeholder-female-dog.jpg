@@ -1,0 +1,84 @@
+/**
+ * TAGANIMAL — JOURNAL ENTRY ROUTER
+ *
+ * Flux simplifié (2 niveaux) :
+ * [home] → observation | appointment | event | free
+ *        ← data-entry-back (retour direct home)
+ *
+ * L'écran "note" n'existe plus.
+ * Chaque screen embarque son propre bouton data-entry-back.
+ */
+(function () {
+  "use strict";
+
+  const TITLES = {
+    home:        { icon: "📓", label: "Journal de vie"          },
+    observation: { icon: "👁️", label: "Ajouter une observation" },
+    appointment: { icon: "🏥", label: "Ajouter un rendez-vous"  },
+    event:       { icon: "📅", label: "Ajouter un événement"    },
+    free:        { icon: "📝", label: "Ajouter une note"        },
+  };
+
+  function onReady(fn) {
+    document.readyState === "loading"
+      ? document.addEventListener("DOMContentLoaded", fn, { once: true })
+      : fn();
+  }
+
+  onReady(() => {
+    const root = document.querySelector("[data-ta-entry-root='journal']");
+    if (!root) return;
+
+    let state = root.getAttribute("data-entry-state") || "home";
+
+    function setTitle() {
+      const titleEl = root.querySelector("[data-ta-entry-title] span");
+      if (!titleEl) return;
+      const t = TITLES[state] || TITLES.home;
+      titleEl.textContent = `${t.icon} ${t.label}`;
+    }
+
+    function setScreens() {
+      root.querySelectorAll("[data-entry-screen]").forEach((screen) => {
+        screen.hidden = screen.getAttribute("data-entry-screen") !== state;
+      });
+    }
+
+    function render() {
+      setTitle();
+      setScreens();
+    }
+
+    function go(next) {
+      state = next || "home";
+      root.setAttribute("data-entry-state", state);
+      render();
+    }
+
+    function back() {
+      // Quel que soit l'écran courant, retour direct à home
+      state = "home";
+      root.setAttribute("data-entry-state", state);
+      render();
+    }
+
+    root.addEventListener("click", (e) => {
+      const goBtn   = e.target.closest("[data-entry-go]");
+      const backBtn = e.target.closest("[data-entry-back]");
+
+      if (goBtn) {
+        e.preventDefault();
+        go(goBtn.getAttribute("data-entry-go"));
+        return;
+      }
+
+      if (backBtn) {
+        e.preventDefault();
+        back();
+        return;
+      }
+    });
+
+    render();
+  });
+})();

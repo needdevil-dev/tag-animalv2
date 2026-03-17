@@ -1,0 +1,416 @@
+/* =======================================================
+   TAGANIMAL — PRO ENTRY WIZARD v2 · Carnet Premium
+   Fichier : entry-pro.css
+
+   Styles du wizard d'ajout / édition d'un professionnel.
+   ⚠  entry-global.css doit être chargé AVANT ce fichier.
+   ⚠  Tous les sélecteurs JS/PHP sont préservés à l'identique.
+
+   ORGANISATION :
+   1.  Tokens couleurs pros (enrichis)
+   2.  Scope et paddings du wizard
+   3.  Step 1 — titre avec lignes décoratives premium
+   4.  Step 1 — couleurs par type + états actifs
+   5.  Step 1 — badges décoratifs (★ véto, ‼ urgences)
+   6.  Step 2 — loupe colorée (surcharge global)
+   7.  Step 2 — titre étape recherche
+   8.  Step 3 — titre formulaire manuel
+   9.  Keyframes pros-entry
+======================================================= */
+
+
+/* =======================================================
+   1. TOKENS COULEURS PROS
+   Palette "annuaire santé animale" — couleurs distinctes,
+   premium, lisibles sur fond ivoire.
+======================================================= */
+
+.ta-fiche-public .block-pros {
+
+  /* Vétérinaire — teal médical */
+  --pros-veterinaire:               #0A8A7E;
+  --pros-veterinaire-bg:            rgba(10,138,126,.09);
+  --pros-veterinaire-border:        rgba(10,138,126,.28);
+  --pros-veterinaire-shadow:        rgba(10,138,126,.22);
+
+  /* Toiletteur — violet doux */
+  --pros-toiletteur:                #7229CC;
+  --pros-toiletteur-bg:             rgba(114,41,204,.09);
+  --pros-toiletteur-border:         rgba(114,41,204,.24);
+  --pros-toiletteur-shadow:         rgba(114,41,204,.20);
+
+  /* Éducateur — bleu royal */
+  --pros-educateur:                 #1D59D4;
+  --pros-educateur-bg:              rgba(29,89,212,.09);
+  --pros-educateur-border:          rgba(29,89,212,.24);
+  --pros-educateur-shadow:          rgba(29,89,212,.20);
+
+  /* Comportementaliste — indigo */
+  --pros-comportementaliste:        #4540D8;
+  --pros-comportementaliste-bg:     rgba(69,64,216,.09);
+  --pros-comportementaliste-border: rgba(69,64,216,.24);
+  --pros-comportementaliste-shadow: rgba(69,64,216,.20);
+
+  /* Pension — ambre chaud */
+  --pros-pension:                   #C47B0A;
+  --pros-pension-bg:                rgba(196,123,10,.09);
+  --pros-pension-border:            rgba(196,123,10,.28);
+  --pros-pension-shadow:            rgba(196,123,10,.22);
+
+  /* Urgences — rouge vif */
+  --pros-urgences:                  #D42020;
+  --pros-urgences-bg:               rgba(212,32,32,.09);
+  --pros-urgences-border:           rgba(212,32,32,.28);
+  --pros-urgences-shadow:           rgba(212,32,32,.22);
+
+  /* Pharmacie — vert pharmacie */
+  --pros-pharmacie:                 #158840;
+  --pros-pharmacie-bg:              rgba(21,136,64,.09);
+  --pros-pharmacie-border:          rgba(21,136,64,.26);
+  --pros-pharmacie-shadow:          rgba(21,136,64,.20);
+
+  /* Autre — ardoise neutre */
+  --pros-autre:                     #546270;
+  --pros-autre-bg:                  rgba(84,98,112,.09);
+  --pros-autre-border:              rgba(84,98,112,.24);
+  --pros-autre-shadow:              rgba(84,98,112,.18);
+}
+
+
+/* =======================================================
+   2. SCOPE ET PADDINGS DU WIZARD
+======================================================= */
+
+.ta-fiche-public .ta-pros-step--type {
+  padding: 22px 16px 24px !important;
+}
+
+.ta-fiche-public .ta-pros-step--search {
+  padding: 20px 16px 22px !important;
+}
+
+.ta-fiche-public .ta-pros-step--manual {
+  padding: 20px 16px 24px !important;
+}
+
+
+/* =======================================================
+   3. STEP 1 — TITRE AVEC LIGNES DÉCORATIVES PREMIUM
+======================================================= */
+
+.ta-fiche-public .ta-pros-step--type > .ta-section-title {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  gap:             12px;
+  width:           100%;
+  text-align:      center;
+
+  background:  none;
+  border:      none;
+  box-shadow:  none;
+
+  padding:    0 0 16px;
+  margin:     0 0 16px;
+  border-bottom: 1px solid var(--entry-border, rgba(170,130,70,.17));
+
+  font-family:    var(--entry-font-display, 'Lora', Georgia, serif);
+  font-size:      0.82em;
+  font-style:     italic;
+  font-weight:    600;
+  letter-spacing: .02em;
+  text-transform: none;
+  color:          var(--entry-gold-deep, #A6732A);
+}
+
+/* Lignes latérales en dégradé */
+.ta-fiche-public .ta-pros-step--type > .ta-section-title::before,
+.ta-fiche-public .ta-pros-step--type > .ta-section-title::after {
+  content:    '';
+  flex:       1;
+  height:     1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--entry-border-mid, rgba(170,130,70,.32)) 40%,
+    var(--entry-border-mid, rgba(170,130,70,.32)) 60%,
+    transparent
+  );
+  display:    block;
+}
+
+/* Petite étoile décorative avant le texte */
+.ta-fiche-public .ta-pros-step--type > .ta-section-title::before {
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--entry-border-mid, rgba(170,130,70,.32))
+  );
+}
+
+.ta-fiche-public .ta-pros-step--type > .ta-section-title::after {
+  background: linear-gradient(
+    to right,
+    var(--entry-border-mid, rgba(170,130,70,.32)),
+    transparent
+  );
+}
+
+
+/* =======================================================
+   4. STEP 1 — COULEURS PAR TYPE + ÉTATS ACTIFS PREMIUM
+======================================================= */
+
+/* ── Vétérinaire ── */
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="veterinaire"] {
+  border-color: var(--pros-veterinaire-border) !important;
+  color:        var(--pros-veterinaire) !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="veterinaire"]:hover {
+  background:   var(--pros-veterinaire-bg)     !important;
+  border-color: var(--pros-veterinaire)        !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="veterinaire"].is-active {
+  background:   var(--pros-veterinaire-bg)          !important;
+  border-color: var(--pros-veterinaire)             !important;
+  box-shadow:
+    0 0 0 3px rgba(10,138,126,.08),
+    0 6px 20px var(--pros-veterinaire-shadow)      !important;
+  font-weight: 900 !important;
+}
+
+/* ── Toiletteur ── */
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="toiletteur"] {
+  border-color: var(--pros-toiletteur-border) !important;
+  color:        var(--pros-toiletteur) !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="toiletteur"]:hover {
+  background:   var(--pros-toiletteur-bg)    !important;
+  border-color: var(--pros-toiletteur)       !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="toiletteur"].is-active {
+  background:   var(--pros-toiletteur-bg)         !important;
+  border-color: var(--pros-toiletteur)            !important;
+  box-shadow:
+    0 0 0 3px rgba(114,41,204,.07),
+    0 6px 20px var(--pros-toiletteur-shadow)     !important;
+  font-weight: 900 !important;
+}
+
+/* ── Éducateur ── */
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="educateur"] {
+  border-color: var(--pros-educateur-border) !important;
+  color:        var(--pros-educateur) !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="educateur"]:hover {
+  background:   var(--pros-educateur-bg)    !important;
+  border-color: var(--pros-educateur)       !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="educateur"].is-active {
+  background:   var(--pros-educateur-bg)         !important;
+  border-color: var(--pros-educateur)            !important;
+  box-shadow:
+    0 0 0 3px rgba(29,89,212,.07),
+    0 6px 20px var(--pros-educateur-shadow)     !important;
+  font-weight: 900 !important;
+}
+
+/* ── Comportementaliste ── */
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="comportementaliste"] {
+  border-color: var(--pros-comportementaliste-border) !important;
+  color:        var(--pros-comportementaliste) !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="comportementaliste"]:hover {
+  background:   var(--pros-comportementaliste-bg)    !important;
+  border-color: var(--pros-comportementaliste)       !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="comportementaliste"].is-active {
+  background:   var(--pros-comportementaliste-bg)              !important;
+  border-color: var(--pros-comportementaliste)                 !important;
+  box-shadow:
+    0 0 0 3px rgba(69,64,216,.07),
+    0 6px 20px var(--pros-comportementaliste-shadow)          !important;
+  font-weight: 900 !important;
+}
+
+/* ── Pension ── */
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="pension"] {
+  border-color: var(--pros-pension-border) !important;
+  color:        var(--pros-pension) !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="pension"]:hover {
+  background:   var(--pros-pension-bg)    !important;
+  border-color: var(--pros-pension)       !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="pension"].is-active {
+  background:   var(--pros-pension-bg)         !important;
+  border-color: var(--pros-pension)            !important;
+  box-shadow:
+    0 0 0 3px rgba(196,123,10,.08),
+    0 6px 20px var(--pros-pension-shadow)     !important;
+  font-weight: 900 !important;
+}
+
+/* ── Urgences ── */
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="urgences"] {
+  border-color: var(--pros-urgences-border) !important;
+  color:        var(--pros-urgences) !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="urgences"]:hover {
+  background:   var(--pros-urgences-bg)    !important;
+  border-color: var(--pros-urgences)       !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="urgences"].is-active {
+  background:   var(--pros-urgences-bg)         !important;
+  border-color: var(--pros-urgences)            !important;
+  box-shadow:
+    0 0 0 3px rgba(212,32,32,.08),
+    0 6px 20px var(--pros-urgences-shadow)     !important;
+  font-weight: 900 !important;
+}
+
+/* ── Pharmacie ── */
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="pharmacie"] {
+  border-color: var(--pros-pharmacie-border) !important;
+  color:        var(--pros-pharmacie) !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="pharmacie"]:hover {
+  background:   var(--pros-pharmacie-bg)    !important;
+  border-color: var(--pros-pharmacie)       !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="pharmacie"].is-active {
+  background:   var(--pros-pharmacie-bg)         !important;
+  border-color: var(--pros-pharmacie)            !important;
+  box-shadow:
+    0 0 0 3px rgba(21,136,64,.07),
+    0 6px 20px var(--pros-pharmacie-shadow)     !important;
+  font-weight: 900 !important;
+}
+
+/* ── Autre ── */
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="autre"] {
+  border-color: var(--pros-autre-border) !important;
+  color:        var(--pros-autre) !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="autre"]:hover {
+  background:   var(--pros-autre-bg)    !important;
+  border-color: var(--pros-autre)       !important;
+}
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="autre"].is-active {
+  background:   var(--pros-autre-bg)         !important;
+  border-color: var(--pros-autre)            !important;
+  box-shadow:
+    0 0 0 3px rgba(84,98,112,.07),
+    0 6px 20px var(--pros-autre-shadow)     !important;
+  font-weight: 900 !important;
+}
+
+
+/* =======================================================
+   5. BADGES DÉCORATIFS PREMIUM
+   ★ vétérinaire (recommandé) — étoile animée
+   ‼ urgences — pulsation d'alerte
+======================================================= */
+
+/* ★ discret en haut à droite — vétérinaire */
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="veterinaire"]::after {
+  content:        '★';
+  position:       absolute;
+  top:            7px;
+  right:          9px;
+  font-size:      0.58rem;
+  color:          var(--pros-veterinaire);
+  opacity:        .55;
+  pointer-events: none;
+  transition:     opacity var(--entry-dur-fast, .13s);
+}
+
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="veterinaire"]:hover::after {
+  opacity: .90;
+}
+
+/* ‼ rouge pulsant — urgences */
+.ta-fiche-public .ta-pro-type-btn[data-pro-type="urgences"]::after {
+  content:         '!';
+  position:        absolute;
+  top:             7px;
+  right:           9px;
+  width:           17px;
+  height:          17px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  background:      var(--pros-urgences);
+  color:           #fff;
+  border-radius:   50%;
+  font-size:       0.64rem;
+  font-weight:     900;
+  line-height:     1;
+  pointer-events:  none;
+  animation:       urgencesPulse 2.2s ease-in-out infinite;
+}
+
+@keyframes urgencesPulse {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(212,32,32,.55); }
+  50%       { box-shadow: 0 0 0 5px rgba(212,32,32,.00); }
+}
+
+
+/* =======================================================
+   6. STEP 2 — LOUPE COLORÉE (surcharge entry-global)
+======================================================= */
+
+.ta-fiche-public [data-ta-pros-search].ta-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23C89145' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") !important;
+}
+
+
+/* =======================================================
+   7. STEP 2 — TITRE ÉTAPE RECHERCHE
+======================================================= */
+
+.ta-fiche-public [data-ta-pros-search-title] {
+  margin:      0 0 14px;
+  font-family: var(--entry-font-display, 'Lora', Georgia, serif);
+  font-style:  italic;
+  font-size:   0.88em;
+  font-weight: 600;
+  color:       var(--entry-gold-deep, #A6732A);
+  padding:     8px 14px;
+}
+
+
+/* =======================================================
+   8. STEP 3 — TITRE FORMULAIRE MANUEL
+======================================================= */
+
+.ta-fiche-public [data-ta-pros-form-title] {
+  margin:      0 0 20px;
+  font-family: var(--entry-font-display, 'Lora', Georgia, serif);
+  font-style:  italic;
+  font-size:   0.88em;
+  font-weight: 600;
+  color:       var(--entry-gold-deep, #A6732A);
+}
+
+.ta-fiche-public .ta-pros-form .ta-field {
+  position: relative;
+}
+
+
+/* =======================================================
+   9. KEYFRAMES PROS-ENTRY SPÉCIFIQUES
+======================================================= */
+
+/* Badge "Par défaut" dans la liste */
+@keyframes prosDefaultBadgeIn {
+  0%   { transform: scale(.6) translateX(-4px); opacity: 0; }
+  70%  { transform: scale(1.08); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+
+/* =======================================================
+   FIN — entry-pro.css v2
+   TagAnimal · Carnet de Santé Premium
+======================================================= */

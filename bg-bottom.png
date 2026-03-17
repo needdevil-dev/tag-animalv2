@@ -1,0 +1,577 @@
+/**
+ * =========================================================
+ * TAGANIMAL — HISTORY.JS
+ * =========================================================
+ *
+ * Fichier unique qui gère les DEUX vues historique.
+ *
+ * BLOC A — JOURNAL HISTORY
+ *   Root    : [data-ta-journal-block="history"]
+ *   Section : views/public/journal/sections/journal-history.php
+ *   Fonctions :
+ *     - Navigation par année (tabs)
+ *     - Filtres par type (observation / RDV / événement / note)
+ *     - Recherche full-text client-side
+ *     - Toggle vue grille / liste
+ *     - Modal de détail
+ *     - Highlight post-save (sessionStorage)
+ *
+ * BLOC B — HEALTH HISTORY
+ *   Root    : [data-ta-health-block="history"]
+ *   Section : views/public/sante/health/sections/health-history.php
+ *   Fonctions :
+ *     - Navigation par année (tabs)
+ *     - Filtres par type (vaccin / antiparasitaire / vermifuge)
+ *     - Recherche full-text client-side
+ *     - Toggle vue grille / liste
+ *     - Modal de détail
+ *     - Suppression AJAX d'une entrée (croix)
+ *     - Refresh AJAX complet (event ta:health:history:refresh)
+ *
+ * Les deux blocs sont INDÉPENDANTS et peuvent coexister
+ * sur la même page sans conflit.
+ * =========================================================
+ */
+
+(() => {
+  "use strict";
+
+  /* ==========================================================
+     UTILITAIRES PARTAGÉS
+  ========================================================== */
+
+  function onReady(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      fn();
+    }
+  }
+
+  /** Échappe le HTML pour injection dans innerHTML */
+  function esc(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /** Couleurs modal par type */
+  const TYPE_COLORS = {
+    // Journal
+    observation:      { bg: "rgba(74,124,89,.14)",  text: "var(--ta-journal-obs)"      },
+    appointment:      { bg: "rgba(58,110,168,.14)",  text: "var(--ta-journal-rdv)"      },
+    event:            { bg: "rgba(196,120,32,.14)",  text: "var(--ta-journal-event)"    },
+    note:             { bg: "rgba(192,84,101,.14)",  text: "var(--ta-journal-note)"     },
+    // Santé
+    vaccine:          { bg: "rgba(107,70,193,.12)",  text: "var(--ta-health-vaccine)"   },
+    antiparasitaire:  { bg: "rgba(45,106,79,.12)",   text: "var(--ta-health-antiparas)" },
+    vermifuge:        { bg: "rgba(0,119,182,.12)",   text: "var(--ta-health-vermifuge)" },
+    care:             { bg: "rgba(231,111,81,.12)",  text: "var(--ta-health-care,#E76F51)" },
+  };
+
+  /* ==========================================================
+     MOTEUR DE NAVIGATION / FILTRES
+     Partagé par les deux blocs.
+  ========================================================== */
+
+  /**
+   * @param {object} cfg
+   *   root         HTMLElement  — root [data-ta-*-block="history"]
+   *   modalId      string       — id du <div> modal
+   *   modalHeadId  string       — id du head du modal
+   *   modalBodyId  string       — id du body du modal
+   */
+  function buildHistoryBlock(cfg) {
+    const { root, modalId, modalHeadId, modalBodyId } = cfg;
+
+    /* ---- REFS ---- */
+    const timeline    = root.querySelector("[data-journal-timeline]");
+    const countEl     = root.querySelector("[data-journal-count]");
+    const emptyEl     = root.querySelector("[data-journal-empty]");
+    const searchInput = root.querySelector("[data-journal-search]");
+    const searchClear = root.querySelector("[data-journal-search-clear]");
+    const modal       = document.getElementById(modalId);
+    const modalHead   = document.getElementById(modalHeadId);
+    const modalBody   = document.getElementById(modalBodyId);
+
+    if (!timeline) return;
+
+    /* ---- STATE ---- */
+    let activeYear  = "all";
+    let activeType  = "all";
+    let searchQuery = "";
+
+    /* ---- HELPERS ---- */
+    const getAllCards        = () => Array.from(timeline.querySelectorAll("[data-journal-entry]"));
+    const getAllYearSections = () => Array.from(timeline.querySelectorAll("[data-journal-year-section]"));
+
+    /* ---- FILTER ENGINE ---- */
+    function applyFilters() {
+      const cards = getAllCards();
+      let visible = 0;
+
+      cards.forEach((card) => {
+        const cardYear = card.dataset.journalYear  || "";
+        const cardType = card.dataset.journalType  || "";
+        const cardText = (card.dataset.journalSearchText || "").toLowerCase();
+
+        const ok =
+          (activeYear  === "all" || cardYear === String(activeYear)) &&
+          (activeType  === "all" || cardType === activeType) &&
+          (!searchQuery || cardText.includes(searchQuery));
+
+        card.hidden = !ok;
+        if (ok) visible++;
+      });
+
+      /* Masque les sections d'année vides */
+      getAllYearSections().forEach((section) => {
+        const cards = Array.from(section.querySelectorAll("[data-journal-entry]"));
+        section.hidden = !cards.some((c) => !c.hidden);
+      });
+
+      if (emptyEl) emptyEl.hidden = visible > 0;
+
+      if (countEl) {
+        countEl.textContent =
+          visible === 0 ? "" :
+          visible === 1 ? "1 entrée" :
+          `${visible} entrées`;
+      }
+    }
+
+    /* ---- NAVIGATION ANNÉES ---- */
+    const yearNav = root.querySelector(".ta-journal-year-nav");
+    if (yearNav) {
+      yearNav.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-journal-year]");
+        if (!btn) return;
+
+        activeYear = btn.dataset.journalYear === "all" ? "all" : btn.dataset.journalYear;
+
+        yearNav.querySelectorAll("[data-journal-year]").forEach((b) => {
+          const active = b === btn;
+          b.classList.toggle("is-active", active);
+          b.setAttribute("aria-selected", active ? "true" : "false");
+        });
+
+        applyFilters();
+
+        if (activeYear !== "all") {
+          const sec = timeline.querySelector(`[data-journal-year-section="${activeYear}"]`);
+          if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    }
+
+    /* ---- FILTRES TYPE ---- */
+    const filtersWrap = root.querySelector(".ta-journal-filters");
+    if (filtersWrap) {
+      filtersWrap.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-journal-type]");
+        if (!btn) return;
+
+        activeType = btn.dataset.journalType;
+
+        filtersWrap.querySelectorAll("[data-journal-type]").forEach((b) => {
+          b.classList.toggle("is-active", b === btn);
+        });
+
+        applyFilters();
+      });
+    }
+
+    /* ---- RECHERCHE ---- */
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        searchQuery = searchInput.value.trim().toLowerCase();
+        if (searchClear) searchClear.hidden = !searchQuery;
+        applyFilters();
+      });
+    }
+
+    if (searchClear) {
+      searchClear.addEventListener("click", () => {
+        if (searchInput) { searchInput.value = ""; searchInput.focus(); }
+        searchQuery = "";
+        searchClear.hidden = true;
+        applyFilters();
+      });
+    }
+
+    /* ---- VUE TOGGLE ---- */
+    const viewToggle = root.querySelector(".ta-journal-view-toggle");
+    if (viewToggle) {
+      viewToggle.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-journal-view]");
+        if (!btn) return;
+
+        const mode = btn.dataset.journalView;
+
+        viewToggle.querySelectorAll("[data-journal-view]").forEach((b) => {
+          const active = b === btn;
+          b.classList.toggle("is-active", active);
+          b.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+
+        root.classList.toggle("ta-journal--list-view", mode === "list");
+        root.classList.toggle("ta-journal--grid-view", mode === "grid");
+      });
+    }
+
+    /* ---- MODAL ---- */
+    function openModal(data) {
+      if (!modal || !modalHead || !modalBody) return;
+
+      const colors = TYPE_COLORS[data.type] || TYPE_COLORS.note;
+
+      modalHead.innerHTML = `
+        <div class="ta-journal-modal-ico" style="background:${colors.bg}">
+          ${esc(data.icon)}
+        </div>
+        <div class="ta-journal-modal-info">
+          <span class="ta-journal-modal-type" style="color:${colors.text}">
+            ${esc(data.label)}
+          </span>
+          <h4 class="ta-journal-modal-title" id="${esc(modalHeadId)}-title">
+            ${esc(data.title)}
+          </h4>
+          <p class="ta-journal-modal-date">
+            📆&nbsp;${esc(data.date)}
+            ${data.ago ? `&ensp;·&ensp;<em>${esc(data.ago)}</em>` : ""}
+          </p>
+        </div>
+        <button class="ta-journal-modal-close"
+                aria-label="Fermer"
+                data-modal-close>✕</button>
+      `;
+
+      let bodyHtml = "";
+
+      if (data.content) {
+        bodyHtml += `
+          <p class="ta-journal-modal-section-label">Détails</p>
+          <p class="ta-journal-modal-text">${esc(data.content)}</p>`;
+      }
+
+      if (data.tags && data.tags.length) {
+        bodyHtml += `
+          <p class="ta-journal-modal-section-label">Informations</p>
+          <div class="ta-journal-modal-chips">
+            ${data.tags.map((t) => `<span class="ta-journal-chip">${esc(t)}</span>`).join("")}
+          </div>`;
+      }
+
+      if (data.badge) {
+        bodyHtml += `
+          <div style="margin-top:14px">
+            <span class="ta-badge ${esc(data.badge.class)}">${esc(data.badge.label)}</span>
+          </div>`;
+      }
+
+      if (!bodyHtml) {
+        bodyHtml = `<p class="ta-journal-modal-text" style="color:var(--ta-journal-muted)">
+          Aucune information complémentaire.
+        </p>`;
+      }
+
+      modalBody.innerHTML = bodyHtml;
+
+      modal.hidden = false;
+      requestAnimationFrame(() => modal.classList.add("is-open"));
+      document.body.style.overflow = "hidden";
+
+      const closeBtn = modal.querySelector("[data-modal-close]");
+      if (closeBtn) closeBtn.focus();
+    }
+
+    function closeModal() {
+      if (!modal) return;
+      modal.classList.remove("is-open");
+      document.body.style.overflow = "";
+
+      const onEnd = () => {
+        modal.hidden = true;
+        modal.removeEventListener("transitionend", onEnd);
+      };
+      modal.addEventListener("transitionend", onEnd);
+    }
+
+    // Clic sur une carte → ouvre le modal
+    timeline.addEventListener("click", (e) => {
+      // Ne pas déclencher le modal si on clique sur le bouton suppression
+      if (e.target.closest("[data-ta-history-delete]")) return;
+
+      const card = e.target.closest("[data-journal-entry]");
+      if (!card || !card.dataset.journalPayload) return;
+
+      try {
+        openModal(JSON.parse(card.dataset.journalPayload));
+      } catch (err) {
+        console.error("[TA_HISTORY] payload parse error", err);
+      }
+    });
+
+    // Clavier
+    timeline.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const card = e.target.closest("[data-journal-entry]");
+      if (!card) return;
+      e.preventDefault();
+      card.click();
+    });
+
+    // Fermeture modal
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal || e.target.closest("[data-modal-close]")) {
+          closeModal();
+        }
+      });
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal && !modal.hidden) closeModal();
+    });
+
+    /* ---- INIT ---- */
+    root.classList.add("ta-journal--grid-view");
+    applyFilters();
+  }
+
+  /* ==========================================================
+     BLOC A — JOURNAL HISTORY
+  ========================================================== */
+
+  function bootJournal() {
+    console.log("[TA_JOURNAL_HISTORY] ✅ boot");
+
+    const root = document.querySelector('[data-ta-journal-block="history"]');
+    if (!root) return;
+    if (root.dataset.journalHistoryBooted === "1") return;
+    root.dataset.journalHistoryBooted = "1";
+
+    buildHistoryBlock({
+      root,
+      modalId:     "ta-journal-modal",
+      modalHeadId: "ta-journal-modal-head",
+      modalBodyId: "ta-journal-modal-body",
+    });
+
+    /* Highlight post-save */
+    const openFlag   = sessionStorage.getItem("ta_open_journal_history");
+    const highlightId = sessionStorage.getItem("ta_highlight_journal_id");
+
+    if (openFlag === "1") {
+      sessionStorage.removeItem("ta_open_journal_history");
+      const section = document.getElementById("ta-journal-history");
+      if (section) setTimeout(() => section.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+    }
+
+    if (highlightId) {
+      sessionStorage.removeItem("ta_highlight_journal_id");
+      const timeline = root.querySelector("[data-journal-timeline]");
+      const card = timeline
+        ? timeline.querySelector(`[data-journal-entry="${highlightId}"]`)
+        : null;
+      if (card) {
+        card.classList.add("ta-journal-highlight");
+        setTimeout(() => card.classList.remove("ta-journal-highlight"), 4000);
+      }
+    }
+  }
+
+  /* ==========================================================
+     BLOC B — HEALTH HISTORY
+  ========================================================== */
+
+  function bootHealth() {
+    console.log("[TA_HEALTH_HISTORY] ✅ boot");
+
+    const root = document.querySelector('[data-ta-health-block="history"]');
+    if (!root) return;
+    if (root.dataset.healthHistoryBooted === "1") return;
+    root.dataset.healthHistoryBooted = "1";
+
+    /* ---- Navigation / filtres / modal partagés ---- */
+    buildHistoryBlock({
+      root,
+      modalId:     "ta-health-history-modal",
+      modalHeadId: "ta-health-modal-head",
+      modalBodyId: "ta-health-modal-body",
+    });
+
+    /* ---- Données AJAX (TA_HEALTH injecté par WordPress) ---- */
+    const TA = window.TA_HEALTH;
+    if (!TA || !TA.ajax_url || !TA.post_id || !TA.nonce) {
+      console.warn("[TA_HEALTH_HISTORY] TA_HEALTH missing — suppression désactivée");
+      return;
+    }
+
+    /* ---- Helpers état vide ---- */
+    function getHistoryCard() {
+      return root.querySelector('[data-ta-health-block="history"]') || root;
+    }
+
+    function refreshEmptyState(container) {
+      if (!container) return;
+      const list    = container.querySelector(".ta-health-timeline");
+      const empty   = container.querySelector(".ta-health-empty");
+      const count   = container.querySelectorAll(".ta-health-timeline__item").length;
+      const isEmpty = count === 0;
+      if (list)  list.hidden  = isEmpty;
+      if (empty) empty.hidden = !isEmpty;
+      container.classList.toggle("is-empty", isEmpty);
+    }
+
+    /* ---- Refresh AJAX complet ---- */
+    async function refreshHistory() {
+      const card = getHistoryCard();
+      if (!card) return;
+
+      try {
+        const body = new URLSearchParams({
+          action:  "ta_health_history_render",
+          nonce:   String(TA.nonce),
+          post_id: String(TA.post_id),
+        });
+
+        const r    = await fetch(TA.ajax_url, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+          body,
+        });
+        const json = await r.json().catch(() => null);
+
+        if (!r.ok || !json?.success || !json?.data?.html) {
+          console.warn("[TA_HEALTH_HISTORY] render failed", json);
+          return;
+        }
+
+        card.outerHTML = json.data.html;
+        console.log("[TA_HEALTH_HISTORY] refreshed OK");
+
+      } catch (e) {
+        console.error("[TA_HEALTH_HISTORY] refresh error", e);
+      }
+    }
+
+    /* ---- Suppression AJAX ---- */
+    async function deleteEntry(li) {
+      if (!li) return;
+
+      // Détection robuste de l'ID (compatibilité Safari mobile)
+      let entryId = li.getAttribute("data-id");
+      const entryType = li.getAttribute("data-entry-type") || "care";
+
+      if (!entryId) {
+        const btn = li.querySelector("[data-history-id]");
+        if (btn) entryId = btn.getAttribute("data-history-id");
+      }
+
+      if (!entryId) {
+        console.error("[TA_HEALTH_HISTORY] No entry ID found");
+        alert("Impossible de trouver l'ID de l'entrée.");
+        return;
+      }
+
+      if (!confirm("Supprimer cette entrée de l'historique ?")) return;
+
+      try {
+        const action = entryType === "act"
+          ? "ta_health_act_delete"
+          : "ta_health_history_delete";
+
+        const body = new URLSearchParams({
+          action,
+          nonce:   String(TA.nonce),
+          post_id: String(TA.post_id),
+          id:      String(entryId),
+        });
+
+        const r    = await fetch(TA.ajax_url, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+          body,
+        });
+        const json = await r.json().catch(() => null);
+
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        if (!json?.success) throw new Error(json?.data?.message || "delete_failed");
+
+        const list = li.closest(".ta-health-timeline");
+        const card = li.closest('[data-ta-health-block="history"]') || getHistoryCard();
+        li.remove();
+
+        if (list && list.querySelectorAll(".ta-health-timeline__item").length === 0) {
+          list.remove();
+          if (card && !card.querySelector(".ta-health-empty")) {
+            const empty = document.createElement("p");
+            empty.className   = "ta-health-empty";
+            empty.textContent = "Pas encore d'historique.";
+            card.appendChild(empty);
+          }
+        }
+
+        refreshEmptyState(card);
+        console.log("[TA_HEALTH_HISTORY] deleted", entryId);
+
+      } catch (e) {
+        console.error("[TA_HEALTH_HISTORY] delete error", e);
+        alert("Erreur lors de la suppression : " + e.message);
+      }
+    }
+
+    /* ---- Délégation — bouton suppression ---- */
+    root.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-ta-history-delete]");
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Cherche le <div> carte (data-journal-entry) OU l'ancien <li>
+      const li = btn.closest(".ta-health-timeline__item")
+               || btn.closest("[data-journal-entry]");
+
+      if (!li) {
+        console.warn("[TA_HEALTH_HISTORY] pas de parent trouvé pour la suppression");
+        return;
+      }
+
+      deleteEntry(li);
+    });
+
+    /* ---- Expansion optionnelle ---- */
+    root.addEventListener("click", (e) => {
+      if (e.target.closest("[data-ta-history-delete]")) return;
+      const item = e.target.closest(".ta-health-timeline__item");
+      if (!item) return;
+      item.classList.toggle("is-expanded");
+      item.classList.toggle("is-active");
+    });
+
+    /* ---- Event external refresh ---- */
+    document.addEventListener("ta:health:history:refresh", () => {
+      console.log("[TA_HEALTH_HISTORY] refresh event received");
+      refreshHistory();
+    });
+
+    refreshEmptyState(root);
+  }
+
+  /* ==========================================================
+     ENTRY POINT
+  ========================================================== */
+
+  onReady(() => {
+    bootJournal();
+    bootHealth();
+  });
+
+})();

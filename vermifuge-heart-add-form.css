@@ -1,0 +1,167 @@
+/* =========================================================
+ * TAGANIMAL — antiparasite-form.css  (thème couleur uniquement)
+ * =========================================================
+ * Dépend de : global-form.css  (chargé avant)
+ *
+ * CE FICHIER NE FAIT QUE COLORER.
+ * Palette : teal émeraude (#0D6B55) — protection externe.
+ * Zéro layout, zéro comportement ici.
+ *
+ * TABLE DES MATIÈRES :
+ *   1.  Surcharge des tokens d'accent (--ta-form-accent-*)
+ *   2.  Palette locale (--ap-*)
+ *   3.  Typographie antiparasite
+ *   4.  Fond & inputs — teinte vert-eau
+ *   5.  Bouton ghost adapté
+ *   6.  Aperçu — état reminder
+ *   7.  Alerte rappel passé
+ *   8.  Toast antiparasite
+ * ========================================================= */
+
+
+/* ─────────────────────────────────────────────────────────
+   1. SURCHARGE DES TOKENS D'ACCENT
+   ─────────────────────────────────────────────────────────
+   Ces 5 variables pilotent TOUT le global-form.css.
+   Modifier uniquement ces lignes pour changer la couleur
+   de l'ensemble : bulles progress, boutons, focus, freq…
+   ───────────────────────────────────────────────────────── */
+.ap-form {
+  --ta-form-accent:        #0D6B55;             /* teal émeraude */
+  --ta-form-accent-dark:   #084D3D;             /* teal sombre (active) */
+  --ta-form-accent-light:  #E6F5F1;             /* teal pâle (backgrounds) */
+  --ta-form-accent-border: #6DBDAA;             /* teal moyen (bordures) */
+  --ta-form-accent-shadow: rgba(13,107,85,.22); /* ombre colorée des btns */
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   2. PALETTE LOCALE
+   ─────────────────────────────────────────────────────────
+   Couleurs spécifiques au domaine antiparasite non couvertes
+   par les tokens globaux.
+   ───────────────────────────────────────────────────────── */
+.ap-form {
+  /* Fond légèrement teinté vert-eau — spécifique antiparasite */
+  --ap-bg:       #F2FAF8;
+  --ap-surface:  #FFFFFF;
+  --ap-border:   #D5EDE8;
+  --ap-border-hi:#B5D9D0;
+
+  /* Encre froide légère */
+  --ap-ink-1: #0E2622;
+  --ap-ink-2: #2D4E49;
+  --ap-ink-3: #7A9E99;
+
+  /* Teal — variantes succès */
+  --ap-teal-success: #0A5C47;
+  --ap-teal-sbg:     #E0F4EE;
+  --ap-teal-sbdr:    #5DBBA3;
+
+  /* Amber — alerte rappel passé */
+  --ap-amber:     #8B5E04;
+  --ap-amber-bg:  #FFF8E6;
+  --ap-amber-bdr: #F5D06A;
+
+  /* Rouge erreur local */
+  --ap-red:    #C0392B;
+  --ap-red-bg: #FFF0EE;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   3. TYPOGRAPHIE ANTIPARASITE
+   ─────────────────────────────────────────────────────────
+   DM Sans pour le corps, Sora pour les titres/labels.
+   ───────────────────────────────────────────────────────── */
+.ap-form {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--ap-ink-2);
+}
+
+.ap-form .ta-form-label,
+.ap-form .ta-form-progress__lbl,
+.ap-form .ta-form-freq__n,
+.ap-form .ta-form-preview__title,
+.ap-form .ta-form-btn,
+.ap-form .ta-form-step__title {
+  font-family: 'Sora', sans-serif;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   4. FOND & INPUTS — TEINTE VERT-EAU
+   ─────────────────────────────────────────────────────────
+   On remplace le fond gris neutre du global par la teinte
+   propre à l'identité antiparasite.
+   ───────────────────────────────────────────────────────── */
+.ap-form .ta-form-input {
+  background: var(--ap-bg);
+  border-color: var(--ap-border);
+  color: var(--ap-ink-1);
+}
+.ap-form .ta-form-input::placeholder { color: var(--ap-ink-3); }
+.ap-form .ta-form-input:focus {
+  background: var(--ap-surface);
+  /* border-color et box-shadow pilotés par --ta-form-accent */
+}
+
+.ap-form .ta-form-chip,
+.ap-form .ta-form-shortcut {
+  background: var(--ap-bg);
+  border-color: var(--ap-border-hi);
+  color: var(--ap-ink-2);
+}
+
+.ap-form .ta-form-freq__card {
+  background: var(--ap-bg);
+  border-color: var(--ap-border);
+}
+
+.ap-form .ta-form-preview[data-state="reminder"] {
+  border-color: var(--ap-teal-sbdr);
+  background: var(--ap-teal-sbg);
+}
+
+/* Date du prochain rappel — teal succès */
+.ap-form .ta-form-preview__date { color: var(--ap-teal-success); }
+
+
+/* ─────────────────────────────────────────────────────────
+   5. BOUTON GHOST ADAPTÉ
+   ─────────────────────────────────────────────────────────
+   Adapté à la palette vert-eau.
+   ───────────────────────────────────────────────────────── */
+.ap-form .ta-form-btn--ghost {
+  border-color: var(--ap-border-hi);
+  color: var(--ap-ink-3);
+}
+.ap-form .ta-form-btn--ghost:active {
+  background: var(--ap-bg);
+  color: var(--ap-ink-2);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   6. ALERTE RAPPEL PASSÉ
+   ─────────────────────────────────────────────────────────
+   Variante amber — rappel dont la date calculée est déjà
+   dépassée, affiché à l'étape Date.
+   ───────────────────────────────────────────────────────── */
+.ap-form .ta-form-alert--ap-past {
+  background: var(--ap-amber-bg);
+  border-color: var(--ap-amber-bdr);
+  color: var(--ap-amber);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   7. TOAST ANTIPARASITE
+   ─────────────────────────────────────────────────────────
+   Le fond du toast reprend l'encre froide au lieu du noir.
+   ───────────────────────────────────────────────────────── */
+.ap-form .ta-form-toast {
+  background: var(--ap-ink-1);
+}
+.ap-form .ta-form-toast--error   { background: var(--ap-red); }
+.ap-form .ta-form-toast--success { background: var(--ap-teal-success); }

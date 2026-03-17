@@ -1,0 +1,913 @@
+/* =======================================================
+   TAGANIMAL – FICHE PUBLIQUE
+   CSS RESTRUCTURÉ V2 (PRODUCTION READY)
+
+   ORGANISATION :
+   1. Reset & Kill Astra
+   2. Design Tokens (Variables CSS)
+   3. Layout Global
+   4. Backgrounds & Decorations
+   5. Blocs & Cartes
+   6. Typographie & Titres
+   7. Boutons (Design System)
+   8. Champs & Forms
+   9. Responsive
+======================================================= */
+
+
+/* =======================================================
+   1. RESET & KILL ASTRA LAYOUT
+======================================================= */
+
+#page,
+#primary,
+#content,
+.ast-container,
+.ast-separate-container,
+.site,
+.site-content,
+.site-main {
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100vh !important;
+  position: relative;
+  
+  background-image:
+    url("/wp-content/plugins/tag-animal/assets/img/bg-top.png"),
+    url("/wp-content/plugins/tag-animal/assets/img/bg-bottom.png"),
+    url("/wp-content/plugins/tag-animal/assets/img/bg-middle.png") !important;
+  
+  background-repeat:
+    no-repeat,
+    no-repeat,
+    repeat-y !important;
+  
+  background-position:
+    top center,
+    bottom center,
+    center 140px !important;
+  
+  background-size:
+    100% auto,
+    100% auto,
+    100% 460px !important;
+  
+  background-attachment: scroll !important;
+}
+
+:root {
+  --ta-banner-h: 150px;
+}
+
+
+/* =======================================================
+   2. DESIGN TOKENS (VARIABLES CSS)
+======================================================= */
+
+.ta-fiche-public {
+  /* Brand Colors */
+  --ta-accent: #F39A36;
+  --ta-ink: #2B2B2B;
+  --ta-muted: #7A6D60;
+
+  /* Surfaces */
+  --ta-bg: #fbf4ea;
+  --ta-surface: #FFFFFF;
+  --ta-border: #E9E3DB;
+
+  /* Layout */
+  --ta-maxw: 980px;
+  --ta-pad-x: 22px;
+  --ta-gap: 26px;
+
+  /* Radius */
+  --ta-r-lg: 22px;
+  --ta-r-md: 16px;
+  --ta-r-sm: 12px;
+
+  /* Shadows */
+  --ta-shadow-1: 0 8px 22px rgba(32,22,10,.06);
+
+  /* Buttons */
+  --ta-btn-h: 46px;
+  --ta-btn-pad-x: 18px;
+  --ta-btn-radius: var(--ta-r-md);
+  --ta-btn-bg: #ffffff;
+  --ta-btn-bg-hover: #fff6eb;
+  --ta-btn-danger: #d64545;
+  --ta-btn-danger-hover: #bb3434;
+  --ta-btn-border: var(--ta-border);
+  --ta-btn-shadow: 0 6px 14px rgba(32,22,10,.08);
+  --ta-action-bg: rgba(243,154,54,.12);
+  --ta-action-bg-hover: rgba(243,154,54,.20);
+  --ta-action-color: var(--ta-accent);
+
+  /* Typography */
+  --ta-font: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --ta-fs: 16px;
+  --ta-lh: 1.55;
+
+  /* Base Styles */
+  color: var(--ta-ink);
+  font-family: var(--ta-font);
+  font-size: var(--ta-fs);
+  line-height: var(--ta-lh);
+}
+
+
+/* =======================================================
+   3. LAYOUT GLOBAL
+======================================================= */
+
+.ta-fiche-public {
+  position: relative;
+  overflow-x: hidden;
+  background: transparent;
+  padding-top: var(--ta-banner-h);
+}
+
+/* Ombre latérale décorative */
+.ta-fiche-public::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,.12),
+    rgba(0,0,0,.04),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Box-model & médias */
+.ta-fiche-public,
+.ta-fiche-public * {
+  box-sizing: border-box;
+}
+
+.ta-fiche-public img,
+.ta-fiche-public svg,
+.ta-fiche-public video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Wrapper central */
+.ta-fiche-public .ta-wrap {
+  max-width: var(--ta-maxw);
+  margin: 28px auto 56px;
+  padding: 0 var(--ta-pad-x);
+}
+
+
+/* =======================================================
+   4. BLOCS – CARTES PRINCIPALES
+======================================================= */
+
+.ta-fiche-public .ta-block {
+  background:
+    url("/wp-content/plugins/tag-animal/assets/img/paper-animal.png") center / 1200px repeat,
+    linear-gradient(180deg, #fffdf7, #f4e8d5);
+  
+  border-radius: 18px;
+  padding: 22px;
+  margin-top: var(--ta-gap);
+  border: 1px solid rgba(120,90,50,.18);
+  
+  box-shadow:
+    0 8px 24px rgba(80,60,30,.25),
+    inset 0 1px 0 rgba(255,255,255,.7);
+  
+  position: relative;
+}
+
+/* Bordure décorative interne */
+.ta-fiche-public .ta-block::before {
+  content: "";
+  position: absolute;
+  inset: 0px;
+  border-radius: 14px;
+  pointer-events: none;
+  border: 5px solid rgba(243,154,54,.35);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.5);
+  opacity: .7;
+}
+
+
+/* =======================================================
+   5. CARTES CHAMPS
+======================================================= */
+
+.ta-fiche-public .ta-field-card {
+  background:
+    url("/wp-content/plugins/tag-animal/assets/img/paper-animal.png") center / 900px repeat,
+    linear-gradient(180deg, #fffaf3, #f3e7d6);
+  
+  border-radius: 14px;
+  padding: 16px 16px 18px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(120,90,50,.15);
+  
+  
+box-shadow:
+  0 3px 10px rgba(80,60,30,.18),
+  inset 0 1px 0 rgba(255,255,255,.6);
+}
+
+.ta-field-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+
+/* Focus state */
+.ta-fiche-public .ta-field-card:has(input:focus),
+.ta-fiche-public .ta-field-card:has(select:focus),
+.ta-fiche-public .ta-field-card:has(textarea:focus) {
+  border-color: var(--ta-accent);
+  box-shadow:
+    0 0 0 2px rgba(243,154,54,.25),
+    0 8px 22px rgba(32,22,10,.08);
+}
+
+/* =======================================================
+   TA — FORM CARD (BLANCHE / NEUTRE)
+   Usage : class="ta-form-card" (ou en plus de ta-field-card)
+======================================================= */
+
+.ta-fiche-public .ta-form-card{
+  background: #fff;
+  border: 1px solid var(--ta-border);
+  border-radius: 14px;
+  padding: 16px 16px 18px;
+  margin-bottom: 14px;
+
+  box-shadow:
+    0 3px 10px rgba(80,60,30,.10),
+    inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+/* Option : focus glow quand un input est focus */
+.ta-fiche-public .ta-form-card:has(input:focus),
+.ta-fiche-public .ta-form-card:has(select:focus),
+.ta-fiche-public .ta-form-card:has(textarea:focus){
+  border-color: var(--ta-accent);
+  box-shadow:
+    0 0 0 2px rgba(243,154,54,.18),
+    0 8px 22px rgba(32,22,10,.06);
+}
+
+/* =======================================================
+   5.1 CARTES info
+======================================================= */
+.ta-fiche-public .ta-field-card.ta-info {
+  background:
+    linear-gradient(180deg, #fff7eb, #f3e6d3);
+  
+  border-color: rgba(180,140,80,.35);
+  
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.7),
+    0 2px 6px rgba(80,60,30,.12);
+  
+  border-left: 4px solid var(--ta-accent);
+}
+
+
+/* =======================================================
+   6. TYPOGRAPHIE & TITRES
+======================================================= */
+
+
+/* ===============================
+   1) HEADER DE BLOC (structure)
+================================ */
+.ta-fiche-public .ta-block-hd {
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+/* ===============================
+   2) TITRE PRINCIPAL (H2)
+   Module : Santé, Contacts, Animal…
+================================ */
+.ta-fiche-public .ta-block-title {
+  display: block;
+  width: calc(100% + 24px);
+  margin: -10px -12px 16px;
+  position: relative;
+  text-align: center;
+  padding: 12px 20px;
+  
+  font-family: var(--ta-font);
+  font-size: 1.1em;
+  font-weight: 900;
+  letter-spacing: .035em;
+  color: #5a3a16;
+  
+  background:
+    url("/wp-content/plugins/tag-animal/assets/img/paper-animal.png") center / 600px repeat,
+    linear-gradient(180deg, #fff8ec, #f1dec3);
+  
+  border-radius: 16px;
+  border: 3px solid rgba(243,154,54,.75);
+  
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.8),
+    0 6px 18px rgba(80,60,30,.22);
+}
+
+/* Liseré interne premium */
+.ta-fiche-public .ta-block-title::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 13px;
+  border: 1px solid rgba(255,255,255,.5);
+  pointer-events: none;
+}
+
+/* Ombre basse douce */
+.ta-fiche-public .ta-block-title::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: -6px;
+  height: 8px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,.18),
+    transparent 70%
+  );
+  pointer-events: none;
+  opacity: .3;
+}
+
+/* ===============================
+   3) SOUS-TITRE DE SECTION (H3)
+   Exemple : Historique, Traitements…
+================================ */
+.ta-section-title {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 10px 18px;
+
+  background: rgba(255,255,255,.75);
+  border: 1px solid rgba(180,150,100,.35);
+  border-radius: 16px;
+
+  font-family: var(--ta-font);
+  font-size: 1em;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--ta-ink);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.7),
+    0 4px 10px rgba(0,0,0,.08);
+}
+
+/* ===============================
+   4) TITRE DE CARTE (H4)
+   Exemple : Vaccin rage, Traitement…
+================================ */
+.ta-card-title {
+  margin: 0 0 6px;
+  font-size: 1.05em;
+  font-weight: 800;
+  color: var(--ta-ink);
+}
+
+/* ===============================
+   5) SOUS-TITRE / TEXTE SECONDAIRE
+   Exemple : infos complémentaires
+================================ */
+.ta-fiche-public .ta-card-subtitle {
+  margin: 0;
+  margin-top: 2px;
+
+  font-size: 0.82em;
+  line-height: 1.35;
+  font-weight: 500;
+
+  color: var(--ta-muted);
+  opacity: .9;
+}
+
+
+/* =======================================================
+   7. BOUTONS – DESIGN SYSTEM
+======================================================= */
+
+/* Base button */
+.ta-fiche-public .ta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  
+  height: var(--ta-btn-h);
+  padding: 0 var(--ta-btn-pad-x);
+  
+  border-radius: var(--ta-btn-radius);
+  border: 1px solid var(--ta-btn-border);
+  
+  background: var(--ta-btn-bg);
+  color: var(--ta-ink);
+  
+  font-weight: 600;
+  font-size: 0.95em;
+  line-height: 1;
+  
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .08s ease;
+}
+
+/* Hover générique (boutons neutres uniquement) */
+.ta-fiche-public .ta-btn:not(.ta-btn--primary):not(.ta-btn--action):not(.ta-btn--danger):not(.ta-btn--ghost):hover {
+  background: var(--ta-btn-bg-hover);
+  box-shadow: var(--ta-btn-shadow);
+}
+
+.ta-fiche-public .ta-btn:active {
+  transform: translateY(1px);
+}
+
+.ta-fiche-public .ta-btn:disabled,
+.ta-fiche-public .ta-btn[aria-disabled="true"] {
+  opacity: .45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Icônes dans boutons */
+.ta-fiche-public .ta-btn .ta-ico {
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.ta-fiche-public .ta-btn .ta-ico + span {
+  display: inline-block;
+}
+
+/* ---------- BOUTON PRIMARY ---------- */
+.ta-fiche-public .ta-btn--primary {
+  background: linear-gradient(180deg, #f7a94b 0%, #f39a36 100%);
+  color: #fff;
+  border: 1px solid #e38b22;
+  border-radius: 16px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    0 6px 14px rgba(243,154,54,.45);
+}
+
+.ta-fiche-public .ta-btn--primary:hover {
+  background: linear-gradient(180deg, #f9b25c, #f39a36);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.5),
+    0 10px 22px rgba(243,154,54,.55);
+}
+
+.ta-fiche-public .ta-btn--primary:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.15),
+    0 4px 10px rgba(243,154,54,.35);
+}
+
+.ta-fiche-public .ta-btn--primary:disabled {
+  opacity: .55;
+  filter: grayscale(.25);
+}
+
+/* ---------- BOUTON ACTION (CTA) ---------- */
+.ta-fiche-public .ta-btn--action {
+  background: linear-gradient(180deg, #f7a94b, #f39a36);
+  color: #fff;
+  border: 1px solid #e38b22;
+  border-radius: 16px;
+  font-weight: 800;
+  
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    0 6px 14px rgba(243,154,54,.45);
+}
+
+.ta-fiche-public .ta-btn--action:hover {
+  background: linear-gradient(180deg, #f9b25c, #f39a36);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.5),
+    0 10px 22px rgba(243,154,54,.55);
+}
+
+/* =======================================================
+   TA — BOUTON GHOST (BLANC)
+======================================================= */
+.ta-fiche-public .ta-btn--ghost{
+  background: #fff;
+  border-color: var(--ta-border);
+  color: var(--ta-ink);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+.ta-fiche-public .ta-btn--ghost:hover{
+  background: var(--ta-btn-bg-hover); /* ton hover doux */
+  border-color: rgba(243,154,54,.45);
+  color: var(--ta-ink);
+}
+
+/* ---------- BOUTON DANGER ---------- */
+.ta-fiche-public .ta-btn--danger {
+  background: var(--ta-btn-danger);
+  border-color: var(--ta-btn-danger);
+  color: #fff;
+}
+
+.ta-fiche-public .ta-btn--danger:hover {
+  background: var(--ta-btn-danger-hover);
+  border-color: var(--ta-btn-danger-hover);
+  box-shadow: 0 6px 16px rgba(214,69,69,.35);
+}
+
+.ta-fiche-public .ta-btn--danger:active {
+  transform: translateY(1px);
+}
+
+.ta-fiche-public .ta-btn--danger:disabled,
+.ta-fiche-public .ta-btn--danger[aria-disabled="true"] {
+  background: #f2bcbc;
+  border-color: #f2bcbc;
+  color: #fff;
+  box-shadow: none;
+}
+
+/* ======================================================
+   TA TOGGLE — FULL WIDTH RESPONSIVE
+   Compatible fiche-public
+====================================================== */
+
+.ta-reminder-field {
+  width: 100%;
+}
+
+.ta-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  padding: 14px 18px;
+  border-radius: var(--ta-r-lg, 16px);
+  border: 1px solid var(--ta-border);
+
+  font-weight: 600;
+  font-size: 0.95rem;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  text-align: center;
+}
+
+/* Indicator */
+.ta-toggle-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+/* Etat ON */
+.ta-toggle[data-state="on"] {
+  background: #e8f7ee;
+  border-color: #2ecc71;
+  color: #1e824c;
+}
+
+.ta-toggle[data-state="on"] .ta-toggle-indicator {
+  background: #2ecc71;
+}
+
+/* Etat OFF */
+.ta-toggle[data-state="off"] {
+  background: #fdeaea;
+  border-color: #e74c3c;
+  color: #c0392b;
+}
+
+.ta-toggle[data-state="off"] .ta-toggle-indicator {
+  background: #e74c3c;
+}
+
+/* Mobile spacing */
+@media (max-width: 768px) {
+  .ta-toggle {
+    padding: 16px;
+    font-size: 1rem;
+  }
+}
+
+.ta-highlight {
+  animation: taHighlightPulse 4s ease forwards;
+  box-shadow: 0 0 0 3px rgba(247, 148, 29, 0.35);
+  border-radius: 16px;
+}
+
+@keyframes taHighlightPulse {
+  0% {
+    background-color: rgba(247, 148, 29, 0.18);
+  }
+  70% {
+    background-color: rgba(247, 148, 29, 0.10);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* =======================================================
+   8. FORM ACTIONS – CONTENEUR
+======================================================= */
+
+/* =======================================================
+   TAGANIMAL — GRID TYPES (DESIGN PREMIUM)
+======================================================= */
+
+.ta-fiche-public .ta-form-actions{
+  display: flex;            /* remplace le grid */
+  flex-direction: column;   /* 1 sous l'autre */
+  gap: 12px;                /* espace vertical */
+  align-items: stretch;     /* full width */
+  width: 100%;
+  margin-top: 12px;         /* marge au-dessus (ajuste si besoin) */
+}
+.ta-fiche-public .ta-form-actions > .ta-btn{
+  width: 100%;
+  justify-content: center;
+}
+
+
+.ta-form-actions .row-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* =======================================================
+   TAGANIMAL — INPUT DATE (STANDARD)
+======================================================= */
+.ta-fiche-public input[type="date"].ta-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+
+  box-sizing: border-box;   /* ← LA LIGNE QUI SAUVE TOUT */
+
+  border-radius: 12px;
+  border: 1px solid var(--ta-border);
+  background: #fff;
+
+  font-family: var(--ta-font);
+  font-size: 0.9em;
+  color: var(--ta-ink);
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+}
+
+/* =======================================================
+   TAGANIMAL — INPUT TIME (STANDARD)
+======================================================= */
+
+.ta-fiche-public input[type="time"].ta-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+
+  box-sizing: border-box;
+
+  border-radius: 12px;
+  border: 1px solid var(--ta-border);
+  background: #fff;
+
+  font-family: var(--ta-font);
+  font-size: 0.9em;
+  color: var(--ta-ink);
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+}
+
+/* =======================================================
+   TAGANIMAL — TEXTAREA (STANDARD)
+======================================================= */
+
+.ta-fiche-public textarea.ta-input {
+  width: 100%;
+  min-height: 90px;
+  padding: 10px 12px;
+
+  box-sizing: border-box;
+
+  border-radius: 12px;
+  border: 1px solid var(--ta-border);
+  background: #fff;
+
+  font-family: var(--ta-font);
+  font-size: 0.9em;
+  line-height: 1.4;
+  color: var(--ta-ink);
+
+  resize: vertical;
+
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+}
+
+/* =======================================================
+   TAGANIMAL — INPUT BASE (SOCLE COMMUN)
+======================================================= */
+
+.ta-fiche-public .ta-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  box-sizing: border-box;
+
+  border-radius: 12px;
+  border: 1px solid var(--ta-border);
+  background: #fff;
+
+  font-family: var(--ta-font);
+  font-size: 0.9em;
+  color: var(--ta-ink);
+
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+}
+.ta-fiche-public .ta-input:focus {
+  outline: none;
+  border-color: var(--ta-accent);
+  box-shadow:
+    0 0 0 2px rgba(243,154,54,.25),
+    inset 0 1px 2px rgba(0,0,0,.04);
+}
+
+.ta-fiche-public select.ta-input{
+  width:100%;
+  height:42px;
+  padding:0 12px;
+
+  border-radius:12px;
+  border:1px solid var(--ta-border);
+  background:#fff;
+
+  font-family:var(--ta-font);
+  font-size:0.9em;
+  color:var(--ta-ink);
+
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.04);
+}
+
+
+
+/* =======================================================
+   TAGANIMAL — FIELD (STRUCTURE)
+======================================================= */
+
+.ta-fiche-public .ta-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+/* =======================================================
+   TAGANIMAL — LABEL
+======================================================= */
+
+.ta-fiche-public .ta-label {
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+
+  color: var(--ta-muted);
+}
+
+/* =======================================================
+   TAGANIMAL — TEXT (STANDARD • REFINED)
+======================================================= */
+
+.ta-fiche-public .ta-text {
+  font-size: 0.98em;
+  line-height: 1.6;
+
+  color: var(--ta-ink);
+
+  letter-spacing: 0.01em;
+
+  /* douceur visuelle */
+  opacity: 0.92;
+}
+
+/* =======================================================
+   TAGANIMAL — TEXT (STATUS / SECONDARY • REFINED)
+======================================================= */
+
+.ta-fiche-public .ta-text--status {
+  margin-top: 6px;
+
+  font-size: 0.88em;
+  font-weight: 600;
+  line-height: 1.45;
+
+  color: var(--ta-muted);
+
+  letter-spacing: 0.03em;
+}
+
+/* =======================================================
+   TAGANIMAL — BLOCK BODY (CONTENT FRAME)
+======================================================= */
+
+.ta-block-bd {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* =======================================================
+   9. RESPONSIVE
+======================================================= */
+
+@media (max-width: 520px) {
+  :root {
+    --ta-banner-h: 50px;
+  }
+  
+  .ta-fiche-public .ta-wrap {
+    padding: 0 16px;
+  }
+  
+  .ta-fiche-public .ta-block {
+    padding: 18px;
+  }
+  
+  .ta-fiche-public .ta-block-title {
+    width: calc(100% + 16px);
+    margin: -6px -8px 12px;
+    font-size: 1.02em;
+  }
+  
+  /* Boutons en pleine largeur UNIQUEMENT dans les form-actions */
+  .ta-fiche-public .ta-form-actions .ta-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .ta-fiche-public .ta-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+
+/* =======================================================
+   FIN DU FICHIER
+   Dernière mise à jour: Restructuration complète V2
+======================================================= */
+
+

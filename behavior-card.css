@@ -1,0 +1,587 @@
+/* =======================================================
+   TAGANIMAL — HEALTH ENTRY v2 · Carnet de Santé Premium
+   Fichier : entry-health.css
+
+   Styles spécifiques au wizard de saisie de soins.
+   ⚠  entry-global.css doit être chargé AVANT ce fichier.
+   ⚠  Tous les sélecteurs JS/PHP sont préservés à l'identique.
+
+   ORGANISATION :
+   1.  Tokens couleurs soins (affinées)
+   2.  Routing d'état — affichage des écrans
+   3.  Titre unique routé
+   4.  Boutons home — couleurs par type + états actifs premium
+   5.  Formulaires de soin — show / hide
+   6.  Zone d'actions
+   7.  Masquage sous-titre en mode form
+   8.  Keyframes health-entry
+======================================================= */
+
+
+/* =======================================================
+   1. TOKENS COULEURS SOINS
+   Palette "carnet médical" — couleurs riches, saturées,
+   lisibles sur fond papier ivoire.
+======================================================= */
+
+[data-ta-entry-root],
+.ta-health-entry {
+
+  /* ── Vaccin — bleu médical profond ── */
+  --care-vaccine:          #1D59D4;
+  --care-vaccine-bg:       rgba(29,89,212,.09);
+  --care-vaccine-border:   rgba(29,89,212,.25);
+  --care-vaccine-light:    rgba(29,89,212,.05);
+  --care-vaccine-shadow:   rgba(29,89,212,.22);
+
+  /* ── Traitement — orange vif ── */
+  --care-treatment:        #E8620A;
+  --care-treatment-bg:     rgba(232,98,10,.09);
+  --care-treatment-border: rgba(232,98,10,.28);
+  --care-treatment-light:  rgba(232,98,10,.05);
+  --care-treatment-shadow: rgba(232,98,10,.22);
+
+  /* ── Antiparasite — teal foncé ── */
+  --care-antiparasite:        #0A8A7E;
+  --care-antiparasite-bg:     rgba(10,138,126,.09);
+  --care-antiparasite-border: rgba(10,138,126,.26);
+  --care-antiparasite-light:  rgba(10,138,126,.05);
+  --care-antiparasite-shadow: rgba(10,138,126,.22);
+
+  /* ── Vermifuge — émeraude ── */
+  --care-vermifuge:        #068559;
+  --care-vermifuge-bg:     rgba(6,133,89,.09);
+  --care-vermifuge-border: rgba(6,133,89,.26);
+  --care-vermifuge-light:  rgba(6,133,89,.05);
+  --care-vermifuge-shadow: rgba(6,133,89,.22);
+
+  /* ── Note — ardoise chaude ── */
+  --care-note:        #5C6B7A;
+  --care-note-bg:     rgba(92,107,122,.09);
+  --care-note-border: rgba(92,107,122,.24);
+  --care-note-light:  rgba(92,107,122,.05);
+  --care-note-shadow: rgba(92,107,122,.18);
+
+  /* ── Protection — vert forêt ── */
+  --care-protection:        #2D7D46;
+  --care-protection-bg:     rgba(45,125,70,.09);
+  --care-protection-border: rgba(45,125,70,.26);
+  --care-protection-light:  rgba(45,125,70,.05);
+  --care-protection-shadow: rgba(45,125,70,.22);
+
+  /* ── Observation — indigo chaud ── */
+  --care-observation:        #4F46E5;
+  --care-observation-bg:     rgba(79,70,229,.09);
+  --care-observation-border: rgba(79,70,229,.26);
+  --care-observation-light:  rgba(79,70,229,.05);
+  --care-observation-shadow: rgba(79,70,229,.22);
+
+  /* ── RDV Vétérinaire — violet médical ── */
+  --care-rdv:          #7C3AED;
+  --care-rdv-bg:       rgba(124,58,237,.09);
+  --care-rdv-border:   rgba(124,58,237,.28);
+  --care-rdv-light:    rgba(124,58,237,.05);
+  --care-rdv-shadow:   rgba(124,58,237,.22);
+}
+
+
+/* =======================================================
+   2. ROUTING D'ÉTAT — AFFICHAGE DES ÉCRANS
+======================================================= */
+
+[data-ta-entry-root] [data-entry-screen] {
+  display: none;
+}
+
+[data-ta-entry-root][data-entry-state="home"]
+  [data-entry-screen="home"],
+
+[data-ta-entry-root][data-entry-state="vaccine"]
+  [data-entry-screen="vaccine"],
+
+[data-ta-entry-root][data-entry-state="treatment"]
+  [data-entry-screen="treatment"],
+
+[data-ta-entry-root][data-entry-state="note"]
+  [data-entry-screen="note"],
+
+[data-ta-entry-root][data-entry-state="antiparasite"]
+  [data-entry-screen="antiparasite"],
+
+[data-ta-entry-root][data-entry-state="vermifuge"]
+  [data-entry-screen="vermifuge"],
+
+[data-ta-entry-root][data-entry-state="rdv"]
+  [data-entry-screen="rdv"],
+
+[data-ta-entry-root][data-entry-state="protection"]
+  [data-entry-screen="protection"],
+
+[data-ta-entry-root][data-entry-state="observation"]
+  [data-entry-screen="observation"] {
+  display: block;
+  animation: entryPageIn .22s var(--entry-ease-s, cubic-bezier(.4,0,.2,1)) both;
+}
+
+/* Compatibilité data-ta-care-screen */
+[data-ta-entry-root][data-entry-state="home"]
+  [data-ta-care-screen="home"],
+
+[data-ta-entry-root][data-entry-state="vaccine"]
+  [data-ta-care-screen="vaccine"],
+
+[data-ta-entry-root][data-entry-state="treatment"]
+  [data-ta-care-screen="treatment"],
+
+[data-ta-entry-root][data-entry-state="note"]
+  [data-ta-care-screen="note"],
+
+[data-ta-entry-root][data-entry-state="antiparasite"]
+  [data-ta-care-screen="antiparasite"],
+
+[data-ta-entry-root][data-entry-state="vermifuge"]
+  [data-ta-care-screen="vermifuge"],
+
+[data-ta-entry-root][data-entry-state="rdv"]
+  [data-ta-care-screen="rdv"],
+
+[data-ta-entry-root][data-entry-state="protection"]
+  [data-ta-care-screen="protection"],
+
+[data-ta-entry-root][data-entry-state="observation"]
+  [data-ta-care-screen="observation"] {
+  display: block;
+  animation: entryPageIn .22s var(--entry-ease-s, cubic-bezier(.4,0,.2,1)) both;
+}
+
+
+/* =======================================================
+   3. TITRE UNIQUE ROUTÉ
+======================================================= */
+
+[data-ta-entry-root] [data-ta-entry-title] [data-title-state] {
+  display: none;
+}
+
+[data-ta-entry-root][data-entry-state="home"]
+  [data-ta-entry-title] [data-title-state="home"],
+
+[data-ta-entry-root][data-entry-state="vaccine"]
+  [data-ta-entry-title] [data-title-state="vaccine"],
+
+[data-ta-entry-root][data-entry-state="treatment"]
+  [data-ta-entry-title] [data-title-state="treatment"],
+
+[data-ta-entry-root][data-entry-state="note"]
+  [data-ta-entry-title] [data-title-state="note"],
+
+[data-ta-entry-root][data-entry-state="antiparasite"]
+  [data-ta-entry-title] [data-title-state="antiparasite"],
+
+[data-ta-entry-root][data-entry-state="vermifuge"]
+  [data-ta-entry-title] [data-title-state="vermifuge"],
+
+[data-ta-entry-root][data-entry-state="rdv"]
+  [data-ta-entry-title] [data-title-state="rdv"] {
+  display: inline;
+}
+
+[data-ta-entry-root] [data-ta-entry-title]:not(:has([data-title-state])) {
+  display: block;
+}
+
+
+/* =======================================================
+   4. BOUTONS HOME — COULEURS PAR TYPE + ÉTATS PREMIUM
+   ─────────────────────────────────────────────────────
+   Couleur repos  : border + text colorés, fond neutre.
+   Hover          : fond teinté + elevation (hérité global).
+   Actif (.is-active) : fond coloré + ring + ombre colorée.
+======================================================= */
+
+/* ── Vaccin ── */
+.ta-fiche-public [data-ta-care-tab="vaccine"],
+.ta-fiche-public [data-entry-go="vaccine"] {
+  border-color: var(--care-vaccine-border) !important;
+  color:        var(--care-vaccine) !important;
+}
+.ta-fiche-public [data-ta-care-tab="vaccine"]:hover,
+.ta-fiche-public [data-entry-go="vaccine"]:hover {
+  background:   var(--care-vaccine-bg)     !important;
+  border-color: var(--care-vaccine)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="vaccine"].is-active,
+.ta-fiche-public [data-entry-go="vaccine"].is-active {
+  background:   var(--care-vaccine-bg)        !important;
+  border-color: var(--care-vaccine)           !important;
+  color:        var(--care-vaccine)           !important;
+  box-shadow:
+    0 0 0 3px  var(--care-vaccine-light),
+    0 6px 20px var(--care-vaccine-shadow)   !important;
+  font-weight: 900 !important;
+}
+
+/* ── Traitement ── */
+.ta-fiche-public [data-ta-care-tab="treatment"],
+.ta-fiche-public [data-entry-go="treatment"] {
+  border-color: var(--care-treatment-border) !important;
+  color:        var(--care-treatment)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="treatment"]:hover,
+.ta-fiche-public [data-entry-go="treatment"]:hover {
+  background:   var(--care-treatment-bg)     !important;
+  border-color: var(--care-treatment)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="treatment"].is-active,
+.ta-fiche-public [data-entry-go="treatment"].is-active {
+  background:   var(--care-treatment-bg)       !important;
+  border-color: var(--care-treatment)          !important;
+  color:        var(--care-treatment)          !important;
+  box-shadow:
+    0 0 0 3px  var(--care-treatment-light),
+    0 6px 20px var(--care-treatment-shadow)  !important;
+  font-weight: 900 !important;
+}
+
+/* ── Antiparasite ── */
+.ta-fiche-public [data-ta-care-tab="antiparasite"],
+.ta-fiche-public [data-entry-go="antiparasite"] {
+  border-color: var(--care-antiparasite-border) !important;
+  color:        var(--care-antiparasite)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="antiparasite"]:hover,
+.ta-fiche-public [data-entry-go="antiparasite"]:hover {
+  background:   var(--care-antiparasite-bg)     !important;
+  border-color: var(--care-antiparasite)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="antiparasite"].is-active,
+.ta-fiche-public [data-entry-go="antiparasite"].is-active {
+  background:   var(--care-antiparasite-bg)        !important;
+  border-color: var(--care-antiparasite)           !important;
+  color:        var(--care-antiparasite)           !important;
+  box-shadow:
+    0 0 0 3px  var(--care-antiparasite-light),
+    0 6px 20px var(--care-antiparasite-shadow)   !important;
+  font-weight: 900 !important;
+}
+
+/* ── Vermifuge ── */
+.ta-fiche-public [data-ta-care-tab="vermifuge"],
+.ta-fiche-public [data-entry-go="vermifuge"] {
+  border-color: var(--care-vermifuge-border) !important;
+  color:        var(--care-vermifuge)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="vermifuge"]:hover,
+.ta-fiche-public [data-entry-go="vermifuge"]:hover {
+  background:   var(--care-vermifuge-bg)     !important;
+  border-color: var(--care-vermifuge)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="vermifuge"].is-active,
+.ta-fiche-public [data-entry-go="vermifuge"].is-active {
+  background:   var(--care-vermifuge-bg)       !important;
+  border-color: var(--care-vermifuge)          !important;
+  color:        var(--care-vermifuge)          !important;
+  box-shadow:
+    0 0 0 3px  var(--care-vermifuge-light),
+    0 6px 20px var(--care-vermifuge-shadow)  !important;
+  font-weight: 900 !important;
+}
+
+/* ── Protection ── */
+.ta-fiche-public [data-ta-care-tab="protection"],
+.ta-fiche-public [data-entry-go="protection"] {
+  border-color: var(--care-protection-border) !important;
+  color:        var(--care-protection)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="protection"]:hover,
+.ta-fiche-public [data-entry-go="protection"]:hover {
+  background:   var(--care-protection-bg)     !important;
+  border-color: var(--care-protection)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="protection"].is-active,
+.ta-fiche-public [data-entry-go="protection"].is-active {
+  background:   var(--care-protection-bg)        !important;
+  border-color: var(--care-protection)           !important;
+  color:        var(--care-protection)           !important;
+  box-shadow:
+    0 0 0 3px  var(--care-protection-light),
+    0 6px 20px var(--care-protection-shadow)   !important;
+  font-weight: 900 !important;
+}
+
+/* ── Observation ── */
+.ta-fiche-public [data-ta-care-tab="observation"],
+.ta-fiche-public [data-entry-go="observation"] {
+  border-color: var(--care-observation-border) !important;
+  color:        var(--care-observation)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="observation"]:hover,
+.ta-fiche-public [data-entry-go="observation"]:hover {
+  background:   var(--care-observation-bg)     !important;
+  border-color: var(--care-observation)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="observation"].is-active,
+.ta-fiche-public [data-entry-go="observation"].is-active {
+  background:   var(--care-observation-bg)        !important;
+  border-color: var(--care-observation)           !important;
+  color:        var(--care-observation)           !important;
+  box-shadow:
+    0 0 0 3px  var(--care-observation-light),
+    0 6px 20px var(--care-observation-shadow)   !important;
+  font-weight: 900 !important;
+}
+
+/* ── RDV ── */
+.ta-fiche-public [data-ta-care-tab="rdv"],
+.ta-fiche-public [data-entry-go="rdv"] {
+  border-color: var(--care-rdv-border) !important;
+  color:        var(--care-rdv)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="rdv"]:hover,
+.ta-fiche-public [data-entry-go="rdv"]:hover {
+  background:   var(--care-rdv-bg)     !important;
+  border-color: var(--care-rdv)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="rdv"].is-active,
+.ta-fiche-public [data-entry-go="rdv"].is-active {
+  background:   var(--care-rdv-bg)        !important;
+  border-color: var(--care-rdv)           !important;
+  color:        var(--care-rdv)           !important;
+  box-shadow:
+    0 0 0 3px  var(--care-rdv-light),
+    0 6px 20px var(--care-rdv-shadow)   !important;
+  font-weight: 900 !important;
+}
+
+/* ── Note ── */
+.ta-fiche-public [data-ta-care-tab="note"],
+.ta-fiche-public [data-entry-go="note"] {
+  border-color: var(--care-note-border) !important;
+  color:        var(--care-note)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="note"]:hover,
+.ta-fiche-public [data-entry-go="note"]:hover {
+  background:   var(--care-note-bg)     !important;
+  border-color: var(--care-note)        !important;
+}
+.ta-fiche-public [data-ta-care-tab="note"].is-active,
+.ta-fiche-public [data-entry-go="note"].is-active {
+  background:   var(--care-note-bg)       !important;
+  border-color: var(--care-note)          !important;
+  color:        var(--care-note)          !important;
+  box-shadow:
+    0 0 0 3px  var(--care-note-light),
+    0 6px 20px var(--care-note-shadow)  !important;
+  font-weight: 900 !important;
+}
+
+
+/* =======================================================
+   5. FORMULAIRES DE SOIN — SHOW / HIDE
+======================================================= */
+
+[data-ta-care-form] {
+  display: none;
+}
+
+[data-ta-care-form].is-active {
+  display:   block;
+  animation: entryPageIn .20s var(--entry-ease-s, cubic-bezier(.4,0,.2,1)) both;
+}
+
+
+/* =======================================================
+   6. ZONE D'ACTIONS — GRILLE D'ENTRÉE HOME
+======================================================= */
+
+[data-ta-health-root]  .ta-field-card .ta-form-actions,
+[data-ta-entry-root]   .ta-field-card .ta-form-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+/* Boutons secondaires (non type-tab) légèrement atténués */
+[data-ta-health-root]  .ta-field-card .ta-form-actions .ta-btn:not([data-ta-care-tab]),
+[data-ta-entry-root]   .ta-field-card .ta-form-actions .ta-btn:not([data-ta-care-tab]) {
+  opacity: 0.85;
+}
+
+
+/* =======================================================
+   7. MASQUAGE SOUS-TITRE EN MODE FORMULAIRE ACTIF
+======================================================= */
+
+[data-ta-entry-root]
+  .ta-field-card
+  [data-ta-care-form].is-active ~ .ta-card-subtitle {
+  display: none;
+}
+
+
+/* =======================================================
+   8. KEYFRAMES HEALTH-ENTRY SPÉCIFIQUES
+======================================================= */
+
+/* Pulse au focus clavier sur un bouton de type */
+@keyframes healthTypeBtnPulse {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; }
+  50%       { box-shadow: 0 0 0 5px rgba(0,0,0,.06); }
+}
+
+/* Badge "administré" apparaissant sur le bouton */
+@keyframes healthBadgeIn {
+  from { transform: scale(.6) translateY(4px); opacity: 0; }
+  to   { transform: scale(1)  translateY(0);   opacity: 1; }
+}
+
+
+/* =======================================================
+   9. WIZARD RDV — MOTIF GRID (contexte health)
+   Masquage des grilles inactives + style boutons motif.
+   Le JS pose .is-active sur la grille du praticien choisi.
+======================================================= */
+
+/* Toutes les grilles masquées par défaut */
+[data-ta-entry-root="health"] .ta-vet-motif-grid {
+  display: none;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* Seule la grille active est affichée */
+[data-ta-entry-root="health"] .ta-vet-motif-grid.is-active {
+  display: grid;
+}
+
+/* Boutons motif */
+[data-ta-entry-root="health"] .ta-vet-motif-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  overflow: hidden;
+  width: 100%;
+  min-height: 90px;
+  padding: 14px 8px 12px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid var(--care-rdv-border, rgba(124,58,237,.28));
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  color: var(--care-rdv, #7C3AED);
+  cursor: pointer;
+  transition:
+    transform .15s ease,
+    box-shadow .22s ease,
+    background .22s ease,
+    border-color .15s ease;
+}
+
+[data-ta-entry-root="health"] .ta-vet-motif-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.10);
+  background: var(--care-rdv-bg, rgba(124,58,237,.09));
+  border-color: var(--care-rdv, #7C3AED);
+}
+
+[data-ta-entry-root="health"] .ta-vet-motif-btn:active {
+  transform: scale(.96);
+  transition-duration: .06s;
+}
+
+[data-ta-entry-root="health"] .ta-vet-motif-btn--urgent {
+  border-color: rgba(212,32,32,.28);
+  color: #D42020;
+}
+
+[data-ta-entry-root="health"] .ta-vet-motif-btn--urgent:hover {
+  background: rgba(212,32,32,.09);
+  border-color: #D42020;
+}
+
+[data-ta-entry-root="health"] .ta-vet-motif-icon {
+  font-size: 2rem;
+  line-height: 1;
+  display: block;
+  transition: transform .15s ease;
+}
+
+[data-ta-entry-root="health"] .ta-vet-motif-btn:hover .ta-vet-motif-icon {
+  transform: scale(1.15);
+}
+
+[data-ta-entry-root="health"] .ta-vet-motif-label {
+  font-size: .84em;
+  font-weight: 800;
+  line-height: 1.2;
+  display: block;
+}
+
+[data-ta-entry-root="health"] .ta-vet-motif-hint {
+  font-size: .70em;
+  font-weight: 600;
+  opacity: .60;
+  line-height: 1;
+  display: block;
+}
+
+[data-ta-entry-root="health"] .ta-vet-motif-autre {
+  margin-top: 12px;
+}
+
+
+/* =======================================================
+   10. WIZARD RDV — CONFIRM CARD (contexte health)
+======================================================= */
+
+[data-ta-entry-root="health"] .ta-vet-confirm-card {
+  background: #fff;
+  border: 1.5px solid #E6DACA;
+  border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+[data-ta-entry-root="health"] .ta-vet-confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  border-bottom: 1px solid #F0E8DC;
+}
+
+[data-ta-entry-root="health"] .ta-vet-confirm-row:last-child {
+  border-bottom: none;
+}
+
+[data-ta-entry-root="health"] .ta-vet-confirm-key {
+  font-size: .82em;
+  font-weight: 700;
+  color: #8A7055;
+  flex-shrink: 0;
+}
+
+[data-ta-entry-root="health"] .ta-vet-confirm-val {
+  font-size: .88em;
+  font-weight: 700;
+  color: #3A2E22;
+  text-align: right;
+}
+
+[data-ta-entry-root="health"] .ta-vet-confirm-separator {
+  height: 1px;
+  background: #E8DDD0;
+  margin: 2px 18px;
+}
+
+
+/* =======================================================
+   FIN — entry-health.css v2
+   TagAnimal · Carnet de Santé Premium
+======================================================= */

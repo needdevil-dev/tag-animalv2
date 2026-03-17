@@ -1,0 +1,352 @@
+/* ===============================================================
+   TAGANIMAL — HEALTH-CARD.CSS
+   Carte résumé du carnet de santé (preview + score)
+
+   ORGANISATION :
+   1. Conteneur de la card santé
+   2. ÉTAT VIDE — Onboarding
+      2a. Icône hero
+      2b. Titre + texte
+      2c. Étapes d'onboarding (.ta-health-step)
+      2d. Note d'encouragement
+   3. ÉTAT NORMAL — Score + indicateurs
+      3a. Zone score (.ta-health-score)
+      3b. Jauge SVG (.ta-health-gauge)
+      3c. Infos score (badge niveau + barre + phrase)
+      3d. Indicateurs pills → via .ta-card-pills (global-card.css)
+      3e. Prochain rappel (.ta-health-next)
+   4. Responsive
+
+   DÉPENDANCE :
+   Requiert global-card.css
+   (.ta-card-pills, .ta-card-sep, .ta-card-empty déjà définis)
+
+   MIGRATION PHP REQUISE :
+   Voir MIGRATION.md — section health-card.php
+   Les inline styles doivent être remplacés par ces classes.
+
+   SCOPE : .ta-fiche-public [data-ta-health-card]
+=============================================================== */
+
+
+/* ===============================================================
+   1. CONTENEUR DE LA CARD SANTÉ
+=============================================================== */
+
+/* Pas de style supplémentaire sur le wrapper :
+   .ta-block et .ta-block-bd (global.css) suffisent.
+   Les enfants gèrent leur propre espacement. */
+
+
+/* ===============================================================
+   2. ÉTAT VIDE — ONBOARDING
+=============================================================== */
+
+/* ── 2a. Icône hero centrée ── */
+.ta-fiche-public .ta-health-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+  padding: 8px 0 4px;
+  animation: ta-card-appear .35s ease both;
+}
+
+/* La pastille .ta-card-icon--lg vient de global-card.css */
+
+.ta-fiche-public .ta-health-empty__title {
+  margin: 12px 0 6px;
+  font-size: 1.05em;
+  font-weight: 900;
+  color: var(--ta-ink);
+  letter-spacing: .01em;
+}
+
+.ta-fiche-public .ta-health-empty__text {
+  margin: 0 auto;
+  font-size: 0.84em;
+  color: var(--ta-muted);
+  line-height: 1.55;
+  max-width: 290px;
+}
+
+/* ── 2b. Étapes d'onboarding ── */
+.ta-fiche-public .ta-health-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Chaque étape utilise des CSS custom properties
+   injectées par PHP (--step-bg, --step-border, --step-color)
+   pour les couleurs spécifiques à chaque type de soin.
+
+   PHP attendu :
+   <div class="ta-health-step"
+        style="--step-bg: rgba(39,174,96,.07);
+               --step-border: rgba(39,174,96,.22);
+               --step-color: #27ae60;">
+     <span class="ta-health-step__icon">💉</span>
+     <div class="ta-health-step__info">
+       <span class="ta-health-step__label">Ajouter un vaccin</span>
+       <span class="ta-health-step__hint">Rage, typhus…</span>
+     </div>
+     <span class="ta-health-step__arrow">›</span>
+   </div>
+*/
+
+.ta-fiche-public .ta-health-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: var(--step-bg, rgba(243,154,54,.07));
+  border: 1px solid var(--step-border, rgba(243,154,54,.22));
+  transition:
+    background .15s ease,
+    transform  .15s cubic-bezier(.22,.68,0,1.2);
+}
+
+.ta-fiche-public .ta-health-step:hover {
+  transform: translateX(2px);
+  background: var(--step-bg, rgba(243,154,54,.12));
+}
+
+.ta-fiche-public .ta-health-step__icon {
+  font-size: 1.25em;
+  flex: 0 0 auto;
+  line-height: 1;
+  width: 28px;
+  text-align: center;
+}
+
+.ta-fiche-public .ta-health-step__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ta-fiche-public .ta-health-step__label {
+  display: block;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--step-color, var(--ta-ink));
+  line-height: 1.2;
+}
+
+.ta-fiche-public .ta-health-step__hint {
+  display: block;
+  font-size: 0.73em;
+  color: var(--ta-muted);
+  line-height: 1.2;
+}
+
+.ta-fiche-public .ta-health-step__arrow {
+  font-size: 1.1em;
+  color: var(--ta-muted);
+  flex: 0 0 auto;
+  line-height: 1;
+  opacity: .6;
+}
+
+
+/* ── 2c. Note d'encouragement (bas de l'onboarding) ── */
+/* Utilise .ta-field-card.ta-info de global.css — aucun style spécifique */
+
+
+/* ===============================================================
+   3. ÉTAT NORMAL — SCORE + INDICATEURS
+=============================================================== */
+
+/* ── 3a. Zone score : jauge + label ── */
+.ta-fiche-public .ta-health-score {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 18px;
+  /* Surcouche de .ta-field-card — même padding conservé */
+}
+
+/* ── 3b. Jauge SVG circulaire ── */
+.ta-fiche-public .ta-health-gauge {
+  flex: 0 0 auto;
+  position: relative;
+  width: 86px;
+  height: 86px;
+}
+
+.ta-fiche-public .ta-health-gauge__svg {
+  transform: rotate(-90deg);
+  display: block;
+}
+
+/* Les deux <circle> sont stylés inline depuis PHP (couleur dynamique)
+   mais les transitions sont définies ici */
+.ta-fiche-public .ta-health-gauge__svg circle:last-child {
+  transition: stroke-dasharray .8s cubic-bezier(.4,0,.2,1);
+}
+
+/* Chiffre centré dans la jauge */
+.ta-fiche-public .ta-health-gauge__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  gap: 1px;
+}
+
+/* PHP attendu :
+   <span class="ta-health-gauge__score"
+         style="color: <?= $level_color ?>;">
+     <?= $score ?>
+   </span>
+   <span class="ta-health-gauge__denom">/ 100</span>
+*/
+.ta-fiche-public .ta-health-gauge__score {
+  font-size: 1.5em;
+  font-weight: 900;
+  /* color injectée depuis PHP via style="color:..." */
+}
+
+.ta-fiche-public .ta-health-gauge__denom {
+  font-size: 0.58em;
+  font-weight: 700;
+  color: var(--ta-muted);
+  letter-spacing: .02em;
+}
+
+/* ── 3c. Infos score (côté droit de la jauge) ── */
+.ta-fiche-public .ta-health-score__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+/* Badge "niveau de forme" (dynamique couleur via style) */
+.ta-fiche-public .ta-health-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px 5px 10px;
+  border-radius: 30px;
+  /* background, border-color, color injectés par PHP */
+}
+
+.ta-fiche-public .ta-health-level-badge__emoji {
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.ta-fiche-public .ta-health-level-badge__label {
+  font-size: 0.82em;
+  font-weight: 800;
+  /* color injectée par PHP */
+}
+
+/* Barre de progression */
+.ta-fiche-public .ta-health-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 10px;
+  background: rgba(0,0,0,.07);
+  overflow: hidden;
+}
+
+.ta-fiche-public .ta-health-bar__fill {
+  height: 100%;
+  border-radius: 10px;
+  /* width et background injectés par PHP */
+  transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+
+/* Phrase d'état */
+.ta-fiche-public .ta-health-score__phrase {
+  margin: 0;
+  font-size: 0.78em;
+  color: var(--ta-muted);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+
+/* ── 3d. Grille de pills ── */
+/* Utilise .ta-card-pills / .ta-card-pill de global-card.css */
+
+
+/* ── 3e. Prochain rappel ── */
+.ta-fiche-public .ta-health-next {
+  padding: 12px 16px;
+  /* Surcouche de .ta-field-card.ta-info */
+}
+
+.ta-fiche-public .ta-health-next__text {
+  margin: 0;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--ta-ink);
+  line-height: 1.4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.ta-fiche-public .ta-health-next__date {
+  color: var(--ta-accent);
+  font-weight: 800;
+}
+
+.ta-fiche-public .ta-health-next__label {
+  color: var(--ta-muted);
+  font-weight: 600;
+}
+
+
+/* ===============================================================
+   4. RESPONSIVE
+=============================================================== */
+
+@media (max-width: 393px) {
+
+  .ta-fiche-public .ta-health-score {
+    gap: 14px;
+    padding: 16px 14px;
+  }
+
+  .ta-fiche-public .ta-health-gauge {
+    width: 76px;
+    height: 76px;
+  }
+
+  .ta-fiche-public .ta-health-gauge__svg {
+    width: 76px;
+    height: 76px;
+  }
+
+  .ta-fiche-public .ta-health-gauge__score {
+    font-size: 1.3em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ta-fiche-public .ta-health-bar__fill,
+  .ta-fiche-public .ta-health-gauge__svg circle:last-child {
+    transition: none !important;
+  }
+}
+
+
+/* ===============================================================
+   FIN — health-card.css
+   TagAnimal — Carnet de santé premium — Mars 2026
+=============================================================== */

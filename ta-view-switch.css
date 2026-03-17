@@ -1,0 +1,1087 @@
+/* =========================================================
+ * TAGANIMAL — HISTORY GLOBAL CARD
+ * Fichier : assets/css/card/history/history-global-card.css
+ * RÔLE    : socle UI commun de l'historique Santé + Journal
+ * CIBLE   : #ta-history + #ta-journal-history
+ * APPROCHE: mobile-first, premium, sans logique métier
+ * ========================================================= */
+
+/* =========================================================
+   1. TOKENS COMMUNS
+========================================================= */
+#ta-history,
+#ta-journal-history {
+  --ta-his-bg: #FFFDF9;
+  --ta-his-surface: rgba(255, 255, 255, .92);
+  --ta-his-surface-strong: #FFFFFF;
+  --ta-his-surface-soft: #F8F4EE;
+  --ta-his-surface-muted: #F3EEE7;
+
+  --ta-his-border: rgba(61, 43, 31, .10);
+  --ta-his-border-strong: rgba(61, 43, 31, .16);
+  --ta-his-border-dashed: rgba(61, 43, 31, .14);
+
+  --ta-his-ink: var(--ta-ink, #2B2B2B);
+  --ta-his-ink-2: #5F4A3C;
+  --ta-his-muted: #8E7A69;
+  --ta-his-muted-2: #A69585;
+
+  --ta-his-accent: var(--ta-accent, #F39A36);
+  --ta-his-accent-2: #E68A23;
+  --ta-his-accent-soft: rgba(243, 154, 54, .12);
+
+  --ta-his-success: #2E7D6B;
+  --ta-his-danger: #C0392B;
+  --ta-his-info: #3A6EA8;
+
+  --ta-his-radius-xs: 10px;
+  --ta-his-radius-sm: 14px;
+  --ta-his-radius: 18px;
+  --ta-his-radius-lg: 22px;
+
+  --ta-his-shadow-sm: 0 4px 14px rgba(61, 43, 31, .06);
+  --ta-his-shadow: 0 10px 28px rgba(61, 43, 31, .10);
+  --ta-his-shadow-lg: 0 18px 38px rgba(61, 43, 31, .14);
+
+  --ta-his-transition: .24s ease;
+}
+
+/* =========================================================
+   2. WRAPPER / SECTION
+========================================================= */
+#ta-history.ta-health-block--history,
+#ta-journal-history.ta-journal-card--history {
+  position: relative;
+}
+
+#ta-history .ta-block-bd,
+#ta-journal-history .ta-block-bd {
+  display: grid;
+  gap: 14px;
+}
+
+#ta-history .ta-section-title,
+#ta-journal-history .ta-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+#ta-history .ta-section-title span,
+#ta-journal-history .ta-section-title span {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--ta-his-ink);
+}
+
+/* =========================================================
+   3. NAVIGATION ANNÉES
+========================================================= */
+#ta-history .ta-journal-year-nav,
+#ta-journal-history .ta-journal-year-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 2px 10px;
+  margin: 0;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid var(--ta-his-border);
+  scroll-snap-type: x proximity;
+}
+
+#ta-history .ta-journal-year-nav::-webkit-scrollbar,
+#ta-journal-history .ta-journal-year-nav::-webkit-scrollbar {
+  display: none;
+}
+
+#ta-history .ta-journal-year-btn,
+#ta-journal-history .ta-journal-year-btn {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--ta-his-border);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,244,238,.96));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.75);
+  color: var(--ta-his-muted);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    transform var(--ta-his-transition),
+    border-color var(--ta-his-transition),
+    background var(--ta-his-transition),
+    color var(--ta-his-transition),
+    box-shadow var(--ta-his-transition);
+}
+
+#ta-history .ta-journal-year-btn:hover,
+#ta-history .ta-journal-year-btn:focus-visible,
+#ta-journal-history .ta-journal-year-btn:hover,
+#ta-journal-history .ta-journal-year-btn:focus-visible {
+  color: var(--ta-his-ink);
+  border-color: rgba(243, 154, 54, .34);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+#ta-history .ta-journal-year-btn.is-active,
+#ta-journal-history .ta-journal-year-btn.is-active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--ta-his-accent), var(--ta-his-accent-2));
+  box-shadow: 0 12px 26px rgba(243, 154, 54, .22);
+}
+
+#ta-history .ta-journal-year-count,
+#ta-journal-history .ta-journal-year-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 800;
+  line-height: 1;
+  background: rgba(255,255,255,.22);
+}
+
+#ta-history .ta-journal-year-btn:not(.is-active) .ta-journal-year-count,
+#ta-journal-history .ta-journal-year-btn:not(.is-active) .ta-journal-year-count {
+  background: rgba(61, 43, 31, .06);
+  color: var(--ta-his-muted);
+}
+
+/* =========================================================
+   4. TOOLBAR
+========================================================= */
+#ta-history .ta-journal-toolbar,
+#ta-journal-history .ta-journal-toolbar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+#ta-history .ta-journal-filters,
+#ta-journal-history .ta-journal-filters {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+#ta-history .ta-journal-filters::-webkit-scrollbar,
+#ta-journal-history .ta-journal-filters::-webkit-scrollbar {
+  display: none;
+}
+
+#ta-history .ta-journal-filter-pill,
+#ta-journal-history .ta-journal-filter-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid var(--ta-his-border);
+  border-radius: 999px;
+  background: rgba(255,255,255,.82);
+  color: var(--ta-his-muted);
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+  transition:
+    transform var(--ta-his-transition),
+    background var(--ta-his-transition),
+    color var(--ta-his-transition),
+    border-color var(--ta-his-transition),
+    box-shadow var(--ta-his-transition);
+}
+
+#ta-history .ta-journal-filter-pill:hover,
+#ta-history .ta-journal-filter-pill:focus-visible,
+#ta-journal-history .ta-journal-filter-pill:hover,
+#ta-journal-history .ta-journal-filter-pill:focus-visible {
+  color: var(--ta-his-ink);
+  border-color: rgba(243, 154, 54, .34);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+#ta-history .ta-journal-filter-pill.is-active,
+#ta-journal-history .ta-journal-filter-pill.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--ta-his-accent), var(--ta-his-accent-2));
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(243, 154, 54, .20);
+}
+
+#ta-history .ta-journal-search-wrap,
+#ta-journal-history .ta-journal-search-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+#ta-history .ta-journal-search-ico,
+#ta-journal-history .ta-journal-search-ico {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  color: var(--ta-his-muted);
+  pointer-events: none;
+}
+
+#ta-history .ta-journal-search-input,
+#ta-journal-history .ta-journal-search-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 40px 10px 38px;
+  border: 1px solid var(--ta-his-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,244,238,.94));
+  color: var(--ta-his-ink);
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+  transition:
+    border-color var(--ta-his-transition),
+    box-shadow var(--ta-his-transition),
+    background var(--ta-his-transition);
+}
+
+#ta-history .ta-journal-search-input::placeholder,
+#ta-journal-history .ta-journal-search-input::placeholder {
+  color: var(--ta-his-muted-2);
+  font-weight: 500;
+}
+
+#ta-history .ta-journal-search-input:focus,
+#ta-journal-history .ta-journal-search-input:focus {
+  border-color: rgba(243, 154, 54, .38);
+  box-shadow: 0 0 0 4px rgba(243, 154, 54, .10);
+  background: #fff;
+}
+
+#ta-history .ta-journal-search-input::-webkit-search-cancel-button,
+#ta-journal-history .ta-journal-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+#ta-history .ta-journal-search-clear,
+#ta-journal-history .ta-journal-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(61, 43, 31, .08);
+  color: var(--ta-his-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background var(--ta-his-transition),
+    color var(--ta-his-transition),
+    transform var(--ta-his-transition);
+}
+
+#ta-history .ta-journal-search-clear:hover,
+#ta-journal-history .ta-journal-search-clear:hover {
+  background: rgba(61, 43, 31, .14);
+  color: var(--ta-his-ink);
+}
+
+#ta-history .ta-journal-view-toggle,
+#ta-journal-history .ta-journal-view-toggle {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+  padding: 4px;
+  border: 1px solid var(--ta-his-border);
+  border-radius: 14px;
+  background: var(--ta-his-surface-soft);
+}
+
+#ta-history .ta-journal-view-btn,
+#ta-journal-history .ta-journal-view-btn {
+  min-height: 38px;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--ta-his-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background var(--ta-his-transition),
+    color var(--ta-his-transition),
+    box-shadow var(--ta-his-transition),
+    transform var(--ta-his-transition);
+}
+
+#ta-history .ta-journal-view-btn.is-active,
+#ta-journal-history .ta-journal-view-btn.is-active {
+  color: var(--ta-his-ink);
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(61, 43, 31, .08);
+}
+
+#ta-history .ta-journal-results-count,
+#ta-journal-history .ta-journal-results-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  font-size: .76rem;
+  font-weight: 700;
+  color: var(--ta-his-muted);
+}
+
+/* =========================================================
+   5. STATS STRIP
+========================================================= */
+#ta-history .ta-journal-stats-strip,
+#ta-journal-history .ta-journal-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+  margin: 0;
+  background: transparent;
+}
+
+#ta-history .ta-journal-stat,
+#ta-journal-history .ta-journal-stat {
+  min-width: 0;
+  padding: 12px 10px;
+  border: 1px solid var(--ta-his-border);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,244,238,.96)),
+    radial-gradient(circle at top right, rgba(255,255,255,.72), transparent 48%);
+  box-shadow: var(--ta-his-shadow-sm);
+  text-align: center;
+  display: grid;
+  gap: 4px;
+}
+
+#ta-history .ta-journal-stat-value,
+#ta-journal-history .ta-journal-stat-value {
+  font-size: 1.18rem;
+  line-height: 1;
+  font-weight: 900;
+  color: var(--ta-his-ink);
+}
+
+#ta-history .ta-journal-stat-label,
+#ta-journal-history .ta-journal-stat-label {
+  margin: 0;
+  font-size: .66rem;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: .45px;
+  text-transform: uppercase;
+  color: var(--ta-his-muted);
+}
+
+/* =========================================================
+   6. SÉPARATEUR ANNÉE
+========================================================= */
+#ta-history .ta-journal-year-section,
+#ta-journal-history .ta-journal-year-section {
+  margin: 0;
+}
+
+#ta-history .ta-journal-year-divider,
+#ta-journal-history .ta-journal-year-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 10px;
+}
+
+#ta-history .ta-journal-year-divider-line,
+#ta-journal-history .ta-journal-year-divider-line {
+  flex: 1;
+  min-width: 12px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ta-his-border-dashed), transparent);
+}
+
+#ta-history .ta-journal-year-divider-label,
+#ta-journal-history .ta-journal-year-divider-label {
+  font-size: .98rem;
+  line-height: 1;
+  font-weight: 900;
+  color: var(--ta-his-ink);
+  white-space: nowrap;
+}
+
+#ta-history .ta-badge--muted,
+#ta-journal-history .ta-badge--muted {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  border: 1px solid rgba(61, 43, 31, .08);
+  border-radius: 999px;
+  background: rgba(61, 43, 31, .06);
+  color: var(--ta-his-muted);
+  font-size: .68rem;
+  line-height: 1;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   7. GRILLE / TIMELINE
+========================================================= */
+#ta-history [data-journal-timeline],
+#ta-journal-history [data-journal-timeline] {
+  display: grid;
+  gap: 10px;
+}
+
+#ta-history .ta-journal-year-grid,
+#ta-journal-history .ta-journal-year-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* =========================================================
+   8. CARTE — SOCLE COMMUN
+========================================================= */
+#ta-history .ta-journal-history-item,
+#ta-journal-history .ta-journal-history-item {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: 14px 14px 14px 18px;
+  border: 1px solid var(--ta-his-border);
+  border-radius: var(--ta-his-radius);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.99), rgba(250,247,242,.98)),
+    radial-gradient(circle at top right, rgba(255,255,255,.86), transparent 42%);
+  box-shadow: var(--ta-his-shadow-sm);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform var(--ta-his-transition),
+    box-shadow var(--ta-his-transition),
+    border-color var(--ta-his-transition),
+    background var(--ta-his-transition);
+}
+
+#ta-history .ta-journal-history-item::after,
+#ta-journal-history .ta-journal-history-item::after {
+  content: "";
+  position: absolute;
+  inset: auto -22% -42% auto;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.42), transparent 68%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+#ta-history .ta-journal-history-item:hover,
+#ta-history .ta-journal-history-item:focus-visible,
+#ta-journal-history .ta-journal-history-item:hover,
+#ta-journal-history .ta-journal-history-item:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--ta-his-shadow);
+  border-color: var(--ta-his-border-strong);
+  outline: none;
+}
+
+#ta-history .ta-journal-history-item:focus-visible,
+#ta-journal-history .ta-journal-history-item:focus-visible {
+  box-shadow:
+    var(--ta-his-shadow),
+    0 0 0 4px rgba(243, 154, 54, .10);
+}
+
+#ta-history .ta-journal-history-head,
+#ta-journal-history .ta-journal-history-head,
+#ta-history .ta-health-history-head,
+#ta-journal-history .ta-health-history-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  min-width: 0;
+}
+
+#ta-history .ta-journal-ico,
+#ta-journal-history .ta-journal-ico,
+#ta-history .ta-health-ico,
+#ta-journal-history .ta-health-ico {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.04rem;
+  line-height: 1;
+  flex-shrink: 0;
+  background: rgba(61, 43, 31, .06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+#ta-history .ta-journal-type,
+#ta-journal-history .ta-journal-type,
+#ta-history .ta-health-type,
+#ta-journal-history .ta-health-type {
+  min-width: 0;
+  font-size: .7rem;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: .55px;
+  text-transform: uppercase;
+  color: var(--ta-his-muted);
+}
+
+#ta-history .ta-journal-card-date,
+#ta-journal-history .ta-journal-card-date,
+#ta-history .ta-health-card-date,
+#ta-journal-history .ta-health-card-date {
+  font-size: .72rem;
+  line-height: 1.1;
+  font-weight: 800;
+  color: var(--ta-his-muted);
+  white-space: nowrap;
+}
+
+#ta-history .ta-journal-history-body,
+#ta-journal-history .ta-journal-history-body,
+#ta-history .ta-health-history-body,
+#ta-journal-history .ta-health-history-body {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+#ta-history .ta-journal-name,
+#ta-journal-history .ta-journal-name,
+#ta-history .ta-health-name,
+#ta-journal-history .ta-health-name {
+  margin: 0;
+  font-size: .97rem;
+  line-height: 1.34;
+  font-weight: 900;
+  color: var(--ta-his-ink);
+  word-break: break-word;
+}
+
+#ta-history .ta-journal-note,
+#ta-journal-history .ta-journal-note,
+#ta-history .ta-health-observation-note,
+#ta-journal-history .ta-health-observation-note {
+  margin: 0;
+  font-size: .84rem;
+  line-height: 1.58;
+  color: var(--ta-his-ink-2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+#ta-history .ta-journal-tags,
+#ta-journal-history .ta-journal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#ta-history .ta-journal-tag,
+#ta-journal-history .ta-journal-tag,
+#ta-history .ta-health-observation-level,
+#ta-journal-history .ta-health-observation-level,
+#ta-history .ta-badge,
+#ta-journal-history .ta-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 4px 10px;
+  border: 1px solid rgba(61, 43, 31, .08);
+  border-radius: 999px;
+  background: rgba(61, 43, 31, .06);
+  color: var(--ta-his-muted);
+  font-size: .69rem;
+  line-height: 1;
+  font-weight: 800;
+}
+
+#ta-history .ta-journal-history-date,
+#ta-journal-history .ta-journal-history-date,
+#ta-history .ta-health-history-date,
+#ta-journal-history .ta-health-history-date,
+#ta-history .ta-health-history-duration,
+#ta-journal-history .ta-health-history-duration {
+  font-size: .75rem;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--ta-his-muted);
+}
+
+/* Supprimer — présent uniquement côté santé */
+#ta-history .ta-health-delete-btn,
+#ta-journal-history .ta-health-delete-btn {
+  width: 28px;
+  height: 28px;
+  margin-left: 2px;
+  border: 1px solid rgba(61, 43, 31, .08);
+  border-radius: 999px;
+  background: rgba(61, 43, 31, .06);
+  color: var(--ta-his-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    transform var(--ta-his-transition),
+    background var(--ta-his-transition),
+    border-color var(--ta-his-transition),
+    color var(--ta-his-transition);
+}
+
+#ta-history .ta-health-delete-btn:hover,
+#ta-journal-history .ta-health-delete-btn:hover {
+  transform: scale(1.04);
+  color: var(--ta-his-danger);
+  background: rgba(192, 57, 43, .10);
+  border-color: rgba(192, 57, 43, .18);
+}
+
+/* =========================================================
+   9. MODAL
+========================================================= */
+#ta-health-history-modal.ta-journal-modal-overlay,
+#ta-journal-modal.ta-journal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: rgba(24, 16, 11, .56);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  opacity: 0;
+  transition: opacity .26s ease;
+}
+
+#ta-health-history-modal.ta-journal-modal-overlay.is-open,
+#ta-journal-modal.ta-journal-modal-overlay.is-open {
+  opacity: 1;
+}
+
+#ta-health-history-modal .ta-journal-modal,
+#ta-journal-modal .ta-journal-modal {
+  width: 100%;
+  max-width: 620px;
+  max-height: 86vh;
+  overflow-y: auto;
+  border-radius: 24px 24px 0 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.99), rgba(249,245,239,.99)),
+    radial-gradient(circle at top right, rgba(255,255,255,.9), transparent 44%);
+  box-shadow: 0 -14px 48px rgba(0, 0, 0, .18);
+  transform: translateY(24px);
+  transition: transform .34s cubic-bezier(.22, 1, .36, 1);
+}
+
+#ta-health-history-modal.is-open .ta-journal-modal,
+#ta-journal-modal.is-open .ta-journal-modal {
+  transform: translateY(0);
+}
+
+#ta-health-history-modal .ta-journal-modal-handle,
+#ta-journal-modal .ta-journal-modal-handle {
+  width: 44px;
+  height: 5px;
+  margin: 12px auto 0;
+  border-radius: 999px;
+  background: rgba(61, 43, 31, .12);
+}
+
+#ta-health-history-modal .ta-journal-modal-head,
+#ta-journal-modal .ta-journal-modal-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: start;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid var(--ta-his-border);
+}
+
+#ta-health-history-modal .ta-journal-modal-ico,
+#ta-journal-modal .ta-journal-modal-ico {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  line-height: 1;
+  background: rgba(61, 43, 31, .06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+#ta-health-history-modal .ta-journal-modal-info,
+#ta-journal-modal .ta-journal-modal-info {
+  min-width: 0;
+}
+
+#ta-health-history-modal .ta-journal-modal-type,
+#ta-journal-modal .ta-journal-modal-type {
+  display: block;
+  margin: 0 0 4px;
+  font-size: .72rem;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: .55px;
+  text-transform: uppercase;
+  color: var(--ta-his-muted);
+}
+
+#ta-health-history-modal .ta-journal-modal-title,
+#ta-journal-modal .ta-journal-modal-title {
+  margin: 0 0 4px;
+  font-size: 1.06rem;
+  line-height: 1.28;
+  font-weight: 900;
+  color: var(--ta-his-ink);
+}
+
+#ta-health-history-modal .ta-journal-modal-date,
+#ta-journal-modal .ta-journal-modal-date {
+  margin: 0;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--ta-his-muted);
+}
+
+#ta-health-history-modal .ta-journal-modal-close,
+#ta-journal-modal .ta-journal-modal-close {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(61, 43, 31, .08);
+  border-radius: 999px;
+  background: rgba(61, 43, 31, .06);
+  color: var(--ta-his-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background var(--ta-his-transition),
+    color var(--ta-his-transition),
+    transform var(--ta-his-transition);
+}
+
+#ta-health-history-modal .ta-journal-modal-close:hover,
+#ta-journal-modal .ta-journal-modal-close:hover {
+  color: var(--ta-his-ink);
+  background: rgba(61, 43, 31, .12);
+}
+
+#ta-health-history-modal .ta-journal-modal-body,
+#ta-journal-modal .ta-journal-modal-body {
+  padding: 18px;
+}
+
+#ta-health-history-modal .ta-journal-modal-section-label,
+#ta-journal-modal .ta-journal-modal-section-label {
+  margin: 18px 0 8px;
+  font-size: .7rem;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: .55px;
+  text-transform: uppercase;
+  color: var(--ta-his-muted);
+}
+
+#ta-health-history-modal .ta-journal-modal-section-label:first-child,
+#ta-journal-modal .ta-journal-modal-section-label:first-child {
+  margin-top: 0;
+}
+
+#ta-health-history-modal .ta-journal-modal-text,
+#ta-journal-modal .ta-journal-modal-text {
+  margin: 0;
+  font-size: .92rem;
+  line-height: 1.7;
+  color: var(--ta-his-ink-2);
+}
+
+#ta-health-history-modal .ta-journal-modal-chips,
+#ta-journal-modal .ta-journal-modal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#ta-health-history-modal .ta-journal-chip,
+#ta-journal-modal .ta-journal-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 6px 12px;
+  border: 1px solid rgba(61, 43, 31, .08);
+  border-radius: 999px;
+  background: rgba(61, 43, 31, .06);
+  color: var(--ta-his-ink-2);
+  font-size: .78rem;
+  line-height: 1;
+  font-weight: 800;
+}
+
+/* =========================================================
+   10. ÉTAT VIDE
+========================================================= */
+#ta-history .ta-journal-empty,
+#ta-journal-history .ta-journal-empty {
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: 28px 16px;
+  border: 1px dashed var(--ta-his-border-dashed);
+  border-radius: 18px;
+  background: rgba(255,255,255,.65);
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+#ta-history .ta-journal-empty-ico,
+#ta-journal-history .ta-journal-empty-ico {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 0 2px;
+  border-radius: 16px;
+  background: rgba(61, 43, 31, .06);
+  font-size: 1.3rem;
+}
+
+#ta-history .ta-journal-empty-title,
+#ta-journal-history .ta-journal-empty-title {
+  margin: 0;
+  font-size: .98rem;
+  line-height: 1.25;
+  font-weight: 900;
+  color: var(--ta-his-ink);
+}
+
+#ta-history .ta-journal-empty-sub,
+#ta-journal-history .ta-journal-empty-sub {
+  margin: 0;
+  font-size: .83rem;
+  line-height: 1.55;
+  color: var(--ta-his-muted);
+}
+
+/* =========================================================
+   11. VUE LISTE
+========================================================= */
+#ta-history .ta-journal--list-view .ta-journal-year-grid,
+#ta-journal-history .ta-journal--list-view .ta-journal-year-grid {
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+}
+
+#ta-history .ta-journal--list-view .ta-journal-history-item,
+#ta-journal-history .ta-journal--list-view .ta-journal-history-item {
+  gap: 10px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+#ta-history .ta-journal--list-view .ta-journal-note,
+#ta-journal-history .ta-journal--list-view .ta-journal-note,
+#ta-history .ta-journal--list-view .ta-journal-history-date,
+#ta-journal-history .ta-journal--list-view .ta-journal-history-date,
+#ta-history .ta-journal--list-view .ta-journal-tags,
+#ta-journal-history .ta-journal--list-view .ta-journal-tags {
+  display: none;
+}
+
+#ta-history .ta-journal--list-view .ta-journal-name,
+#ta-journal-history .ta-journal--list-view .ta-journal-name {
+  font-size: .9rem;
+}
+
+/* =========================================================
+   12. BADGES D'ÉTAT SANTÉ
+========================================================= */
+#ta-history .ta-badge--running,
+#ta-journal-history .ta-badge--running {
+  background: rgba(58, 110, 168, .10);
+  border-color: rgba(58, 110, 168, .18);
+  color: #2F5B8B;
+}
+
+#ta-history .ta-badge--completed,
+#ta-journal-history .ta-badge--completed {
+  background: rgba(46, 125, 107, .10);
+  border-color: rgba(46, 125, 107, .18);
+  color: #286C5D;
+}
+
+#ta-history .ta-badge--stopped,
+#ta-journal-history .ta-badge--stopped {
+  background: rgba(192, 57, 43, .10);
+  border-color: rgba(192, 57, 43, .18);
+  color: #B33528;
+}
+
+#ta-history .ta-badge--info,
+#ta-journal-history .ta-badge--info {
+  background: rgba(58, 110, 168, .10);
+  border-color: rgba(58, 110, 168, .18);
+  color: #2F5B8B;
+}
+
+/* =========================================================
+   13. RESPONSIVE TABLET / DESKTOP
+========================================================= */
+@media (min-width: 640px) {
+  #ta-history .ta-journal-toolbar,
+  #ta-journal-history .ta-journal-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+    align-items: start;
+  }
+
+  #ta-history .ta-journal-filters,
+  #ta-journal-history .ta-journal-filters {
+    grid-column: 1 / 2;
+  }
+
+  #ta-history .ta-journal-search-wrap,
+  #ta-journal-history .ta-journal-search-wrap {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+  }
+
+  #ta-history .ta-journal-view-toggle,
+  #ta-journal-history .ta-journal-view-toggle {
+    width: auto;
+    min-width: 108px;
+  }
+
+  #ta-history .ta-journal-results-count,
+  #ta-journal-history .ta-journal-results-count {
+    justify-self: end;
+    align-self: center;
+  }
+
+  #ta-history .ta-journal-stats-strip,
+  #ta-journal-history .ta-journal-stats-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #ta-history .ta-journal-year-grid,
+  #ta-journal-history .ta-journal-year-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  #ta-history .ta-journal-stats-strip,
+  #ta-journal-history .ta-journal-stats-strip {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  #ta-history .ta-journal-year-grid,
+  #ta-journal-history .ta-journal-year-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+/* =========================================================
+   14. PETITS ÉCRANS
+========================================================= */
+@media (max-width: 479px) {
+  #ta-history .ta-journal-history-head,
+  #ta-journal-history .ta-journal-history-head,
+  #ta-history .ta-health-history-head,
+  #ta-journal-history .ta-health-history-head {
+    grid-template-columns: auto 1fr auto;
+    align-items: start;
+  }
+
+  #ta-history .ta-journal-card-date,
+  #ta-journal-history .ta-journal-card-date,
+  #ta-history .ta-health-card-date,
+  #ta-journal-history .ta-health-card-date {
+    grid-column: 2 / 4;
+    justify-self: start;
+    margin-top: -2px;
+  }
+
+  #ta-history .ta-health-delete-btn,
+  #ta-journal-history .ta-health-delete-btn {
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+    justify-self: end;
+  }
+
+  #ta-health-history-modal .ta-journal-modal-head,
+  #ta-journal-modal .ta-journal-modal-head {
+    grid-template-columns: auto 1fr;
+  }
+
+  #ta-health-history-modal .ta-journal-modal-close,
+  #ta-journal-modal .ta-journal-modal-close {
+    grid-column: 2 / 3;
+    justify-self: end;
+  }
+}

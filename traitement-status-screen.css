@@ -1,0 +1,253 @@
+/* =========================================================
+ * TAGANIMAL — HISTORY HEALTH CARD (PREMIUM V2)
+ * Fichier : assets/css/card/history/history-health-card.css
+ * RÔLE    : spécialisation visuelle dense et premium de l'historique Santé
+ * CIBLE   : #ta-history / data-ta-health-history
+ * NOTE    : reprend la qualité perçue du Journal de vie avec une palette santé
+ * ========================================================= */
+
+#ta-history {
+  --ta-his-accent: #2E7D6B;
+  --ta-his-accent-2: #256B5B;
+  --ta-his-accent-soft: rgba(46, 125, 107, .16);
+}
+
+/* =========================================================
+   1. TITRE / INTRO
+========================================================= */
+#ta-history .ta-section-title span {
+  color: #24493F;
+}
+
+#ta-history .ta-info {
+  border: 1px solid rgba(46, 125, 107, .14);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.99), rgba(241,248,246,.99)),
+    radial-gradient(circle at top right, rgba(255,255,255,.90), transparent 46%);
+  box-shadow: 0 10px 24px rgba(36, 73, 63, .08);
+}
+
+/* =========================================================
+   2. PILLS / STATS SANTÉ
+========================================================= */
+#ta-history .ta-journal-filter--vaccine.is-active {
+  background: linear-gradient(135deg, #3A6EA8, #2F5B8B);
+  box-shadow: 0 12px 28px rgba(58, 110, 168, .24);
+}
+
+#ta-history .ta-journal-filter--vermifuge.is-active {
+  background: linear-gradient(135deg, #2E7D6B, #256B5B);
+  box-shadow: 0 12px 28px rgba(46, 125, 107, .24);
+}
+
+#ta-history .ta-journal-filter--antiparasite.is-active {
+  background: linear-gradient(135deg, #6B46C1, #5B38AC);
+  box-shadow: 0 12px 28px rgba(107, 70, 193, .24);
+}
+
+#ta-history .ta-journal-filter--treatment.is-active {
+  background: linear-gradient(135deg, #C47820, #A86117);
+  box-shadow: 0 12px 28px rgba(196, 120, 32, .26);
+}
+
+#ta-history .ta-journal-stat--vaccine .ta-journal-stat-value {
+  color: #3A6EA8;
+}
+
+#ta-history .ta-journal-stat--vermifuge .ta-journal-stat-value {
+  color: #2E7D6B;
+}
+
+#ta-history .ta-journal-stat--antiparasite .ta-journal-stat-value {
+  color: #6B46C1;
+}
+
+#ta-history .ta-journal-stat--treatment .ta-journal-stat-value {
+  color: #C47820;
+}
+
+/* =========================================================
+   3. CARTE — SOCLE SANTÉ PLUS DENSE
+   On surdéfinit volontairement le socle global pour éviter l'effet transparent.
+========================================================= */
+#ta-history .ta-field-card.ta-journal-history-item {
+  border-color: rgba(61, 43, 31, .11);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,1), rgba(248,244,238,.995)),
+    radial-gradient(circle at top right, rgba(255,255,255,.94), transparent 44%) !important;
+  box-shadow: 0 8px 24px rgba(61, 43, 31, .08);
+}
+
+#ta-history .ta-field-card.ta-journal-history-item:hover,
+#ta-history .ta-field-card.ta-journal-history-item:focus-visible {
+  box-shadow: 0 16px 34px rgba(61, 43, 31, .12);
+}
+
+/* =========================================================
+   4. CARTES PAR TYPE MÉTIER
+   Même logique premium que journal, avec couleurs santé.
+========================================================= */
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--vaccine {
+  border-left: 4px solid #3A6EA8 !important;
+  border-color: rgba(58, 110, 168, .16);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,1), rgba(236,243,251,.985)),
+    linear-gradient(135deg, rgba(58,110,168,.14), transparent 58%),
+    radial-gradient(circle at top right, rgba(255,255,255,.92), transparent 42%) !important;
+}
+
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--vermifuge {
+  border-left: 4px solid #2E7D6B !important;
+  border-color: rgba(46, 125, 107, .16);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,1), rgba(239,248,245,.985)),
+    linear-gradient(135deg, rgba(46,125,107,.14), transparent 58%),
+    radial-gradient(circle at top right, rgba(255,255,255,.92), transparent 42%) !important;
+}
+
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--antiparasite {
+  border-left: 4px solid #6B46C1 !important;
+  border-color: rgba(107, 70, 193, .16);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,1), rgba(245,240,252,.985)),
+    linear-gradient(135deg, rgba(107,70,193,.14), transparent 58%),
+    radial-gradient(circle at top right, rgba(255,255,255,.92), transparent 42%) !important;
+}
+
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--treatment {
+  border-left: 4px solid #C47820 !important;
+  border-color: rgba(196, 120, 32, .16);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,1), rgba(252,245,236,.985)),
+    linear-gradient(135deg, rgba(196,120,32,.14), transparent 58%),
+    radial-gradient(circle at top right, rgba(255,255,255,.92), transparent 42%) !important;
+}
+
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--vaccine:hover,
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--vaccine:focus-visible {
+  box-shadow: 0 18px 36px rgba(58, 110, 168, .18);
+}
+
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--vermifuge:hover,
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--vermifuge:focus-visible {
+  box-shadow: 0 18px 36px rgba(46, 125, 107, .18);
+}
+
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--antiparasite:hover,
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--antiparasite:focus-visible {
+  box-shadow: 0 18px 36px rgba(107, 70, 193, .18);
+}
+
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--treatment:hover,
+#ta-history .ta-field-card.ta-journal-history-item.ta-history--treatment:focus-visible {
+  box-shadow: 0 18px 36px rgba(196, 120, 32, .18);
+}
+
+/* =========================================================
+   5. ICONES / TYPES / TAGS / BADGES
+========================================================= */
+#ta-history .ta-history--vaccine .ta-journal-ico {
+  color: #2F5B8B;
+  background: rgba(58, 110, 168, .12);
+  border: 1px solid rgba(58, 110, 168, .18);
+}
+
+#ta-history .ta-history--vermifuge .ta-journal-ico {
+  color: #286C5D;
+  background: rgba(46, 125, 107, .12);
+  border: 1px solid rgba(46, 125, 107, .18);
+}
+
+#ta-history .ta-history--antiparasite .ta-journal-ico {
+  color: #5B38AC;
+  background: rgba(107, 70, 193, .12);
+  border: 1px solid rgba(107, 70, 193, .18);
+}
+
+#ta-history .ta-history--treatment .ta-journal-ico {
+  color: #9D5A12;
+  background: rgba(196, 120, 32, .12);
+  border: 1px solid rgba(196, 120, 32, .18);
+}
+
+#ta-history .ta-history--vaccine .ta-journal-type { color: #2F5B8B; }
+#ta-history .ta-history--vermifuge .ta-journal-type { color: #286C5D; }
+#ta-history .ta-history--antiparasite .ta-journal-type { color: #5B38AC; }
+#ta-history .ta-history--treatment .ta-journal-type { color: #9D5A12; }
+
+#ta-history .ta-history--vaccine .ta-journal-tag {
+  background: rgba(58, 110, 168, .12);
+  border-color: rgba(58, 110, 168, .16);
+  color: #2F5B8B;
+}
+
+#ta-history .ta-history--vermifuge .ta-journal-tag {
+  background: rgba(46, 125, 107, .12);
+  border-color: rgba(46, 125, 107, .16);
+  color: #286C5D;
+}
+
+#ta-history .ta-history--antiparasite .ta-journal-tag {
+  background: rgba(107, 70, 193, .12);
+  border-color: rgba(107, 70, 193, .16);
+  color: #5B38AC;
+}
+
+#ta-history .ta-history--treatment .ta-journal-tag {
+  background: rgba(196, 120, 32, .12);
+  border-color: rgba(196, 120, 32, .16);
+  color: #9D5A12;
+}
+
+#ta-history .ta-history--treatment .ta-health-history-duration {
+  color: #9D5A12;
+  font-weight: 800;
+}
+
+/* =========================================================
+   6. SUPPRESSION / FOCUS / MODAL
+========================================================= */
+#ta-history .ta-health-delete-btn {
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(61, 43, 31, .08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 6px 16px rgba(61, 43, 31, .08);
+}
+
+#ta-history .ta-journal-history-item:focus-visible {
+  box-shadow:
+    0 18px 36px rgba(46, 125, 107, .16),
+    0 0 0 4px rgba(46, 125, 107, .12);
+}
+
+#ta-health-history-modal .ta-journal-modal-ico {
+  color: #286C5D;
+  background: rgba(46, 125, 107, .12);
+  border: 1px solid rgba(46, 125, 107, .16);
+}
+
+#ta-health-history-modal .ta-journal-modal-type {
+  color: #286C5D;
+}
+
+#ta-health-history-modal .ta-journal-chip {
+  background: rgba(46, 125, 107, .10);
+  border-color: rgba(46, 125, 107, .16);
+  color: #286C5D;
+}
+
+/* =========================================================
+   7. PETITS ÉCRANS
+========================================================= */
+@media (max-width: 479px) {
+  #ta-history .ta-journal-history-item {
+    padding-left: 16px;
+    padding-right: 12px;
+  }
+
+  #ta-history .ta-health-delete-btn {
+    width: 30px;
+    height: 30px;
+  }
+}

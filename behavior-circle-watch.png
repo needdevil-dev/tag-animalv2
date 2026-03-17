@@ -1,0 +1,82 @@
+(function () {
+  "use strict";
+
+  function onReady(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      fn();
+    }
+  }
+
+  function setVisible(el, visible) {
+    if (!el) return;
+    el.hidden = !visible;
+    el.classList.toggle("ta-is-hidden", !visible);
+  }
+
+  onReady(function () {
+    const LOG = "[AUTH]";
+
+    const card = document.querySelector('[data-ta-card="auth"]');
+    const screen = document.querySelector('[data-ta-screen="auth"]');
+
+    console.log(LOG, "boot", {
+      hasCard: !!card,
+      hasScreen: !!screen
+    });
+
+    if (!screen) return;
+
+    const loginForm = screen.querySelector("#login");
+    const forgotForm = screen.querySelector("#ta-forgot-form");
+
+    if (!loginForm || !forgotForm) {
+      console.warn(LOG, "login/forgot forms missing");
+      return;
+    }
+
+    const openBtn = card?.querySelector('[data-ta-open="auth"]') || null;
+    const forgotBtn = loginForm.querySelector('[data-auth-action="forgot"]');
+    const backBtn = forgotForm.querySelector('[data-auth-action="back-login"]');
+
+    function showLogin() {
+      setVisible(loginForm, true);
+      setVisible(forgotForm, false);
+    }
+
+    function showForgot() {
+      setVisible(loginForm, false);
+      setVisible(forgotForm, true);
+    }
+
+    // état interne par défaut
+    showLogin();
+
+    // le router ouvre/ferme le module
+    openBtn?.addEventListener("click", function () {
+      showLogin();
+    });
+
+    forgotBtn?.addEventListener("click", function (e) {
+      e.preventDefault();
+      showForgot();
+    });
+
+    backBtn?.addEventListener("click", function (e) {
+      e.preventDefault();
+      showLogin();
+    });
+
+    // si le serveur a déjà ouvert auth-screen après un retour POST
+    if (!screen.hidden) {
+      showLogin();
+    }
+
+    console.log(LOG, "ready", {
+      hasOpenBtn: !!openBtn,
+      hasForgotBtn: !!forgotBtn,
+      hasBackBtn: !!backBtn
+    });
+  });
+})();

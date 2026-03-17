@@ -1,0 +1,737 @@
+/* =========================================================
+   TAGANIMAL — PRO CARD VIEWS
+   Fichier : pro-card-views-card.css
+   Version : 1.0.1
+   Scope   : .block-pros
+   RÔLE    : cartes de lecture / gestion des professionnels
+   STYLE   : premium, lisible mobile, inspiré reminders-global
+
+   Dépendances attendues :
+   - pro-form.css   → .ta-btn + variables pro éventuelles
+   - pro-screen.css → variables --pros-* par type si présentes
+
+   Compatible avec :
+   - [data-ta-pros-list]
+   - .ta-pros-group / __title / __count
+   - .ta-pros-item / __header / __name-wrap / __actions
+   - .ta-card-subtitle / __contacts / __notes
+   - .ta-pros-empty
+========================================================= */
+
+
+/* =========================================================
+   1. VARIABLES LOCALES
+========================================================= */
+
+.block-pros{
+  --ta-pc-bg:              var(--ta-card-bg, #ffffff);
+  --ta-pc-bg-soft:         #fffaf4;
+  --ta-pc-bg-soft-2:       #fffdf9;
+
+  --ta-pc-ink-1:           #2f241d;
+  --ta-pc-ink-2:           #6b4c38;
+  --ta-pc-ink-3:           #9b8878;
+
+  --ta-pc-line:            #efe8dc;
+  --ta-pc-line-strong:     #e5daca;
+
+  --ta-pc-accent:          var(--ta-accent, #f39a36);
+  --ta-pc-accent-2:        #ffb357;
+  --ta-pc-accent-soft:     rgba(243,154,54,.12);
+  --ta-pc-accent-soft-2:   rgba(243,154,54,.18);
+  --ta-pc-accent-border:   rgba(243,154,54,.24);
+
+  --ta-pc-success:         #2e7d6b;
+  --ta-pc-success-soft:    rgba(46,125,107,.12);
+
+  --ta-pc-danger:          #c0392b;
+  --ta-pc-danger-soft:     rgba(192,57,43,.10);
+  --ta-pc-danger-border:   rgba(192,57,43,.20);
+
+  --ta-pc-shadow-soft:     0 6px 18px rgba(61,43,31,.06);
+  --ta-pc-shadow:          0 12px 28px rgba(61,43,31,.08);
+  --ta-pc-shadow-hover:    0 18px 38px rgba(61,43,31,.12);
+  --ta-pc-shadow-default:  0 14px 34px rgba(243,154,54,.13);
+
+  --ta-pc-radius-xs:       10px;
+  --ta-pc-radius-sm:       14px;
+  --ta-pc-radius:          18px;
+  --ta-pc-radius-lg:       22px;
+  --ta-pc-radius-xl:       24px;
+
+  --ta-pc-gap-xs:          6px;
+  --ta-pc-gap-sm:          10px;
+  --ta-pc-gap:             14px;
+  --ta-pc-gap-lg:          18px;
+
+  --ta-pc-bar:             5px;
+  --ta-pc-pad-x:           16px;
+  --ta-pc-pad-offset:      calc(var(--ta-pc-pad-x) + var(--ta-pc-bar));
+  --ta-pc-transition:      .22s ease;
+}
+
+
+/* =========================================================
+   2. CONTENEUR GLOBAL DE LISTE
+========================================================= */
+
+.block-pros [data-ta-pros-list]{
+  display:grid;
+  gap:18px;
+  padding:16px;
+  border:1px solid var(--ta-pc-line);
+  border-radius:var(--ta-pc-radius-xl);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,253,249,.98)),
+    linear-gradient(135deg, rgba(243,154,54,.04), transparent 40%);
+  box-shadow:var(--ta-pc-shadow-soft);
+}
+
+/* Neutralise le faux before si le wrapper porte aussi ta-pros-item */
+.block-pros [data-ta-pros-list].ta-pros-item::before{
+  display:none !important;
+}
+
+
+/* =========================================================
+   3. GROUPES
+========================================================= */
+
+.block-pros .ta-pros-group{
+  display:grid;
+  gap:12px;
+}
+
+.block-pros .ta-pros-group + .ta-pros-group{
+  padding-top:16px;
+  border-top:1px solid rgba(229,218,202,.7);
+}
+
+.block-pros .ta-pros-group__title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0;
+  color:var(--ta-pc-ink-1);
+  font-size:1rem;
+  font-weight:800;
+  line-height:1.3;
+  letter-spacing:-.01em;
+}
+
+.block-pros .ta-pros-group__title > span:first-child{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:34px;
+  height:34px;
+  border-radius:12px;
+  background:linear-gradient(180deg, #fff, #f8f4ee);
+  border:1px solid var(--ta-pc-line);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65);
+  flex:0 0 34px;
+}
+
+.block-pros .ta-pros-group__count{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:26px;
+  height:26px;
+  padding:0 8px;
+  border-radius:999px;
+  background:var(--ta-pc-accent-soft);
+  color:var(--ta-pc-accent);
+  border:1px solid var(--ta-pc-accent-border);
+  font-size:.72rem;
+  font-weight:800;
+  line-height:1;
+}
+
+
+/* =========================================================
+   4. CARTE PROFESSIONNEL
+========================================================= */
+
+.block-pros .ta-pros-item{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  padding:0;
+  border:1px solid rgba(229,218,202,.92);
+  border-radius:var(--ta-pc-radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,250,244,.92)),
+    linear-gradient(135deg, rgba(243,154,54,.05), transparent 55%);
+  box-shadow:var(--ta-pc-shadow-soft);
+  transition:
+    transform var(--ta-pc-transition),
+    box-shadow var(--ta-pc-transition),
+    border-color var(--ta-pc-transition),
+    background var(--ta-pc-transition);
+}
+
+.block-pros .ta-pros-item[data-pro-id]::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:var(--ta-pc-bar);
+  background:var(--ta-pc-accent);
+  opacity:.95;
+  z-index:2;
+}
+
+.block-pros .ta-pros-item::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at top right, rgba(255,255,255,.96), transparent 35%),
+    linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0));
+  pointer-events:none;
+  z-index:-1;
+}
+
+.block-pros .ta-pros-item:hover,
+.block-pros .ta-pros-item:focus-within{
+  transform:translateY(-2px);
+  border-color:var(--ta-pc-line-strong);
+  box-shadow:var(--ta-pc-shadow-hover);
+}
+
+
+/* =========================================================
+   5. COULEURS PAR TYPE
+========================================================= */
+
+.block-pros .ta-pros-item[data-pro-type="veterinaire"]::before{
+  background:var(--pros-veterinaire, #2f7e78);
+}
+.block-pros .ta-pros-item[data-pro-type="toiletteur"]::before{
+  background:var(--pros-toiletteur, #8a56d8);
+}
+.block-pros .ta-pros-item[data-pro-type="educateur"]::before{
+  background:var(--pros-educateur, #3d78d8);
+}
+.block-pros .ta-pros-item[data-pro-type="comportementaliste"]::before{
+  background:var(--pros-comportementaliste, #5a54d6);
+}
+.block-pros .ta-pros-item[data-pro-type="pension"]::before{
+  background:var(--pros-pension, #cf8a2e);
+}
+.block-pros .ta-pros-item[data-pro-type="urgences"]::before{
+  background:var(--pros-urgences, #d14f43);
+}
+.block-pros .ta-pros-item[data-pro-type="pharmacie"]::before{
+  background:var(--pros-pharmacie, #3ea765);
+}
+.block-pros .ta-pros-item[data-pro-type="autre"]::before{
+  background:var(--pros-autre, #7c8798);
+}
+
+
+/* =========================================================
+   6. ÉTATS PARTICULIERS
+========================================================= */
+
+.block-pros .ta-pros-item--default{
+  border-color:var(--ta-pc-accent-border);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.99), rgba(255,247,236,.96)),
+    linear-gradient(135deg, rgba(243,154,54,.08), transparent 58%);
+  box-shadow:var(--ta-pc-shadow-default);
+}
+
+.block-pros .ta-pros-item--default::before{
+  background:linear-gradient(180deg, var(--ta-pc-accent-2), var(--ta-pc-accent));
+}
+
+.block-pros .ta-pros-item--editing{
+  border-color:rgba(243,154,54,.34);
+  box-shadow:
+    0 0 0 3px rgba(243,154,54,.10),
+    0 18px 36px rgba(61,43,31,.12);
+}
+
+
+/* =========================================================
+   7. HEADER
+========================================================= */
+
+.block-pros .ta-pros-item__header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding:16px var(--ta-pc-pad-x) 0 var(--ta-pc-pad-offset);
+}
+
+.block-pros .ta-pros-item__name-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+  min-width:0;
+  flex:1 1 auto;
+}
+
+.block-pros .ta-pros-item__name{
+  display:block;
+  margin:0;
+  color:var(--ta-pc-ink-1);
+  font-size:1.02rem;
+  font-weight:800;
+  line-height:1.3;
+  letter-spacing:-.01em;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+
+/* =========================================================
+   8. BADGE PAR DÉFAUT
+========================================================= */
+
+.block-pros .ta-pros-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  max-width:100%;
+  min-height:28px;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:.72rem;
+  font-weight:800;
+  line-height:1;
+  white-space:nowrap;
+  border:1px solid transparent;
+}
+
+.block-pros .ta-pros-badge--default{
+  background:linear-gradient(180deg, rgba(255,245,227,.96), rgba(255,251,243,.96));
+  color:#c27418;
+  border-color:rgba(243,154,54,.22);
+  box-shadow:0 2px 6px rgba(243,154,54,.10);
+}
+
+
+/* =========================================================
+   9. ACTIONS
+========================================================= */
+
+.block-pros .ta-pros-item__actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+
+.block-pros .ta-pros-item__actions .ta-btn{
+  min-width:38px;
+  min-height:38px;
+  padding:0 10px;
+  border-radius:12px;
+  font-size:.92rem;
+  line-height:1;
+  box-shadow:none;
+  transition:
+    transform var(--ta-pc-transition),
+    border-color var(--ta-pc-transition),
+    background var(--ta-pc-transition),
+    color var(--ta-pc-transition),
+    box-shadow var(--ta-pc-transition);
+}
+
+.block-pros .ta-pros-item__actions .ta-btn:hover{
+  transform:translateY(-1px);
+}
+
+/* étoile */
+.block-pros .ta-pros-item__actions [data-ta-pros-set-default]{
+  background:#fff;
+  border:1px solid var(--ta-pc-line);
+  color:var(--ta-pc-ink-3);
+}
+
+.block-pros .ta-pros-item__actions [data-ta-pros-set-default]:hover{
+  background:var(--ta-pc-accent-soft);
+  border-color:var(--ta-pc-accent-border);
+  color:var(--ta-pc-accent);
+}
+
+/* edit */
+.block-pros .ta-pros-item__actions [data-ta-pros-edit]{
+  background:#fff;
+  border:1px solid var(--ta-pc-line);
+  color:var(--ta-pc-ink-2);
+}
+
+.block-pros .ta-pros-item__actions [data-ta-pros-edit]:hover{
+  background:#f8f4ee;
+  border-color:var(--ta-pc-line-strong);
+  color:var(--ta-pc-ink-1);
+}
+
+/* unlink */
+.block-pros .ta-pros-item__actions [data-ta-pros-unlink]{
+  background:#fff;
+  border:1px solid var(--ta-pc-danger-border);
+  color:var(--ta-pc-danger);
+}
+
+.block-pros .ta-pros-item__actions [data-ta-pros-unlink]:hover{
+  background:var(--ta-pc-danger-soft);
+  border-color:rgba(192,57,43,.28);
+}
+
+
+/* =========================================================
+   10. SOUS-TITRE / CABINET
+========================================================= */
+
+.block-pros .ta-pros-item .ta-card-subtitle{
+  margin:0;
+  padding:6px var(--ta-pc-pad-x) 0 var(--ta-pc-pad-offset);
+  color:var(--ta-pc-ink-2);
+  font-size:.88rem;
+  font-weight:700;
+  line-height:1.45;
+}
+
+
+/* =========================================================
+   11. CONTACTS
+========================================================= */
+
+.block-pros .ta-pros-item__contacts{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  padding:12px var(--ta-pc-pad-x) 0 var(--ta-pc-pad-offset);
+}
+
+.block-pros .ta-pros-item__contacts:last-child{
+  padding-bottom:14px;
+}
+
+.block-pros .ta-pros-item__contacts:last-child > *:last-child{
+  margin-bottom:2px;
+}
+
+.block-pros .ta-pros-item__contacts .ta-btn--ghost,
+.block-pros .ta-pros-item__contacts .ta-text--status{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:34px;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:.82rem;
+  line-height:1.2;
+  white-space:nowrap;
+}
+
+.block-pros .ta-pros-item__contacts .ta-btn--ghost{
+  border:1px solid var(--ta-pc-line);
+  background:rgba(255,255,255,.88);
+  color:var(--ta-pc-ink-2);
+  text-decoration:none;
+}
+
+.block-pros .ta-pros-item__contacts .ta-btn--ghost:hover{
+  border-color:var(--ta-pc-accent-border);
+  background:var(--ta-pc-accent-soft);
+  color:var(--ta-pc-accent);
+}
+
+.block-pros .ta-pros-item__contacts .ta-text--status{
+  border:1px solid var(--ta-pc-line);
+  background:#f8f4ee;
+  color:var(--ta-pc-ink-3);
+}
+
+/* =========================================================
+   12. NOTES
+========================================================= */
+
+.block-pros .ta-pros-item__notes{
+  margin:0;
+  padding:12px var(--ta-pc-pad-x) 14px var(--ta-pc-pad-offset);
+  color:var(--ta-pc-ink-2);
+  font-size:.855rem;
+  line-height:1.6;
+}
+
+.block-pros .ta-pros-item__contacts + .ta-pros-item__notes{
+  padding-top:10px;
+}
+
+.block-pros .ta-pros-item__notes:last-child{
+  position:relative;
+}
+
+.block-pros .ta-pros-item__notes:last-child::before{
+  content:"";
+  display:block;
+  width:100%;
+  height:1px;
+  margin-bottom:10px;
+  background:linear-gradient(90deg, rgba(229,218,202,.75), rgba(229,218,202,0));
+}
+
+
+/* =========================================================
+   13. ÉTAT VIDE
+========================================================= */
+
+.block-pros .ta-pros-empty{
+  padding:28px 20px;
+  border:1px dashed var(--ta-pc-line-strong);
+  border-radius:var(--ta-pc-radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,250,244,.92));
+  text-align:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
+}
+
+.block-pros .ta-pros-empty::before{
+  content:"🩺";
+  display:block;
+  margin-bottom:10px;
+  font-size:2rem;
+  line-height:1;
+  opacity:.48;
+}
+
+.block-pros .ta-pros-empty .ta-text{
+  margin:0;
+  color:var(--ta-pc-ink-3);
+  font-size:.92rem;
+  line-height:1.55;
+}
+
+
+/* =========================================================
+   14. FOCUS ACCESSIBLE
+========================================================= */
+
+.block-pros .ta-pros-item__actions .ta-btn:focus-visible,
+.block-pros .ta-pros-item__contacts .ta-btn--ghost:focus-visible{
+  outline:none;
+  box-shadow:
+    0 0 0 3px rgba(243,154,54,.12),
+    0 0 0 5px rgba(243,154,54,.06);
+}
+
+
+/* =========================================================
+   15. ANIMATION ENTRÉE
+========================================================= */
+
+@keyframes ta-pro-card-in{
+  from{
+    opacity:0;
+    transform:translateY(8px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+.block-pros .ta-pros-item{
+  animation:ta-pro-card-in .26s ease both;
+}
+
+.block-pros .ta-pros-group .ta-pros-item:nth-of-type(2){ animation-delay:.03s; }
+.block-pros .ta-pros-group .ta-pros-item:nth-of-type(3){ animation-delay:.06s; }
+.block-pros .ta-pros-group .ta-pros-item:nth-of-type(4){ animation-delay:.09s; }
+
+
+/* =========================================================
+   16. RESPONSIVE TABLET / MOBILE
+========================================================= */
+
+@media (max-width: 767px){
+
+  .block-pros [data-ta-pros-list]{
+    padding:12px;
+    gap:14px;
+    border-radius:20px;
+  }
+
+  .block-pros .ta-pros-group + .ta-pros-group{
+    padding-top:14px;
+  }
+
+  .block-pros .ta-pros-group__title{
+    font-size:.96rem;
+  }
+
+  /* carte plus tenue sur mobile */
+  .block-pros .ta-pros-item{
+    display:flex;
+    flex-direction:column;
+    border-color:rgba(229,218,202,.95);
+    box-shadow:
+      0 10px 24px rgba(61,43,31,.08),
+      inset 0 1px 0 rgba(255,255,255,.65);
+  }
+
+  .block-pros .ta-pros-item.ta-pros-item--default{
+    border-color:rgba(243,154,54,.28);
+    box-shadow:
+      0 14px 30px rgba(243,154,54,.12),
+      inset 0 1px 0 rgba(255,255,255,.7);
+  }
+
+  /* on "ouvre" le header pour descendre les actions en bas */
+  .block-pros .ta-pros-item__header{
+    display:contents;
+  }
+
+  .block-pros .ta-pros-item__name-wrap{
+    order:1;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+    min-width:0;
+    padding:14px 14px 0 var(--ta-pc-pad-offset);
+  }
+
+  .block-pros .ta-pros-item__name{
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+    font-size:.98rem;
+  }
+
+  .block-pros .ta-pros-item .ta-card-subtitle{
+    order:2;
+    padding:8px 14px 0 var(--ta-pc-pad-offset);
+  }
+
+  .block-pros .ta-pros-item__contacts{
+    order:3;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+    padding:12px 14px 2px var(--ta-pc-pad-offset);
+  }
+
+  .block-pros .ta-pros-item__contacts .ta-btn--ghost,
+  .block-pros .ta-pros-item__contacts .ta-text--status{
+    width:100%;
+    min-width:0;
+    min-height:36px;
+    justify-content:flex-start;
+    white-space:normal;
+    border-radius:12px;
+  }
+
+  /* petite marche visuelle sur la dernière pill */
+  .block-pros .ta-pros-item__contacts > *:last-child{
+    margin-bottom:2px;
+  }
+
+  .block-pros .ta-pros-item__notes{
+    order:4;
+    padding:12px 14px 0 var(--ta-pc-pad-offset);
+    font-size:.84rem;
+  }
+
+  .block-pros .ta-pros-item__actions{
+    order:5;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+    width:100%;
+    padding:14px 14px 14px var(--ta-pc-pad-offset);
+    margin-top:14px;
+    border-top:1px solid rgba(229,218,202,.72);
+  }
+
+  .block-pros .ta-pros-item__actions [data-ta-pros-set-default]{
+    width:100%;
+    min-height:40px;
+    padding:0 14px;
+    justify-content:center;
+    border-radius:12px;
+    font-size:.84rem;
+    font-weight:700;
+  }
+
+  .block-pros .ta-pros-item__actions [data-ta-pros-set-default]::after{
+    content:" Définir par défaut";
+  }
+
+  .block-pros .ta-pros-item__actions [data-ta-pros-edit],
+  .block-pros .ta-pros-item__actions [data-ta-pros-unlink]{
+    width:100%;
+    min-height:46px;
+    padding:0 14px;
+    justify-content:center;
+    border-radius:14px;
+    font-size:.9rem;
+    font-weight:800;
+  }
+
+  .block-pros .ta-pros-item__actions [data-ta-pros-edit]{
+    order:2;
+  }
+
+  .block-pros .ta-pros-item__actions [data-ta-pros-unlink]{
+    order:3;
+  }
+
+  .block-pros .ta-pros-item__actions [data-ta-pros-edit]::after{
+    content:" Modifier";
+  }
+
+  .block-pros .ta-pros-item__actions [data-ta-pros-unlink]::after{
+    content:" Retirer";
+  }
+}
+
+
+/* =========================================================
+   17. PETITS MOBILES
+========================================================= */
+
+@media (max-width: 420px){
+
+  .block-pros .ta-pros-item__name-wrap{
+    padding-top:13px;
+  }
+
+  .block-pros .ta-pros-item__actions{
+    gap:9px;
+    padding:13px 13px 13px var(--ta-pc-pad-offset);
+  }
+
+  .block-pros .ta-pros-item__actions [data-ta-pros-edit],
+  .block-pros .ta-pros-item__actions [data-ta-pros-unlink],
+  .block-pros .ta-pros-item__actions [data-ta-pros-set-default]{
+    min-height:44px;
+    font-size:.86rem;
+  }
+}
+
+
+/* =========================================================
+   18. REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce){
+  .block-pros .ta-pros-item,
+  .block-pros .ta-pros-item__actions .ta-btn,
+  .block-pros .ta-pros-item__contacts .ta-btn--ghost{
+    animation:none !important;
+    transition:none !important;
+  }
+}

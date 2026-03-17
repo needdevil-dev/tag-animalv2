@@ -1,0 +1,969 @@
+/* =========================================================
+   TAGANIMAL — PRO FORM
+   Fichier : pro-form.css
+   Scope   : .block-pros
+
+   RÔLE : wizard d'ajout / édition d'un professionnel
+   ─ Variables --ta-pro-* (source de vérité du module)
+   ─ Pontage → global-form.css via --ta-form-accent-*
+   ─ Bloc général .ta-block-hd / bd / title / subtitle
+   ─ Étapes wizard .ta-pros-step
+       ├── Étape 1 — choix du type : grille + .ta-pro-type-btn
+       ├── Étape 2 — recherche : champ, résultats, spinner,
+       │            highlight, result-card, confirm-card, notfound
+       └── Étape 3 — manuel : .ta-pros-form, champs identité,
+                              .ta-field-pair, messages
+   ─ Champs : .ta-label / .ta-input (text, email, tel, select,
+              textarea) + .ta-spinner
+   ─ Boutons : .ta-btn et toutes ses variantes
+               (primary, ghost, action, danger, icon, sm)
+   ─ Zones actions : .ta-form-actions / .ta-pros-back
+   ─ Focus accessibilité
+   ─ Responsive
+
+   NE CONTIENT PAS :
+   ─ Variables couleur type pro     → pro-screen.css
+   ─ Cadre / header / décorateur    → pro-screen.css
+   ─ .ta-pros-item et ses sections  → pro-card-views-card.css
+   ─ .ta-pros-group / __count       → pro-card-views-card.css
+   ─ [data-ta-pros-list]            → pro-card-views-card.css
+   ─ .ta-pros-badge                 → pro-card-views-card.css
+   ─ .ta-pros-empty                 → pro-card-views-card.css
+========================================================= */
+
+
+/* =========================================================
+   1. VARIABLES — source de vérité du module Pro
+   Pontage automatique → global-form.css via --ta-form-*
+========================================================= */
+
+.block-pros {
+  --ta-pro-accent:        #c87410;
+  --ta-pro-accent-2:      #e79b2f;
+  --ta-pro-accent-soft:   rgba(200, 116, 16, 0.10);
+  --ta-pro-accent-soft-2: rgba(200, 116, 16, 0.16);
+  --ta-pro-accent-border: rgba(200, 116, 16, 0.22);
+
+  --ta-pro-ink-1: #2b2b2b;   /* = --ta-ink global — cohérence thème */
+  --ta-pro-ink-2: #5a4a38;   /* ton chaud, pas gris froid */
+  --ta-pro-ink-3: #7a6d60;   /* = --ta-muted global */
+
+  /* Bordures warm amber — plus JAMAIS de gris froid (#e5e7eb) ici */
+  --ta-pro-line:        #e4d9cc;   /* ex #e5e7eb → chaud, accord papier */
+  --ta-pro-line-strong: #d3c2ae;   /* ex #d6dbe4 → chaud */
+  --ta-pro-line-accent: rgba(200, 116, 16, 0.30); /* bordure ghost active */
+  --ta-pro-bg-soft:     #fffaf3;
+  --ta-pro-bg-soft-2:   #fff7ed;
+  --ta-pro-white:       #ffffff;
+
+  --ta-pro-radius-xl: 24px;
+  --ta-pro-radius-lg: 20px;
+  --ta-pro-radius-md: 16px;
+  --ta-pro-radius-sm: 12px;
+
+  --ta-pro-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.06),
+    0  4px 12px rgba(15, 23, 42, 0.04);
+  --ta-pro-shadow-hover:
+    0 18px 36px rgba(15, 23, 42, 0.09),
+    0  8px 16px rgba(15, 23, 42, 0.06);
+
+  /* ── Pontage global-form.css ─────────────────────────── */
+  --ta-form-accent:        var(--ta-pro-accent);
+  --ta-form-accent-dark:   #9f5d0c;
+  --ta-form-accent-light:  var(--ta-pro-accent-soft);
+  --ta-form-accent-border: var(--ta-pro-accent-border);
+  --ta-form-accent-shadow: rgba(200, 116, 16, 0.18);
+}
+
+
+/* =========================================================
+   2. BLOC GÉNÉRAL
+========================================================= */
+
+.block-pros .ta-block-hd {
+  margin-bottom: 16px;
+}
+
+.block-pros .ta-block-title {
+  color: var(--ta-pro-ink-1);
+}
+
+.block-pros .ta-block-subtitle {
+  color: var(--ta-pro-ink-3);
+  line-height: 1.5;
+}
+
+.block-pros .ta-block-bd {
+  display: grid;
+  gap: 18px;
+}
+
+
+/* =========================================================
+   3. ÉTAPES WIZARD — BASE COMMUNE
+========================================================= */
+
+.block-pros .ta-pros-step {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--ta-pro-line);
+  border-radius: var(--ta-pro-radius-xl);
+  background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, #ffffff 100%);
+  box-shadow: var(--ta-pro-shadow);
+}
+
+.block-pros .ta-pros-step[hidden] {
+  display: none !important;
+}
+
+.block-pros .ta-pros-step .ta-section-title {
+  margin: 0;
+  color: var(--ta-pro-ink-1);
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.block-pros .ta-pros-step .ta-text,
+.block-pros .ta-pros-step .ta-text--status {
+  color: var(--ta-pro-ink-3);
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   4. ÉTAPE 1 — CHOIX DU TYPE
+========================================================= */
+
+.block-pros .ta-pros-type-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.block-pros .ta-pro-type-btn {
+  min-height: 118px;
+  padding: 16px 14px;
+  border: 1.5px solid var(--ta-pro-line);          /* warm #e4d9cc */
+  border-radius: var(--ta-pro-radius-lg);
+  background: linear-gradient(180deg, #ffffff 0%, var(--ta-pro-bg-soft) 100%);
+  box-shadow:
+    var(--ta-pro-shadow),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  color: var(--ta-pro-ink-1);
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform      .18s ease,
+    border-color   .18s ease,
+    box-shadow     .18s ease,
+    background     .18s ease;
+}
+
+.block-pros .ta-pro-type-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--ta-pro-line-accent);          /* amber au survol */
+  background: linear-gradient(180deg, #fff8f0 0%, #fff3e0 100%);
+  box-shadow: var(--ta-pro-shadow-hover);
+}
+
+.block-pros .ta-pro-type-btn.is-active,
+.block-pros .ta-pro-type-btn.is-selected,
+.block-pros .ta-pro-type-btn[aria-pressed="true"] {
+  border-color: var(--ta-pro-accent);
+  background: linear-gradient(180deg, var(--ta-pro-bg-soft-2) 0%, #ffffff 100%);
+  box-shadow:
+    0 0 0 4px var(--ta-pro-accent-soft),
+    var(--ta-pro-shadow);
+}
+
+.block-pros .ta-pro-type-btn .btn-emoji {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--ta-pro-accent-soft);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+
+/* =========================================================
+   5. ÉTAPE 2 — RECHERCHE
+========================================================= */
+
+.block-pros .ta-pros-step--search .ta-field {
+  display: grid;
+  gap: 8px;
+}
+
+/* Zone résultats */
+.block-pros [data-ta-pros-search-results] {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.block-pros [data-ta-pros-search-results][hidden] {
+  display: none !important;
+}
+
+/* Zone vide */
+.block-pros [data-ta-pros-search-empty] {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px dashed var(--ta-pro-accent-border);
+  border-radius: var(--ta-pro-radius-lg);
+  background: linear-gradient(180deg, var(--ta-pro-bg-soft-2) 0%, #ffffff 100%);
+}
+.block-pros [data-ta-pros-search-empty][hidden] {
+  display: none !important;
+}
+
+/* Spinner de recherche */
+.block-pros .ta-pros-searching {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 4px;
+  color: var(--ta-pro-ink-3);
+  font-size: .875rem;
+}
+
+.block-pros .ta-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--ta-pro-accent-soft-2);
+  border-top-color: var(--ta-pro-accent);
+  border-radius: 50%;
+  animation: ta-pro-spin .65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ta-pro-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Compteur résultats */
+.block-pros .ta-pros-results-count {
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--ta-pro-ink-3);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin: 0 0 8px;
+}
+
+/* Highlight terme saisi */
+.block-pros mark.ta-hl {
+  background: rgba(200, 116, 16, .12);
+  color: var(--ta-pro-accent);
+  border-radius: 3px;
+  padding: 0 2px;
+  font-style: normal;
+  font-weight: inherit;
+}
+
+/* Carte résultat */
+.block-pros .ta-pros-result-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--ta-pro-line);
+  border-radius: var(--ta-pro-radius-lg);
+  background: linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);
+  box-shadow: var(--ta-pro-shadow);
+  margin-bottom: 8px;
+  transition:
+    transform      .18s ease,
+    border-color   .18s ease,
+    box-shadow     .18s ease;
+}
+.block-pros .ta-pros-result-card:last-child { margin-bottom: 0; }
+.block-pros .ta-pros-result-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--ta-pro-accent-border);
+  box-shadow: var(--ta-pro-shadow-hover);
+}
+.block-pros .ta-pros-result-card.is-loading {
+  opacity: .5;
+  pointer-events: none;
+}
+
+/* Variante résultat unique */
+.block-pros .ta-pros-result-card--featured {
+  border-color: var(--ta-pro-accent-border);
+  background: linear-gradient(180deg, var(--ta-pro-bg-soft-2) 0%, #ffffff 100%);
+  box-shadow:
+    0 0 0 4px var(--ta-pro-accent-soft),
+    var(--ta-pro-shadow);
+  margin-bottom: 0;
+}
+
+/* Infos dans la carte résultat */
+.block-pros .ta-pros-result-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.block-pros .ta-pros-result__cabinet {
+  font-weight: 800;
+  font-size: .95rem;
+  color: var(--ta-pro-ink-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.block-pros .ta-pros-result__name {
+  font-size: .84rem;
+  color: var(--ta-pro-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Nom en solo (pas de cabinet) */
+.block-pros .ta-pros-result-card__info:not(:has(.ta-pros-result__cabinet)) .ta-pros-result__name {
+  font-weight: 800;
+  font-size: .95rem;
+  color: var(--ta-pro-ink-1);
+}
+
+.block-pros .ta-pros-result__sub {
+  font-size: .78rem;
+  color: var(--ta-pro-ink-3);
+  margin-top: 2px;
+}
+
+.block-pros .ta-pros-result-card__action {
+  flex-shrink: 0;
+}
+
+.block-pros .ta-pros-results-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* "Pas dans la liste" */
+.block-pros .ta-pros-results-notfound {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px 16px;
+  background: var(--ta-pro-bg-soft);
+  border: 1.5px dashed var(--ta-pro-accent-border);
+  border-radius: var(--ta-pro-radius-lg);
+  font-size: .8rem;
+  color: var(--ta-pro-ink-3);
+}
+
+/* Carte de confirmation (résultat unique) */
+.block-pros .ta-pros-confirm-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid var(--ta-pro-accent-border);
+  border-radius: var(--ta-pro-radius-xl);
+  background: linear-gradient(180deg, var(--ta-pro-bg-soft-2) 0%, #ffffff 100%);
+  box-shadow:
+    0 0 0 4px var(--ta-pro-accent-soft),
+    var(--ta-pro-shadow);
+}
+
+.block-pros .ta-pros-confirm-card__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: .76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--ta-pro-accent);
+}
+.block-pros .ta-pros-confirm-card__label::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ta-pro-accent);
+  flex-shrink: 0;
+}
+
+.block-pros .ta-pros-confirm-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/*
+ * BOUTONS INJECTÉS DYNAMIQUEMENT DANS LA CONFIRM-CARD
+ * ─────────────────────────────────────────────────────
+ * Ces boutons sont créés via innerHTML dans pro-form.js.
+ * global.css fournit height:46px + padding:0 18px via
+ * .ta-fiche-public .ta-btn — mais le background/color
+ * doit être redéclaré ici avec une spécificité >= 0,3,0
+ * pour être certain de surcharger tout conflit de cascade.
+ */
+
+/* Primary ("✓ Oui, c'est lui") — orange visible obligatoire */
+.block-pros .ta-pros-confirm-card__actions .ta-btn--primary {
+  background: linear-gradient(180deg, #f9b25c 0%, #f39a36 100%) !important;
+  border: 1.5px solid #d97f1a !important;
+  color: #ffffff !important;
+  padding: 0 20px;
+  min-height: 46px;
+  font-weight: 800;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    0 6px 16px rgba(243,154,54,.45);
+}
+.block-pros .ta-pros-confirm-card__actions .ta-btn--primary:hover {
+  background: linear-gradient(180deg, #fbbf68 0%, #f5a840 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.5),
+    0 10px 22px rgba(243,154,54,.55);
+  transform: translateY(-1px);
+}
+
+/* Ghost ("Non, ce n'est pas lui") — bordure warm, texte sombre */
+.block-pros .ta-pros-confirm-card__actions .ta-btn--ghost {
+  background: rgba(255,255,255,.88) !important;
+  border: 1.5px solid #d3c2ae !important;
+  color: #2b2b2b !important;
+  padding: 0 20px;
+  min-height: 46px;
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 2px 6px rgba(80,60,30,.10);
+}
+.block-pros .ta-pros-confirm-card__actions .ta-btn--ghost:hover {
+  border-color: rgba(200,116,16,.35) !important;
+  background: #fff8f0 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 4px 10px rgba(80,60,30,.14);
+  transform: translateY(-1px);
+}
+
+/*
+ * BOUTON "Choisir" dans les cartes résultat (N résultats)
+ * ─────────────────────────────────────────────────────
+ * Généré via cardHTML() — même contexte dynamique
+ */
+.block-pros [data-ta-pros-search-results] .ta-btn--primary {
+  background: linear-gradient(180deg, #f9b25c 0%, #f39a36 100%) !important;
+  border: 1.5px solid #d97f1a !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  min-height: 38px;
+  padding: 0 16px;
+  box-shadow: 0 4px 12px rgba(243,154,54,.35);
+}
+.block-pros [data-ta-pros-search-results] .ta-btn--primary:hover {
+  background: linear-gradient(180deg, #fbbf68 0%, #f5a840 100%) !important;
+}
+
+/*
+ * BOUTON "Ajouter manuellement" dans ta-pros-results-notfound
+ * ─────────────────────────────────────────────────────────
+ */
+.block-pros .ta-pros-results-notfound .ta-btn--ghost {
+  background: rgba(255,255,255,.88) !important;
+  border: 1.5px solid #d3c2ae !important;
+  color: #2b2b2b !important;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   6. ÉTAPE 3 — AJOUT MANUEL
+========================================================= */
+
+.block-pros .ta-pros-step--manual {
+  background: linear-gradient(180deg, #ffffff 0%, rgba(255,250,243,.85) 100%);
+}
+
+.block-pros .ta-pros-form {
+  display: grid;
+  gap: 14px;
+}
+
+.block-pros .ta-pros-form .ta-field {
+  display: grid;
+  gap: 8px;
+}
+
+.block-pros .ta-pros-form .ta-form-actions {
+  margin-top: 4px;
+}
+
+/* Groupe identité — Établissement / Nom (l'un ou l'autre) */
+.block-pros .ta-field-pair--identity {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--ta-pro-line);
+  border-radius: var(--ta-pro-radius-lg);
+  background: linear-gradient(180deg, #ffffff 0%, var(--ta-pro-bg-soft) 100%);
+  transition:
+    border-color .2s ease,
+    box-shadow   .2s ease;
+}
+.block-pros .ta-field-pair--identity.has-success {
+  border-color: var(--ta-pro-accent-border);
+  box-shadow: 0 0 0 4px var(--ta-pro-accent-soft);
+}
+.block-pros .ta-field-pair--identity.has-error {
+  border-color: #f87171;
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, .10);
+}
+
+/* Deux champs côte à côte */
+.block-pros .ta-field-pair__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+/* Séparateur vertical entre les deux champs */
+.block-pros .ta-field-pair__row .ta-field:first-child {
+  position: relative;
+}
+.block-pros .ta-field-pair__row .ta-field:first-child::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 60%;
+  background: var(--ta-pro-line);
+}
+
+/* Badge "ou" */
+.block-pros .ta-label-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  min-width: 28px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ta-pro-accent-soft-2);
+  color: var(--ta-pro-accent);
+  font-size: .68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  vertical-align: middle;
+}
+
+/* Hint validation sous les champs identité */
+.block-pros .ta-field-pair__hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: .78rem;
+  color: var(--ta-pro-ink-3);
+  line-height: 1.4;
+  transition: color .15s ease;
+}
+.block-pros .ta-field-pair__hint.is-error {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+/* Message retour AJAX (succès / erreur) */
+.block-pros .ta-pros-message {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  color: var(--ta-pro-ink-2);
+  font-size: .84rem;
+  line-height: 1.45;
+}
+.block-pros .ta-pros-message.is-error   { color: #b91c1c; }
+.block-pros .ta-pros-message.is-success { color: #166534; }
+
+
+/* =========================================================
+   7. CHAMPS — LABELS ET INPUTS
+========================================================= */
+
+.block-pros .ta-label {
+  font-size: .84rem;
+  font-weight: 700;
+  color: var(--ta-pro-ink-1);
+}
+
+.block-pros .ta-input,
+.block-pros input.ta-input,
+.block-pros textarea.ta-input,
+.block-pros select.ta-input {
+  width: 100%;
+  min-height: 52px;
+  border: 1.5px solid var(--ta-pro-line);
+  border-radius: 14px;
+  background: #fcfcfd;
+  color: var(--ta-pro-ink-1);
+  padding: 14px 16px;
+  font-size: .95rem;
+  transition:
+    border-color .15s ease,
+    box-shadow   .15s ease,
+    background   .15s ease;
+}
+
+.block-pros textarea.ta-input {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.block-pros .ta-input:focus,
+.block-pros input.ta-input:focus,
+.block-pros textarea.ta-input:focus,
+.block-pros select.ta-input:focus {
+  outline: none;
+  border-color: var(--ta-pro-accent);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px var(--ta-pro-accent-soft);
+}
+
+
+/* =========================================================
+   8. BOUTONS — BASE ET VARIANTES
+   NOTE: global.css impose height:46px sur .ta-fiche-public .ta-btn.
+   On reset ici avec height:auto + min-height pour récupérer
+   le contrôle complet dans le scope .block-pros.
+========================================================= */
+
+.block-pros .ta-btn {
+  height: auto;           /* reset le height:46px de global.css */
+  min-height: 46px;       /* hauteur cible par défaut */
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition:
+    transform      .15s ease,
+    box-shadow     .15s ease,
+    border-color   .15s ease,
+    background     .15s ease,
+    opacity        .15s ease;
+}
+.block-pros .ta-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Primaire */
+.block-pros .ta-btn--primary {
+  background: linear-gradient(180deg, var(--ta-pro-accent-2) 0%, var(--ta-pro-accent) 100%);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(200, 116, 16, .18);
+}
+.block-pros .ta-btn--primary:hover {
+  box-shadow: 0 16px 28px rgba(200, 116, 16, .22);
+}
+
+/* Fantôme — visible sur fond papier crème */
+.block-pros .ta-btn--ghost {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1.5px solid var(--ta-pro-line);   /* warm #e4d9cc */
+  color: var(--ta-pro-ink-1);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 2px 6px rgba(80,60,30,.10);
+}
+.block-pros .ta-btn--ghost:hover {
+  border-color: var(--ta-pro-line-accent);  /* amber au survol */
+  background: #fff8f0;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 4px 10px rgba(80,60,30,.14);
+}
+
+/* Action — fond warm avec bordure amber visible */
+.block-pros .ta-btn--action {
+  background: linear-gradient(180deg, #ffffff 0%, #fff6e8 100%);
+  border: 1.5px solid var(--ta-pro-line);
+  color: var(--ta-pro-ink-1);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 2px 8px rgba(80,60,30,.12);
+}
+.block-pros .ta-btn--action:hover {
+  border-color: var(--ta-pro-line-accent);
+  background: linear-gradient(180deg, #fff8f0 0%, #ffedce 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 4px 12px rgba(80,60,30,.16);
+}
+
+/* Danger — aligné sur la charte globale (fond rouge, texte blanc) */
+.block-pros .ta-btn--danger {
+  background: #d64545;
+  border: 1.5px solid #c23535;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(214,69,69,.25);
+}
+.block-pros .ta-btn--danger:hover {
+  background: #bb3434;
+  border-color: #aa2a2a;
+  box-shadow: 0 6px 16px rgba(214,69,69,.35);
+}
+
+/* Icône seul */
+.block-pros .ta-btn--icon {
+  min-width: 42px;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+/* Petit */
+.block-pros .ta-btn--sm {
+  height: auto !important;        /* annule height:46px de global.css */
+  min-height: 38px !important;
+  padding: 0 14px !important;
+  font-size: .82rem !important;
+  border-radius: 10px !important;
+}
+
+
+/* =========================================================
+   9. ZONES ACTIONS
+========================================================= */
+
+.block-pros .ta-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Override global.css : .ta-fiche-public .ta-form-actions > .ta-btn { width:100% }
+   — Dans le module Pro, les boutons sont côte à côte (flex row), pas en colonne */
+.block-pros .ta-form-actions > .ta-btn {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.block-pros .ta-pros-step .ta-form-actions .ta-btn {
+  min-height: 48px;
+}
+
+.block-pros .ta-pros-back {
+  justify-content: flex-start;
+}
+
+
+/* =========================================================
+   10. FOCUS ACCESSIBILITÉ
+========================================================= */
+
+.block-pros .ta-btn:focus-visible,
+.block-pros .ta-input:focus-visible,
+.block-pros .ta-pros-result-card:focus-visible,
+.block-pros [data-ta-pros-search-results] button:focus-visible,
+.block-pros [data-ta-pros-search-results] a:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 4px var(--ta-pro-accent-soft),
+    var(--ta-pro-shadow);
+}
+
+
+/* =========================================================
+   11. RESPONSIVE
+========================================================= */
+
+/* Tablette : grille 2 colonnes pour les types */
+@media (min-width: 640px) {
+  .block-pros .ta-pros-type-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Desktop : formulaire manuel en 2 colonnes */
+@media (min-width: 880px) {
+  .block-pros .ta-pros-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .block-pros .ta-pros-form .ta-field-pair--identity,
+  .block-pros .ta-pros-form .ta-field:nth-last-of-type(1),
+  .block-pros .ta-pros-form .ta-form-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile */
+@media (max-width: 639px) {
+
+  /* Groupe identité : empilement vertical */
+  .block-pros .ta-field-pair__row {
+    grid-template-columns: 1fr;
+  }
+  .block-pros .ta-field-pair__row .ta-field:first-child::after {
+    display: none;
+  }
+  .block-pros .ta-label-hint {
+    display: none;
+  }
+
+  /* Actions pleine largeur sur mobile uniquement */
+  .block-pros .ta-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .block-pros .ta-form-actions .ta-btn,
+  .block-pros .ta-form-actions .ta-pros-message {
+    width: 100%;
+  }
+
+  /* Confirmation */
+  .block-pros .ta-pros-confirm-card__actions {
+    flex-direction: column;
+  }
+  .block-pros .ta-pros-confirm-card__actions .ta-btn {
+    width: 100%;
+  }
+
+  /* "Pas dans la liste" */
+  .block-pros .ta-pros-results-notfound {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .block-pros .ta-pros-results-notfound .ta-btn {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   PATCH — BOUTONS CONFIRM-CARD (injectés dynamiquement)
+   ─────────────────────────────────────────────────────────
+   CONTEXTE :
+   [data-ta-pros-search-results] porte la class "ta-form-actions"
+   (voir pro-screen.php ligne ~155). global.css impose sur
+   .ta-fiche-public .ta-form-actions > .ta-btn un background
+   white qui remonte via héritage dans la cascade et écrase
+   les dégradés orange des règles précédentes.
+
+   SOLUTION :
+   Spécificité maximale (0,5,0) — chaîne complète depuis
+   .ta-fiche-public — valeurs hardcodées sans CSS vars pour
+   garantir le rendu même en cas de résolution tardive.
+   Ces règles DOIVENT rester en dernier dans le fichier.
+========================================================= */
+
+/* ── "✓ Oui, c'est lui" ─────────────────────────────── */
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-confirm-card__actions .ta-btn.ta-btn--primary,
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-confirm-card__actions .ta-btn--primary {
+  display:         inline-flex   !important;
+  align-items:     center        !important;
+  justify-content: center        !important;
+  background:      linear-gradient(180deg, #f9b25c 0%, #f39a36 100%) !important;
+  border:          1.5px solid #d97f1a !important;
+  color:           #ffffff       !important;
+  min-height:      46px          !important;
+  height:          auto          !important;
+  padding:         0 22px        !important;
+  border-radius:   14px          !important;
+  font-weight:     800           !important;
+  font-size:       .95rem        !important;
+  cursor:          pointer       !important;
+  text-decoration: none          !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    0 6px 16px rgba(243,154,54,.40) !important;
+  transition:
+    background .15s ease,
+    box-shadow .15s ease,
+    transform  .12s ease !important;
+}
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-confirm-card__actions .ta-btn.ta-btn--primary:hover,
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-confirm-card__actions .ta-btn--primary:hover {
+  background: linear-gradient(180deg, #fbbf68 0%, #f5a840 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.5),
+    0 10px 22px rgba(243,154,54,.55) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ── "Non, ce n'est pas lui" ─────────────────────────── */
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-confirm-card__actions .ta-btn.ta-btn--ghost,
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-confirm-card__actions .ta-btn--ghost {
+  display:         inline-flex   !important;
+  align-items:     center        !important;
+  justify-content: center        !important;
+  background:      #ffffff       !important;
+  border:          1.5px solid #d3c2ae !important;
+  color:           #2b2b2b       !important;
+  min-height:      46px          !important;
+  height:          auto          !important;
+  padding:         0 22px        !important;
+  border-radius:   14px          !important;
+  font-weight:     700           !important;
+  font-size:       .95rem        !important;
+  cursor:          pointer       !important;
+  text-decoration: none          !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 2px 6px rgba(80,60,30,.10) !important;
+}
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-confirm-card__actions .ta-btn.ta-btn--ghost:hover,
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-confirm-card__actions .ta-btn--ghost:hover {
+  background:   #fff8f0  !important;
+  border-color: rgba(200,116,16,.35) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ── Bouton "Choisir" dans les cartes N résultats ─────── */
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-result-card__action .ta-btn.ta-btn--primary,
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-result-card__action .ta-btn--primary {
+  background:  linear-gradient(180deg, #f9b25c 0%, #f39a36 100%) !important;
+  border:      1.5px solid #d97f1a !important;
+  color:       #ffffff  !important;
+  height:      auto     !important;
+  min-height:  38px     !important;
+  padding:     0 16px   !important;
+  font-weight: 800      !important;
+  box-shadow:  0 4px 12px rgba(243,154,54,.35) !important;
+}
+
+/* ── "Ajouter manuellement" dans results-notfound ────── */
+.ta-fiche-public .block-pros [data-ta-pros-search-results] .ta-pros-results-notfound .ta-btn {
+  background:  #ffffff       !important;
+  border:      1.5px solid #d3c2ae !important;
+  color:       #2b2b2b       !important;
+  font-weight: 700           !important;
+}

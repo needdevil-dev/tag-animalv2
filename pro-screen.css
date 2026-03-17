@@ -1,0 +1,138 @@
+/* ===============================================================
+   TAGANIMAL — JOURNAL-CARD.CSS
+   Carte "Journal de vie" — preview + accès bêta
+
+   ORGANISATION :
+   1. Banner bêta
+   2. Bloc texte
+   3. Responsive
+
+   DÉPENDANCE :
+   Requiert global-card.css (.ta-preview-action déjà défini)
+
+   SCOPE : .ta-fiche-public [data-ta-journal-card]
+=============================================================== */
+
+
+/* ===============================================================
+   1. BANNER BÊTA
+   Bandeau coloré avec icône + label "Bêta"
+=============================================================== */
+
+.ta-fiche-public .ta-journal-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+
+  background: linear-gradient(135deg,
+    rgba(124,58,237,.08) 0%,
+    rgba(99,102,241,.06) 100%
+  );
+  border: 1px solid rgba(124,58,237,.22);
+  border-radius: 12px;
+
+  margin-bottom: 4px;
+}
+
+.ta-fiche-public .ta-journal-banner__icon {
+  font-size: 1.5rem;
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
+.ta-fiche-public .ta-journal-banner__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ta-fiche-public .ta-journal-banner__title {
+  margin: 0 0 2px;
+  font-size: 0.9em;
+  font-weight: 800;
+  color: #4c1d95;
+  line-height: 1.2;
+}
+
+.ta-fiche-public .ta-journal-banner__subtitle {
+  margin: 0;
+  font-size: 0.78em;
+  font-weight: 600;
+  color: #6d28d9;
+  opacity: .8;
+  line-height: 1.35;
+}
+
+/* Badge "Bêta" en pill */
+.ta-fiche-public .ta-journal-banner__badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(124,58,237,.15);
+  border: 1px solid rgba(124,58,237,.30);
+  font-size: 0.68em;
+  font-weight: 900;
+  color: #5b21b6;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+
+/* ===============================================================
+   2. BLOC TEXTE
+   Les .ta-text et .ta-text--status viennent de global.css
+   Ces overrides ajustent le positionnement dans ce contexte.
+=============================================================== */
+
+.ta-fiche-public [data-ta-journal-card] .ta-field-card .ta-text {
+  font-size: 0.92em;
+  line-height: 1.65;
+}
+
+.ta-fiche-public [data-ta-journal-card] .ta-field-card .ta-text--status {
+  font-size: 0.84em;
+  color: #6d28d9;
+  opacity: .85;
+}
+
+/* Ligne de statut avec icône */
+.ta-fiche-public .ta-journal-status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82em;
+  font-weight: 600;
+  color: var(--ta-muted);
+  padding: 8px 0 0;
+}
+
+.ta-fiche-public .ta-journal-status-line::before {
+  content: '🔄';
+  font-size: 1em;
+  flex: 0 0 auto;
+}
+
+
+/* ===============================================================
+   3. RESPONSIVE
+=============================================================== */
+
+@media (max-width: 393px) {
+
+  .ta-fiche-public .ta-journal-banner {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .ta-fiche-public .ta-journal-banner__badge {
+    display: none; /* masqué sur très petit écran */
+  }
+}
+
+
+/* ===============================================================
+   FIN — journal-card.css
+   TagAnimal — Carnet de santé premium — Mars 2026
+=============================================================== */

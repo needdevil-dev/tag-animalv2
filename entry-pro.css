@@ -1,0 +1,1042 @@
+/* =========================================================
+ * TAGANIMAL — global-form.css  v3
+ * =========================================================
+ * PILIER STRUCTUREL de tous les wizards multi-étapes.
+ *
+ * PRINCIPE :
+ *   Ce fichier seul suffit à afficher un formulaire
+ *   fonctionnel et lisible (blanc, gris neutres).
+ *   Les fichiers spécifiques (vaccine-form.css, etc.)
+ *   n'ajoutent QUE des couleurs — jamais de layout.
+ *
+ * RÈGLES INTANGIBLES :
+ *   – Fond blanc sur toutes les surfaces de formulaire
+ *   – Boutons : pleine largeur, empilés, centrés
+ *   – Zéro couleur métier ici (vert, bleu, amber…)
+ *   – Zéro style inline autorisé dans les PHP
+ *
+ * TABLE DES MATIÈRES :
+ *   1.  Tokens structurels
+ *   2.  [hidden] + box-model
+ *   3.  Keyframes
+ *   4.  Conteneur racine
+ *   5.  Barre de progression — bulles
+ *   6.  Barre de progression — linéaire
+ *   7.  Étapes (step body + animation)
+ *   8.  Champs & labels
+ *   9.  Suggestions / chips
+ *   10. Raccourcis date
+ *   11. Alertes
+ *   12. Grille de fréquence (radio-cards)
+ *   13. Aperçu intelligent (reminder | history)
+ *   14. Boutons — pleine largeur, empilés
+ *   15. Loader à points
+ *   16. Toast flottant
+ *   17. Séparateur
+ *   18. État vide
+ *   19. Badges
+ *   20. Cartes génériques
+ * ========================================================= */
+
+
+/* ─────────────────────────────────────────────────────────
+   1. TOKENS STRUCTURELS
+   ─────────────────────────────────────────────────────────
+   Uniquement géométrie, espacement, timing, neutres.
+   Les thèmes surchargeront --ta-form-accent-* uniquement.
+   ───────────────────────────────────────────────────────── */
+:root {
+
+  /* ── Surfaces (blanc obligatoire) ───────────────────── */
+  --ta-form-bg:       #ffffff;
+  --ta-form-bg-soft:  #f8f8f8;
+  --ta-form-bg-muted: #f2f2f2;
+
+  /* ── Bordures neutres ───────────────────────────────── */
+  --ta-form-border:    #e2e2e2;
+  --ta-form-border-hi: #cccccc;
+
+  /* ── Encre ──────────────────────────────────────────── */
+  --ta-form-ink-1: #1a1a1a;
+  --ta-form-ink-2: #444444;
+  --ta-form-ink-3: #888888;
+
+  /* ── Accentuation — défaut neutre (thème surcharge) ─── */
+  --ta-form-accent:        #333333;
+  --ta-form-accent-dark:   #111111;
+  --ta-form-accent-light:  #eeeeee;
+  --ta-form-accent-border: #bbbbbb;
+  --ta-form-accent-shadow: rgba(0,0,0,.18);
+
+  /* ── Statuts sémantiques ────────────────────────────── */
+  --ta-form-success:        #10b981;
+  --ta-form-success-bg:     #f0fdf4;
+  --ta-form-success-border: #86efac;
+  --ta-form-warning:        #d97706;
+  --ta-form-warning-bg:     #fffbeb;
+  --ta-form-warning-border: #fde68a;
+  --ta-form-error:          #dc2626;
+  --ta-form-error-bg:       #fff0ee;
+  --ta-form-error-border:   #fca5a5;
+  --ta-form-info:           #3b82f6;
+  --ta-form-info-bg:        #eff6ff;
+  --ta-form-info-border:    #bfdbfe;
+
+  /* ── Radius ─────────────────────────────────────────── */
+  --ta-form-r-xs:   6px;
+  --ta-form-r-sm:   8px;
+  --ta-form-r-md:   12px;
+  --ta-form-r-lg:   18px;
+  --ta-form-r-full: 999px;
+
+  /* ── Transitions ────────────────────────────────────── */
+  --ta-form-ease:   cubic-bezier(.4, 0, .2, 1);
+  --ta-form-t-fast: 150ms;
+  --ta-form-t-mid:  250ms;
+
+  /* ── Ombres ─────────────────────────────────────────── */
+  --ta-form-shadow:       0 2px 14px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04);
+  --ta-form-shadow-float: 0 8px 28px rgba(0,0,0,.13), 0 2px 6px rgba(0,0,0,.07);
+
+  /* ── Hauteurs cibles tactiles ───────────────────────── */
+  --ta-form-input-h: 52px;
+  --ta-form-btn-h:   52px;
+  --ta-form-chip-h:  38px;
+
+  /* ── Espacement ─────────────────────────────────────── */
+  --ta-form-pad:     20px;
+  --ta-form-gap:     16px;
+  --ta-form-gap-btn: 10px;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   2. [hidden] + BOX-MODEL
+   ───────────────────────────────────────────────────────── */
+[hidden] {
+  display: none !important;
+}
+
+.ta-form,
+.ta-form * {
+  box-sizing: border-box;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   3. KEYFRAMES
+   ───────────────────────────────────────────────────────── */
+
+@keyframes ta-form-slide-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+@keyframes ta-form-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+@keyframes ta-form-shake {
+  0%, 100% { transform: translateX(0);    }
+  20%      { transform: translateX(-6px); }
+  60%      { transform: translateX(6px);  }
+}
+
+@keyframes ta-form-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ta-form-dot-pulse {
+  from { opacity: .3; transform: scale(.75); }
+  to   { opacity: 1;  transform: scale(1);   }
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   4. CONTENEUR RACINE
+   ─────────────────────────────────────────────────────────
+   .ta-form → classe racine commune à tous les wizards.
+   Fond blanc garanti.
+   ───────────────────────────────────────────────────────── */
+.ta-form {
+  background: var(--ta-form-bg);
+  border-radius: var(--ta-form-r-lg);
+  border: 1.5px solid var(--ta-form-border);
+  box-shadow: var(--ta-form-shadow);
+  padding: var(--ta-form-pad);
+  font-size: 1rem;
+  color: var(--ta-form-ink-2);
+  line-height: 1.5;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   5. BARRE DE PROGRESSION — BULLES
+   ─────────────────────────────────────────────────────────
+   Cercles numérotés + coche SVG + label.
+   Utilisé sur les wizards courts (2-4 étapes).
+   ───────────────────────────────────────────────────────── */
+.ta-form-progress {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.ta-form-progress__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.ta-form-progress__bubble {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ta-form-bg-soft);
+  border: 2px solid var(--ta-form-border-hi);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition:
+    background   var(--ta-form-t-mid) var(--ta-form-ease),
+    border-color var(--ta-form-t-mid) var(--ta-form-ease),
+    box-shadow   var(--ta-form-t-mid) var(--ta-form-ease);
+}
+
+.ta-form-progress__num {
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--ta-form-ink-3);
+  transition: opacity var(--ta-form-t-fast);
+}
+
+.ta-form-progress__check {
+  position: absolute;
+  opacity: 0;
+  color: #fff;
+  transition: opacity var(--ta-form-t-fast);
+}
+
+.ta-form-progress__lbl {
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--ta-form-ink-3);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  transition: color var(--ta-form-t-mid) var(--ta-form-ease);
+}
+
+/* Ligne de connexion entre bulles */
+.ta-form-progress__line {
+  flex: 1;
+  height: 2px;
+  background: var(--ta-form-border);
+  margin: 0 6px 16px;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.ta-form-progress__line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--ta-form-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--ta-form-t-mid) var(--ta-form-ease);
+}
+.ta-form-progress__line.is-done::after { transform: scaleX(1); }
+
+/* États actif / terminé */
+.ta-form-progress__item.is-active .ta-form-progress__bubble {
+  background: var(--ta-form-accent);
+  border-color: var(--ta-form-accent);
+  box-shadow: 0 0 0 5px var(--ta-form-accent-light);
+}
+.ta-form-progress__item.is-active .ta-form-progress__num { color: #fff; }
+.ta-form-progress__item.is-active .ta-form-progress__lbl { color: var(--ta-form-accent); }
+
+.ta-form-progress__item.is-done .ta-form-progress__bubble {
+  background: var(--ta-form-accent);
+  border-color: var(--ta-form-accent);
+}
+.ta-form-progress__item.is-done .ta-form-progress__num   { opacity: 0; }
+.ta-form-progress__item.is-done .ta-form-progress__check { opacity: 1; }
+.ta-form-progress__item.is-done .ta-form-progress__lbl   { color: var(--ta-form-accent); }
+
+
+/* ─────────────────────────────────────────────────────────
+   6. BARRE DE PROGRESSION — LINÉAIRE
+   ─────────────────────────────────────────────────────────
+   Barre fine + labels texte. Wizards longs (5+ étapes).
+   ───────────────────────────────────────────────────────── */
+.ta-form-progress-bar {
+  margin-bottom: 20px;
+}
+
+.ta-form-progress-bar__track {
+  height: 5px;
+  border-radius: var(--ta-form-r-full);
+  background: var(--ta-form-border);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+/* Largeur écrite par JS */
+.ta-form-progress-bar__fill {
+  height: 100%;
+  border-radius: var(--ta-form-r-full);
+  background: var(--ta-form-accent);
+  transition: width .35s var(--ta-form-ease);
+  width: 0%;
+}
+
+.ta-form-progress-bar__labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ta-form-progress-bar__labels span {
+  font-size: .72rem;
+  color: var(--ta-form-ink-3);
+  font-weight: 500;
+  transition: color .2s;
+}
+.ta-form-progress-bar__labels span.is-active {
+  color: var(--ta-form-accent);
+  font-weight: 700;
+}
+.ta-form-progress-bar__labels span.is-done {
+  color: var(--ta-form-success);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   7. ÉTAPES
+   ───────────────────────────────────────────────────────── */
+.ta-form-step {
+  animation: ta-form-slide-in var(--ta-form-t-mid) var(--ta-form-ease);
+}
+
+/* En-tête : numéro cerclé + titre */
+.ta-form-step__hd {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.ta-form-step__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  border-radius: var(--ta-form-r-full);
+  background: var(--ta-form-accent);
+  color: #fff;
+  font-size: .95rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.ta-form-step__num span {
+  font-size: .68rem;
+  font-weight: 400;
+  opacity: .75;
+  margin-left: 1px;
+}
+
+.ta-form-step__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ta-form-ink-1);
+  margin: 0 0 3px;
+  line-height: 1.25;
+}
+.ta-form-step__subtitle {
+  font-size: .85rem;
+  color: var(--ta-form-ink-3);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Corps : champs empilés */
+.ta-form-step__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ta-form-gap);
+  margin-bottom: 24px;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   8. CHAMPS & LABELS
+   ───────────────────────────────────────────────────────── */
+.ta-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ta-form-label {
+  font-size: .83rem;
+  font-weight: 600;
+  color: var(--ta-form-ink-1);
+  letter-spacing: -.01em;
+}
+
+.ta-form-hint {
+  font-size: .76rem;
+  color: var(--ta-form-ink-3);
+  line-height: 1.45;
+}
+
+.ta-form-req { color: var(--ta-form-error); margin-left: 2px; }
+.ta-form-opt { font-weight: 400; font-size: .79rem; color: var(--ta-form-ink-3); margin-left: 4px; }
+
+.ta-form-input-wrap    { position: relative; }
+.ta-form-input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ta-form-ink-3);
+  pointer-events: none;
+}
+
+.ta-form-input {
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ta-form-ink-1);
+  background: var(--ta-form-bg-soft);
+  border: 2px solid var(--ta-form-border);
+  border-radius: var(--ta-form-r-md);
+  padding: 14px 16px;
+  outline: none;
+  min-height: var(--ta-form-input-h);
+  -webkit-appearance: none;
+  appearance: none;
+  transition:
+    border-color var(--ta-form-t-fast) var(--ta-form-ease),
+    background   var(--ta-form-t-fast) var(--ta-form-ease),
+    box-shadow   var(--ta-form-t-fast) var(--ta-form-ease);
+}
+.ta-form-input::placeholder { color: var(--ta-form-ink-3); font-weight: 400; }
+
+.ta-form-input:focus {
+  border-color: var(--ta-form-accent);
+  background: var(--ta-form-bg);
+  box-shadow: 0 0 0 4px var(--ta-form-accent-light);
+}
+
+.ta-form-input--with-icon { padding-left: 46px; }
+.ta-form-input--date      { cursor: pointer; }
+
+.ta-form-input.has-error {
+  border-color: var(--ta-form-error);
+  box-shadow: 0 0 0 4px var(--ta-form-error-bg);
+  animation: ta-form-shake .35s var(--ta-form-ease);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   9. SUGGESTIONS / CHIPS
+   ───────────────────────────────────────────────────────── */
+.ta-form-chips-label {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ta-form-ink-3);
+}
+
+.ta-form-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ta-form-chip {
+  font-size: .83rem;
+  font-weight: 600;
+  color: var(--ta-form-ink-2);
+  background: var(--ta-form-bg-soft);
+  border: 1.5px solid var(--ta-form-border-hi);
+  border-radius: var(--ta-form-r-full);
+  padding: 7px 16px;
+  min-height: var(--ta-form-chip-h);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition:
+    background   var(--ta-form-t-fast) var(--ta-form-ease),
+    border-color var(--ta-form-t-fast) var(--ta-form-ease),
+    color        var(--ta-form-t-fast) var(--ta-form-ease),
+    transform    var(--ta-form-t-fast) var(--ta-form-ease);
+}
+.ta-form-chip:active {
+  background: var(--ta-form-accent-light);
+  border-color: var(--ta-form-accent-border);
+  color: var(--ta-form-accent);
+  transform: scale(.96);
+}
+.ta-form-chip--featured {
+  background: var(--ta-form-accent-light);
+  border-color: var(--ta-form-accent-border);
+  color: var(--ta-form-accent);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   10. RACCOURCIS DATE
+   ───────────────────────────────────────────────────────── */
+.ta-form-shortcuts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ta-form-shortcut {
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--ta-form-ink-2);
+  background: var(--ta-form-bg-soft);
+  border: 1.5px solid var(--ta-form-border-hi);
+  border-radius: var(--ta-form-r-md);
+  padding: 12px;
+  min-height: 48px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: all var(--ta-form-t-fast) var(--ta-form-ease);
+}
+.ta-form-shortcut:active {
+  background: var(--ta-form-accent-light);
+  border-color: var(--ta-form-accent-border);
+  color: var(--ta-form-accent);
+  transform: scale(.97);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   11. ALERTES
+   ───────────────────────────────────────────────────────── */
+.ta-form-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--ta-form-r-md);
+  font-size: .82rem;
+  font-weight: 500;
+  line-height: 1.5;
+  border: 1.5px solid transparent;
+}
+.ta-form-alert svg { flex-shrink: 0; margin-top: 1px; }
+
+.ta-form-alert--warning { background: var(--ta-form-warning-bg); border-color: var(--ta-form-warning-border); color: var(--ta-form-warning); }
+.ta-form-alert--info    { background: var(--ta-form-info-bg);    border-color: var(--ta-form-info-border);    color: var(--ta-form-info);    }
+.ta-form-alert--success { background: var(--ta-form-success-bg); border-color: var(--ta-form-success-border); color: var(--ta-form-success); }
+.ta-form-alert--error   { background: var(--ta-form-error-bg);   border-color: var(--ta-form-error-border);   color: var(--ta-form-error);   }
+
+
+/* ─────────────────────────────────────────────────────────
+   12. GRILLE DE FRÉQUENCE (radio-cards)
+   ───────────────────────────────────────────────────────── */
+.ta-form-freq-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.ta-form-freq {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.ta-form-freq input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.ta-form-freq__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 4px 10px;
+  background: var(--ta-form-bg-soft);
+  border: 2px solid var(--ta-form-border);
+  border-radius: var(--ta-form-r-md);
+  text-align: center;
+  min-height: 72px;
+  gap: 2px;
+  position: relative;
+  transition: all var(--ta-form-t-fast) var(--ta-form-ease);
+}
+.ta-form-freq:active .ta-form-freq__card { transform: scale(.95); }
+
+.ta-form-freq input:checked + .ta-form-freq__card {
+  background: var(--ta-form-accent-light);
+  border-color: var(--ta-form-accent);
+  box-shadow: 0 0 0 3px var(--ta-form-accent-light);
+}
+
+.ta-form-freq--none input:checked + .ta-form-freq__card {
+  background: var(--ta-form-bg-muted);
+  border-color: var(--ta-form-border-hi);
+  box-shadow: none;
+}
+
+.ta-form-freq__n {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ta-form-ink-1);
+  line-height: 1;
+  transition: color var(--ta-form-t-fast) var(--ta-form-ease);
+}
+.ta-form-freq input:checked + .ta-form-freq__card .ta-form-freq__n { color: var(--ta-form-accent); }
+
+.ta-form-freq__u {
+  font-size: .62rem;
+  font-weight: 600;
+  color: var(--ta-form-ink-3);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.ta-form-freq__badge {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ta-form-accent);
+  color: #fff;
+  font-size: .58rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--ta-form-r-full);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--ta-form-t-fast) var(--ta-form-ease);
+  pointer-events: none;
+}
+.ta-form-freq input:checked + .ta-form-freq__card .ta-form-freq__badge { opacity: 1; }
+
+
+/* ─────────────────────────────────────────────────────────
+   13. APERÇU INTELLIGENT (reminder | history)
+   ───────────────────────────────────────────────────────── */
+.ta-form-preview {
+  border-radius: var(--ta-form-r-md);
+  overflow: hidden;
+  border: 2px solid var(--ta-form-border);
+  transition:
+    border-color var(--ta-form-t-mid) var(--ta-form-ease),
+    background   var(--ta-form-t-mid) var(--ta-form-ease);
+}
+
+.ta-form-preview__pane {
+  display: none;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+}
+
+.ta-form-preview[data-state="reminder"] {
+  border-color: var(--ta-form-accent-border);
+  background: var(--ta-form-accent-light);
+}
+.ta-form-preview[data-state="history"] {
+  border-color: var(--ta-form-border-hi);
+  background: var(--ta-form-bg-soft);
+}
+
+.ta-form-preview[data-state="reminder"] [data-pane="reminder"],
+.ta-form-preview[data-state="history"]  [data-pane="history"] { display: flex; }
+
+.ta-form-preview__icon-col {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ta-form-r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  background: rgba(0,0,0,.06);
+}
+.ta-form-preview[data-state="reminder"] .ta-form-preview__icon-col {
+  background: var(--ta-form-accent-light);
+  border: 1px solid var(--ta-form-accent-border);
+}
+
+.ta-form-preview__text-col { display: flex; flex-direction: column; gap: 3px; }
+.ta-form-preview__title    { font-size: .875rem; font-weight: 700; color: var(--ta-form-ink-1); }
+.ta-form-preview__body     { font-size: .78rem; color: var(--ta-form-ink-3); line-height: 1.4; }
+.ta-form-preview__date     { font-weight: 700; color: var(--ta-form-accent); margin-left: 3px; }
+
+
+/* ─────────────────────────────────────────────────────────
+   14. BOUTONS — PLEINE LARGEUR, EMPILÉS, CENTRÉS
+   ─────────────────────────────────────────────────────────
+   RÈGLE ABSOLUE :
+   • Tous les boutons sont width: 100%
+   • Empilés verticalement dans .ta-form-actions
+   • Bouton principal TOUJOURS en premier (order: 1)
+   • Bouton retour TOUJOURS en dessous (order: 2)
+   ───────────────────────────────────────────────────────── */
+.ta-form-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--ta-form-gap-btn);
+  margin-top: 24px;
+}
+
+.ta-form-btn {
+  width: 100%;
+  font-size: .95rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--ta-form-r-md);
+  padding: 0 20px;
+  min-height: var(--ta-form-btn-h);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: -.01em;
+  text-align: center;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background var(--ta-form-t-fast) var(--ta-form-ease),
+    box-shadow var(--ta-form-t-fast) var(--ta-form-ease),
+    transform  var(--ta-form-t-fast) var(--ta-form-ease),
+    opacity    var(--ta-form-t-fast) var(--ta-form-ease);
+}
+
+/* Primaire — action principale (continuer, suivant) */
+.ta-form-btn--primary {
+  background: var(--ta-form-accent);
+  color: #ffffff;
+  box-shadow: 0 4px 14px var(--ta-form-accent-shadow);
+  order: 1;
+}
+.ta-form-btn--primary:active {
+  background: var(--ta-form-accent-dark);
+  box-shadow: none;
+  transform: scale(.98);
+}
+
+/* Submit — enregistrer, avec spinner intégré */
+.ta-form-btn--submit {
+  background: var(--ta-form-accent);
+  color: #ffffff;
+  box-shadow: 0 4px 14px var(--ta-form-accent-shadow);
+  position: relative;
+  overflow: hidden;
+  order: 1;
+}
+.ta-form-btn--submit:active {
+  background: var(--ta-form-accent-dark);
+  transform: scale(.98);
+}
+
+.ta-form-btn__spinner {
+  display: none;
+  animation: ta-form-spin .7s linear infinite;
+  flex-shrink: 0;
+}
+.ta-form-btn--submit.is-loading .ta-form-btn__label   { opacity: 0; }
+.ta-form-btn--submit.is-loading .ta-form-btn__spinner { display: block; }
+
+/* Ghost — retour, passer, annuler (toujours EN DESSOUS) */
+.ta-form-btn--ghost {
+  background: transparent;
+  color: var(--ta-form-ink-3);
+  border: 1.5px solid var(--ta-form-border-hi);
+  order: 2;
+}
+.ta-form-btn--ghost:active {
+  background: var(--ta-form-bg-muted);
+  color: var(--ta-form-ink-2);
+  transform: scale(.98);
+}
+
+/* Danger — suppression */
+.ta-form-btn--danger {
+  background: var(--ta-form-error-bg);
+  color: var(--ta-form-error);
+  border: 1.5px solid var(--ta-form-error-border);
+  order: 3;
+}
+.ta-form-btn--danger:active { background: var(--ta-form-error-border); transform: scale(.98); }
+
+
+/* ─────────────────────────────────────────────────────────
+   15. LOADER À POINTS
+   ───────────────────────────────────────────────────────── */
+.ta-form-loading {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  padding: 24px;
+}
+.ta-form-loading__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ta-form-accent);
+  animation: ta-form-dot-pulse .8s var(--ta-form-ease) infinite alternate;
+}
+.ta-form-loading__dot:nth-child(2) { animation-delay: .2s; }
+.ta-form-loading__dot:nth-child(3) { animation-delay: .4s; }
+
+
+/* ─────────────────────────────────────────────────────────
+   16. TOAST FLOTTANT
+   ───────────────────────────────────────────────────────── */
+.ta-form-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--ta-form-ink-1);
+  color: #fff;
+  font-size: .875rem;
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: var(--ta-form-r-full);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  max-width: calc(100vw - 32px);
+  text-align: center;
+  box-shadow: var(--ta-form-shadow-float);
+  white-space: nowrap;
+  transition:
+    opacity   var(--ta-form-t-fast) var(--ta-form-ease),
+    transform var(--ta-form-t-fast) var(--ta-form-ease);
+}
+.ta-form-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+.ta-form-toast--error     { background: var(--ta-form-error);   }
+.ta-form-toast--success   { background: var(--ta-form-success); }
+
+
+/* ─────────────────────────────────────────────────────────
+   17. SÉPARATEUR
+   ───────────────────────────────────────────────────────── */
+.ta-form-sep {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  color: var(--ta-form-ink-3);
+  font-size: .78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.ta-form-sep::before,
+.ta-form-sep::after { content: ""; flex: 1; height: 1px; background: var(--ta-form-border); }
+
+
+/* ─────────────────────────────────────────────────────────
+   18. ÉTAT VIDE
+   ───────────────────────────────────────────────────────── */
+.ta-form-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 28px 16px 20px;
+  gap: 6px;
+}
+.ta-form-empty__icon { font-size: 2rem; opacity: .4; line-height: 1; }
+.ta-form-empty__text { font-size: .95rem; font-weight: 600; color: var(--ta-form-ink-3); margin: 0; }
+.ta-form-empty__hint { font-size: .83rem; color: var(--ta-form-ink-3); margin: 0; max-width: 270px; line-height: 1.45; }
+
+
+/* ─────────────────────────────────────────────────────────
+   19. BADGES
+   ───────────────────────────────────────────────────────── */
+.ta-form-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 9px;
+  border-radius: var(--ta-form-r-full);
+  font-size: .73rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid var(--ta-form-border-hi);
+  background: var(--ta-form-bg-soft);
+  color: var(--ta-form-ink-2);
+}
+.ta-form-badge--accent  { background: var(--ta-form-accent-light);  color: var(--ta-form-accent);  border-color: var(--ta-form-accent-border);  }
+.ta-form-badge--success { background: var(--ta-form-success-bg);    color: var(--ta-form-success); border-color: var(--ta-form-success-border); }
+.ta-form-badge--warning { background: var(--ta-form-warning-bg);    color: var(--ta-form-warning); border-color: var(--ta-form-warning-border); }
+.ta-form-badge--error   { background: var(--ta-form-error-bg);      color: var(--ta-form-error);   border-color: var(--ta-form-error-border);   }
+
+.ta-form-badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 6px;
+  border-radius: var(--ta-form-r-full);
+  background: var(--ta-form-accent);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 700;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   20. CARTES GÉNÉRIQUES
+   ─────────────────────────────────────────────────────────
+   Fond blanc, ombre légère.
+   .ta-form-card--left → accent border-left (couleur thème)
+   ───────────────────────────────────────────────────────── */
+.ta-form-card {
+  background: var(--ta-form-bg);
+  border: 1.5px solid var(--ta-form-border);
+  border-radius: var(--ta-form-r-md);
+  box-shadow: var(--ta-form-shadow);
+  overflow: hidden;
+}
+
+.ta-form-card--left {
+  border-left: 5px solid var(--ta-form-accent);
+}
+
+/* Ligne interne clé / valeur (récap de confirmation) */
+.ta-form-card__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ta-form-border);
+}
+.ta-form-card__row:last-child { border-bottom: none; }
+
+.ta-form-card__key {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--ta-form-ink-3);
+  min-width: 110px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+.ta-form-card__val {
+  font-size: .9rem;
+  font-weight: 500;
+  color: var(--ta-form-ink-1);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* ─────────────────────────────────────────────────────────
+   21. RESPONSIVE MOBILE
+   ─────────────────────────────────────────────────────────
+   Adaptations pour écrans ≤ 480px (smartphones courants).
+   Objectifs :
+   • cibles tactiles suffisantes (≥ 48px)
+   • espacement généreux entre boutons (pas de collision)
+   • grilles réduites à 2 colonnes pour rester lisibles
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+
+  /* Tokens — valeurs ajustées mobile */
+  .ta-form {
+    --ta-form-btn-h:   56px;   /* zone de tap plus grande */
+    --ta-form-gap-btn: 14px;   /* air entre boutons empilés */
+    --ta-form-pad:     16px;   /* padding latéral réduit */
+    --ta-form-gap:     14px;   /* espacement interne des champs */
+  }
+
+  /* Zone des boutons d'action */
+  .ta-form-actions {
+    margin-top: 32px;   /* respiration avant les CTA */
+    gap: var(--ta-form-gap-btn);
+  }
+
+  /* Grille de fréquence : 4 → 2 colonnes */
+  .ta-form-freq-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Carte fréquence — hauteur tactile confortable */
+  .ta-form-freq__card {
+    min-height: 80px;
+    padding: 14px 6px 12px;
+  }
+
+  /* Raccourcis date — hauteur tactile */
+  .ta-form-shortcut {
+    min-height: 52px;
+    padding: 14px 12px;
+  }
+
+  /* En-tête d'étape — ajustement typographique */
+  .ta-form-step__title {
+    font-size: 1rem;
+  }
+
+  /* Carte récap — clé sur pleine largeur en colonne */
+  .ta-form-card__row {
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+  }
+
+  .ta-form-card__key {
+    min-width: unset;
+    font-size: .8rem;
+  }
+}
+
+/* Très petits écrans ≤ 360px */
+@media (max-width: 360px) {
+  .ta-form {
+    --ta-form-pad: 12px;
+  }
+
+  .ta-form-progress__lbl {
+    font-size: .6rem;
+    letter-spacing: .03em;
+  }
+
+  .ta-form-progress__bubble {
+    width: 30px;
+    height: 30px;
+  }
+}

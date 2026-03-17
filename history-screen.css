@@ -1,0 +1,455 @@
+/* ===============================================================
+   TAGANIMAL — GLOBAL-CARD.CSS  v2
+   Socle commun de toutes les preview-cards de la fiche publique
+
+   ORGANISATION :
+   1.  Tokens & animations cartes
+   2.  Header de card unifié (.ta-card-header)
+   3.  Pastille icône (.ta-card-icon / --sm / --lg)
+   4.  Badge statut (.ta-card-status)
+   5.  Bouton d'action preview (.ta-preview-action)
+   6.  État vide générique (.ta-card-empty)
+   7.  État vide comportement (.ta-behavior-empty)
+   8.  Séparateur de section (.ta-card-sep)
+   9.  Pill indicateur rapide (.ta-card-pill)
+   10. Responsive mobile-first
+
+   DÉPENDANCE :
+   Requiert global.css (variables --ta-*)
+
+   SCOPE : .ta-fiche-public (zéro fuite globale)
+
+   À NE PAS DUPLIQUER dans :
+   ✗ animal-card.css      → .ta-preview-action déjà ici
+   ✗ pro-card.css         → .ta-card-status / .ta-card-empty déjà ici
+   ✗ health-card.css      → .ta-card-pill déjà ici
+   ✗ behavior-card.css    → .ta-behavior-empty déjà ici
+=============================================================== */
+
+
+/* ===============================================================
+   1. TOKENS & ANIMATIONS CARTES
+=============================================================== */
+
+.ta-fiche-public {
+  --card-ease:     cubic-bezier(.22,.68,0,1.2);
+  --card-ease-std: cubic-bezier(.4,0,.2,1);
+  --card-speed:    .18s;
+}
+
+@keyframes ta-card-appear {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+@keyframes ta-fade-scale {
+  from { opacity: 0; transform: scale(.92); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+
+/* ===============================================================
+   2. HEADER DE CARD UNIFIÉ (.ta-card-header)
+   Pattern : [icône pastille] [titre + badge statut]
+   Usage : toutes les preview-cards
+
+   PHP attendu :
+   <div class="ta-card-header">
+     <span class="ta-card-icon">🐾</span>
+     <div class="ta-card-header__body">
+       <h3 class="ta-card-header__title">Titre</h3>
+       <span class="ta-card-status is-ok">Libellé</span>
+     </div>
+   </div>
+=============================================================== */
+
+.ta-fiche-public .ta-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.ta-fiche-public .ta-card-header__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ta-fiche-public .ta-card-header__title {
+  margin: 0;
+  font-size: 1.05em;
+  font-weight: 900;
+  color: var(--ta-ink);
+  letter-spacing: .02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Alias de compatibilité (pro-card existant) ── */
+.ta-fiche-public .ta-pros-card__header       { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.ta-fiche-public .ta-pros-card__title-group  { flex: 1; min-width: 0; }
+.ta-fiche-public .ta-pros-card__title-group .ta-value { margin: 0; font-size: 1.05em; font-weight: 900; color: var(--ta-ink); letter-spacing: .02em; }
+
+
+/* ===============================================================
+   3. PASTILLE ICÔNE (.ta-card-icon)
+   Variantes : --sm (dans les listes), --lg (hero)
+=============================================================== */
+
+/* ── Standard (52 × 52, header de card) ── */
+.ta-fiche-public .ta-card-icon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7eb, #fde9c6);
+  border: 2px solid rgba(243,154,54,.35);
+  border-radius: 14px;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 12px rgba(243,154,54,.20);
+  flex-shrink: 0;
+}
+
+/* ── Petite (32 × 32, dans les listes d'items) ── */
+.ta-fiche-public .ta-card-icon--sm {
+  width: 32px;
+  height: 32px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  background: rgba(243,154,54,.10);
+  border: none;
+  box-shadow: none;
+}
+
+/* ── Large (68 × 68, hero / empty state) ── */
+.ta-fiche-public .ta-card-icon--lg {
+  width: 68px;
+  height: 68px;
+  font-size: 2rem;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #fff8ed, #f3e6d0);
+  border: 2px solid rgba(243,154,54,.30);
+  box-shadow: 0 4px 14px rgba(243,154,54,.18);
+}
+
+/* ── Alias de compatibilité (pro-card existant) ── */
+.ta-fiche-public .ta-pros-card__icon {
+  flex-shrink: 0;
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #fff7eb, #fde9c6);
+  border: 2px solid rgba(243,154,54,.35);
+  border-radius: 14px;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 12px rgba(243,154,54,.20);
+}
+
+.ta-fiche-public .ta-pros-card__item-icon {
+  flex-shrink: 0;
+  font-size: 1.15rem;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(243,154,54,.10);
+  border-radius: 8px;
+}
+
+
+/* ===============================================================
+   4. BADGE STATUT (.ta-card-status)
+   Variantes : is-empty / is-ok / is-warning / is-danger
+=============================================================== */
+
+.ta-fiche-public .ta-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+/* Point coloré avant le texte */
+.ta-fiche-public .ta-card-status::before {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── is-empty : gris / aucune donnée ── */
+.ta-fiche-public .ta-card-status.is-empty {
+  background: rgba(120,109,96,.10);
+  color: var(--ta-muted);
+}
+.ta-fiche-public .ta-card-status.is-empty::before {
+  background: var(--ta-muted);
+  opacity: .5;
+}
+
+/* ── is-ok : vert / données complètes ── */
+.ta-fiche-public .ta-card-status.is-ok {
+  background: rgba(22,163,74,.12);
+  color: #15803d;
+}
+.ta-fiche-public .ta-card-status.is-ok::before {
+  background: #22c55e;
+}
+
+/* ── is-warning : orange / attention ── */
+.ta-fiche-public .ta-card-status.is-warning {
+  background: rgba(234,130,0,.12);
+  color: #9a5500;
+}
+.ta-fiche-public .ta-card-status.is-warning::before {
+  background: #f59e0b;
+}
+
+/* ── is-danger : rouge / vigilance ── */
+.ta-fiche-public .ta-card-status.is-danger {
+  background: rgba(220,38,38,.10);
+  color: #991b1b;
+}
+.ta-fiche-public .ta-card-status.is-danger::before {
+  background: #ef4444;
+}
+
+/* ── is-beta : violet / fonctionnalité bêta ── */
+.ta-fiche-public .ta-card-status.is-beta {
+  background: rgba(124,58,237,.10);
+  color: #5b21b6;
+}
+.ta-fiche-public .ta-card-status.is-beta::before {
+  background: #8b5cf6;
+}
+
+
+/* ===============================================================
+   5. BOUTON D'ACTION PREVIEW (.ta-preview-action)
+   Surcharge légère du .ta-btn--primary pour l'interaction
+   card → screen. Le style de base vient de global.css.
+=============================================================== */
+
+.ta-fiche-public .ta-preview-action {
+  width: 100%;
+  justify-content: center;
+  font-size: 0.97em;
+  letter-spacing: .01em;
+  transition:
+    background var(--card-speed) var(--card-ease-std),
+    box-shadow var(--card-speed) var(--card-ease-std),
+    transform   .12s             var(--card-ease);
+}
+
+.ta-fiche-public .ta-preview-action:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    0 14px 28px rgba(243,154,54,.55);
+}
+
+.ta-fiche-public .ta-preview-action:active {
+  transform: translateY(0);
+}
+
+
+/* ===============================================================
+   6. ÉTAT VIDE GÉNÉRIQUE (.ta-card-empty)
+   Usage : pro-card, health-card, et tout module sans données
+=============================================================== */
+
+.ta-fiche-public .ta-card-empty {
+  margin: 0;
+  padding: 20px 16px;
+  text-align: center;
+  font-size: 0.88em;
+  color: var(--ta-muted);
+  line-height: 1.55;
+
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 6px,
+    rgba(243,154,54,.04) 6px,
+    rgba(243,154,54,.04) 12px
+  );
+  border: 1px dashed rgba(243,154,54,.35);
+  border-radius: 12px;
+}
+
+
+/* ===============================================================
+   7. ÉTAT VIDE COMPORTEMENT (.ta-behavior-empty)
+   Usage : behavior-card.php — aucun comportement renseigné
+=============================================================== */
+
+.ta-fiche-public .ta-behavior-empty {
+  margin: 0 0 4px;
+  padding: 16px 14px;
+  text-align: center;
+  font-size: 0.90em;
+  line-height: 1.6;
+  color: var(--ta-muted);
+
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 6px,
+    rgba(243,154,54,.04) 6px,
+    rgba(243,154,54,.04) 12px
+  );
+  border: 1px dashed rgba(180,150,100,.35);
+  border-radius: 12px;
+}
+
+
+/* ===============================================================
+   8. SÉPARATEUR DE SECTION (.ta-card-sep)
+   Ligne avec label centré (ex : "Par où commencer ?")
+   Usage : health-card onboarding, et autres cartes
+
+   PHP attendu :
+   <div class="ta-card-sep">
+     <span>Par où commencer ?</span>
+   </div>
+=============================================================== */
+
+.ta-fiche-public .ta-card-sep {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0;
+}
+
+.ta-fiche-public .ta-card-sep::before,
+.ta-fiche-public .ta-card-sep::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ta-border);
+}
+
+.ta-fiche-public .ta-card-sep span {
+  font-size: 0.72em;
+  font-weight: 700;
+  color: var(--ta-muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+
+/* ===============================================================
+   9. PILL INDICATEUR RAPIDE (.ta-card-pill)
+   Grille de stats (rappels, traitements, historique…)
+   Usage : health-card, et tout module avec indicateurs chiffrés
+
+   PHP attendu :
+   <div class="ta-card-pills">
+     <div class="ta-card-pill">
+       <span class="ta-card-pill__icon">📅</span>
+       <span class="ta-card-pill__value">3</span>
+       <span class="ta-card-pill__label">Rappels</span>
+       <span class="ta-card-pill__sub">programmés</span>
+     </div>
+   </div>
+=============================================================== */
+
+.ta-fiche-public .ta-card-pills {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.ta-fiche-public .ta-card-pill {
+  background: linear-gradient(160deg, #fffbf4, #f7ead8);
+  border: 1px solid rgba(180,140,80,.20);
+  border-radius: 14px;
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(80,60,30,.10);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.ta-fiche-public .ta-card-pill__icon {
+  font-size: 1.4em;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.ta-fiche-public .ta-card-pill__value {
+  font-size: 1.05em;
+  font-weight: 900;
+  color: var(--ta-ink);
+  line-height: 1.1;
+}
+
+.ta-fiche-public .ta-card-pill__label {
+  font-size: 0.68em;
+  font-weight: 700;
+  color: var(--ta-muted);
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.ta-fiche-public .ta-card-pill__sub {
+  font-size: 0.68em;
+  font-weight: 600;
+  color: var(--ta-muted);
+  line-height: 1.2;
+}
+
+/* Modificateurs de couleur pour le .ta-card-pill__sub */
+.ta-fiche-public .ta-card-pill__sub--warning { color: #e67e22; font-weight: 700; }
+.ta-fiche-public .ta-card-pill__sub--info    { color: #2e86ab; font-weight: 700; }
+.ta-fiche-public .ta-card-pill__sub--ok      { color: #27ae60; font-weight: 700; }
+
+
+/* ===============================================================
+   10. RESPONSIVE MOBILE-FIRST (iPhone 390)
+=============================================================== */
+
+@media (max-width: 393px) {
+
+  .ta-fiche-public .ta-card-header {
+    gap: 10px;
+  }
+
+  .ta-fiche-public .ta-card-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+    border-radius: 12px;
+  }
+
+  .ta-fiche-public .ta-card-pills {
+    gap: 8px;
+  }
+
+  .ta-fiche-public .ta-card-pill {
+    padding: 10px 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ta-fiche-public .ta-preview-action {
+    transition: none !important;
+  }
+}
+
+
+/* ===============================================================
+   FIN — global-card.css  v2
+   TagAnimal — Carnet de santé premium — Mars 2026
+=============================================================== */

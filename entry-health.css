@@ -1,0 +1,1108 @@
+/* =========================================================
+ * TAGANIMAL — APPOINTMENT RDV FORM (Journal + Santé)
+ * Fichier  : appointment-heart-form.css
+ * Version  : 1.4.0
+ *
+ * HISTORIQUE
+ * - 1.3.0 : ajout du sous-formulaire vaccin
+ * - 1.4.0 : scope étendu de [data-ta-entry-root="journal"]
+ *           à [data-ta-entry-root] — couvre désormais le
+ *           contexte Journal ET le contexte Santé (onglet RDV)
+ *
+ * RÔLE DU FICHIER
+ * ---------------------------------------------------------
+ * Ce fichier gère le style du wizard Rendez-vous partagé
+ * entre le Journal de vie et l'onglet Santé.
+ *
+ * IL GÈRE :
+ * - le thème couleur du RDV selon le praticien choisi
+ * - la grille de choix du praticien
+ * - les cartes soignant / pro
+ * - le picker inline d'ajout/recherche de soignant
+ * - les blocs rappel e-mail
+ * - les switches
+ * - les pills de délai
+ * - le bloc "prochain rendez-vous"
+ * - les petits éléments visuels propres au RDV
+ *
+ * IL NE GÈRE PAS :
+ * - la progress bar (entry-journal.css / entry-health.css)
+ * - le header des étapes
+ * - la grille de motifs
+ * - la confirm card
+ * - les boutons back globaux
+ *
+ * CONTRAT DE CHARGEMENT
+ * ---------------------------------------------------------
+ * - entry-journal.css OU entry-health.css doit être chargé avant
+ * - global-form.css doit être chargé avant
+ *
+ * CONTRAT DE SCOPE
+ * ---------------------------------------------------------
+ * Tous les styles sont scoppés sur :
+ * [data-ta-entry-root] [data-ta-appointment-root]
+ * → valide pour journal (data-ta-entry-root="journal")
+ * → valide pour santé   (data-ta-entry-root sans valeur)
+ *
+ * OBJECTIF
+ * ---------------------------------------------------------
+ * Éviter les doublons, éviter les guerres de spécificité,
+ * et isoler le visuel du wizard RDV du shell parent.
+ * ========================================================= */
+
+
+/* =========================================================
+ * 1. RACINE DU FORMULAIRE RDV
+ * ---------------------------------------------------------
+ * Ici on définit les variables locales du module RDV.
+ * Le thème change selon data-ta-appointment-type.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] {
+  --ta-form-accent:        #3A6EA8;
+  --ta-form-accent-dark:   #2A527E;
+  --ta-form-accent-light:  #EBF2FB;
+  --ta-form-accent-border: #93B8DC;
+  --ta-form-accent-shadow: rgba(58,110,168,.22);
+
+  --ta-appointment-card-bg:            #ffffff;
+  --ta-appointment-card-bg-soft:       #FCFCFB;
+  --ta-appointment-card-border:        var(--ta-form-border, #E6DACA);
+
+  --ta-appointment-icon-bg:            var(--ta-form-accent-light);
+  --ta-appointment-icon-color:         var(--ta-form-accent);
+
+  --ta-appointment-muted:              var(--ta-form-ink-3, #8A7055);
+
+  --ta-appointment-toggle-off:         #E8E0D4;
+  --ta-appointment-toggle-off-border:  #DDD1C0;
+  --ta-appointment-toggle-thumb:       #ffffff;
+
+  --ta-appointment-row-shadow:         var(--ta-form-shadow, 0 6px 16px rgba(0,0,0,.06));
+  --ta-appointment-card-radius:        18px;
+  --ta-appointment-card-radius-lg:     22px;
+}
+
+
+/* =========================================================
+ * 2. THÈMES PAR TYPE DE PRATICIEN
+ * ---------------------------------------------------------
+ * Le JS du wizard change data-ta-appointment-type.
+ * Ce CSS adapte les couleurs sans charger d'autres fichiers.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root][data-ta-appointment-type="veterinaire"] {
+  --ta-form-accent:        #3A6EA8;
+  --ta-form-accent-dark:   #2A527E;
+  --ta-form-accent-light:  #EBF2FB;
+  --ta-form-accent-border: #93B8DC;
+  --ta-form-accent-shadow: rgba(58,110,168,.22);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root][data-ta-appointment-type="toiletteur"] {
+  --ta-form-accent:        #C26E2A;
+  --ta-form-accent-dark:   #9A571F;
+  --ta-form-accent-light:  #FFF3E8;
+  --ta-form-accent-border: #F0C7A5;
+  --ta-form-accent-shadow: rgba(194,110,42,.22);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root][data-ta-appointment-type="educateur"] {
+  --ta-form-accent:        #16A34A;
+  --ta-form-accent-dark:   #15803D;
+  --ta-form-accent-light:  #F0FDF4;
+  --ta-form-accent-border: #86EFAC;
+  --ta-form-accent-shadow: rgba(22,163,74,.20);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root][data-ta-appointment-type="osteopathe"] {
+  --ta-form-accent:        #7C3AED;
+  --ta-form-accent-dark:   #6025C9;
+  --ta-form-accent-light:  #F5F0FF;
+  --ta-form-accent-border: #CDB8FF;
+  --ta-form-accent-shadow: rgba(124,58,237,.20);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root][data-ta-appointment-type="pension"] {
+  --ta-form-accent:        #0F766E;
+  --ta-form-accent-dark:   #115E59;
+  --ta-form-accent-light:  #ECFEFF;
+  --ta-form-accent-border: #99F6E4;
+  --ta-form-accent-shadow: rgba(15,118,110,.20);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root][data-ta-appointment-type="autre"] {
+  --ta-form-accent:        #64748B;
+  --ta-form-accent-dark:   #475569;
+  --ta-form-accent-light:  #F8FAFC;
+  --ta-form-accent-border: #CBD5E1;
+  --ta-form-accent-shadow: rgba(100,116,139,.20);
+}
+
+
+/* =========================================================
+ * 3. LAYOUT GÉNÉRAL DU FORMULAIRE RDV
+ * ---------------------------------------------------------
+ * Grilles et conteneurs simples, uniquement pour le module RDV.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-form {
+  display: grid;
+  gap: 18px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-praticien-grid,
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-list,
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-search-results {
+  display: grid;
+  gap: 12px;
+}
+
+
+/* =========================================================
+ * 4. CHOIX DU PRATICIEN
+ * ---------------------------------------------------------
+ * Ces boutons correspondent à l'étape 1 du wizard.
+ * On gère ici seulement leur rendu visuel dans le contexte RDV.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-praticien-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 82px;
+  padding: 16px;
+  border: 1.5px solid var(--ta-form-border);
+  border-radius: var(--ta-appointment-card-radius);
+  background: #fff;
+  box-shadow: var(--ta-form-shadow);
+  text-align: left;
+  color: var(--ta-form-ink-1);
+  font-weight: 800;
+  transition:
+    transform var(--ta-form-t-fast, .15s) var(--ta-form-ease, ease),
+    box-shadow var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    border-color var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    background var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-praticien-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--ta-form-accent-border);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-praticien-btn.is-selected {
+  border-color: var(--ta-form-accent);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--ta-form-accent) 14%, transparent),
+    var(--ta-form-shadow);
+  background: linear-gradient(180deg, #fff 0%, var(--ta-form-accent-light) 100%);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-praticien-btn__icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--ta-form-accent-light);
+  color: var(--ta-form-accent);
+  font-size: 1.5rem;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-praticien-btn__label {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-type-badge {
+  margin-bottom: 4px;
+}
+
+
+/* =========================================================
+ * 5. CARTES SOIGNANT / PROFESSIONNEL
+ * ---------------------------------------------------------
+ * Cartes utilisées quand on sélectionne un soignant existant.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-card {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1.5px solid var(--ta-form-border);
+  border-radius: var(--ta-appointment-card-radius);
+  background: #fff;
+  box-shadow: var(--ta-form-shadow);
+  text-align: left;
+  color: var(--ta-form-ink-1);
+  transition:
+    transform var(--ta-form-t-fast, .15s) var(--ta-form-ease, ease),
+    box-shadow var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    border-color var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--ta-form-accent-border);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-card.is-selected {
+  border-color: var(--ta-form-accent);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--ta-form-accent) 14%, transparent),
+    var(--ta-form-shadow);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-card--default {
+  border-left: 5px solid var(--ta-form-accent);
+  background: linear-gradient(180deg, #fff 0%, var(--ta-form-accent-light) 100%);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-card__hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-card__name {
+  font-size: .98rem;
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--ta-form-ink-1);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-card__clinic,
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-card__city,
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-card__meta {
+  font-size: .84rem;
+  line-height: 1.45;
+  color: var(--ta-form-ink-3);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-card__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+
+/* =========================================================
+ * 6. ÉTAT VIDE / CARTE INFO
+ * ---------------------------------------------------------
+ * Utilisé quand il n'y a pas encore de soignant lié.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-empty,
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-info-card {
+  padding: 16px;
+  border: 1.5px dashed var(--ta-form-accent-border);
+  border-radius: var(--ta-appointment-card-radius);
+  background: linear-gradient(180deg, #fff 0%, var(--ta-form-accent-light) 100%);
+}
+
+
+/* =========================================================
+ * 7. PICKER INLINE SOIGNANT
+ * ---------------------------------------------------------
+ * Bloc intégré dans le wizard pour rechercher / ajouter un
+ * soignant sans quitter le formulaire.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-picker {
+  margin-top: 10px;
+  padding: 16px;
+  border: 1.5px solid var(--ta-form-accent-border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fff 0%, var(--ta-form-accent-light) 100%);
+  box-shadow: 0 8px 18px rgba(0,0,0,.04);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-picker__hd {
+  margin-bottom: 14px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-picker__title {
+  margin: 0 0 4px;
+  color: var(--ta-form-ink-1);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-picker__subtitle {
+  margin: 0;
+  color: var(--ta-form-ink-3);
+  font-size: .84rem;
+  line-height: 1.5;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-grid {
+  display: grid;
+  gap: 12px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-manual-form {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--ta-form-accent) 16%, transparent);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-search-item {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  padding: 14px;
+  border: 1.5px solid var(--ta-form-accent-border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--ta-form-shadow);
+  color: var(--ta-form-ink-1);
+  transition:
+    transform var(--ta-form-t-fast, .15s) var(--ta-form-ease, ease),
+    border-color var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    box-shadow var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-search-item:hover {
+  transform: translateY(-1px);
+  border-color: var(--ta-form-accent);
+  box-shadow: 0 10px 24px rgba(0,0,0,.06);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-search-item__title {
+  font-weight: 800;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-search-item__meta {
+  color: var(--ta-form-ink-3);
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-search-item__cta {
+  color: var(--ta-form-accent);
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-message {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: .82rem;
+  font-weight: 600;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-message.is-error {
+  background: var(--ta-form-error-bg);
+  color: var(--ta-form-error);
+  border: 1px solid var(--ta-form-error-border);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-message.is-success {
+  background: var(--ta-form-success-bg);
+  color: var(--ta-form-success);
+  border: 1px solid var(--ta-form-success-border);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-submit {
+  margin-top: 16px;
+}
+
+
+/* =========================================================
+ * 8. ACTIONS ET FOCUS LOCAUX AU FORMULAIRE RDV
+ * ---------------------------------------------------------
+ * Ce bloc ne remplace pas les boutons globaux du journal.
+ * Il ne fait que recolorer certains états dans le wizard RDV.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-form-btn--ghost:active {
+  background: var(--ta-form-accent-light);
+  color: var(--ta-form-accent);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-form-input:focus,
+[data-ta-entry-root] [data-ta-appointment-root] select.ta-form-input:focus,
+[data-ta-entry-root] [data-ta-appointment-root] textarea.ta-form-input:focus {
+  border-color: var(--ta-form-accent);
+  box-shadow: 0 0 0 4px var(--ta-form-accent-light);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-form-toast--success {
+  background: var(--ta-form-accent);
+}
+
+
+/* =========================================================
+ * 9. RÉCAP SPÉCIFIQUE RDV
+ * ---------------------------------------------------------
+ * Petit bandeau de synthèse utilisé pendant le wizard.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-recap-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--ta-form-accent-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff 0%, var(--ta-form-accent-light) 100%);
+  color: var(--ta-form-accent);
+  font-size: .88rem;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(0,0,0,.035);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-recap-sep {
+  opacity: .55;
+}
+
+
+/* =========================================================
+ * 10. BLOCS RAPPELS
+ * ---------------------------------------------------------
+ * Partie critique du wizard :
+ * - ligne rappel
+ * - icône
+ * - texte
+ * - switch
+ *
+ * Cette partie est volontairement isolée ici pour éviter
+ * toute collision avec entry-journal.css.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 20px 22px;
+  border: 1.5px solid var(--ta-form-border);
+  border-radius: var(--ta-appointment-card-radius-lg);
+  background: var(--ta-appointment-card-bg);
+  box-shadow: var(--ta-appointment-row-shadow);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1 1 auto;
+  padding-right: 10px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-icon {
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--ta-form-accent-light);
+  color: var(--ta-form-accent);
+  font-size: 1.35rem;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-title {
+  margin: 0 0 6px;
+  font-size: 1.02rem;
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--ta-form-ink-1);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-desc {
+  margin: 0;
+  font-size: .92rem;
+  line-height: 1.45;
+  color: var(--ta-form-ink-3);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-row[data-vet-toggle-wrap="next"] {
+  padding-top: 22px;
+  padding-bottom: 22px;
+}
+
+
+/* =========================================================
+ * 11. SWITCH RDV
+ * ---------------------------------------------------------
+ * Switch custom pour les rappels.
+ * Le JS pilote data-state="on/off".
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-toggle {
+  position: relative;
+  display: inline-block;
+  width: 56px;
+  min-width: 56px;
+  height: 32px;
+  padding: 0;
+  margin: 0 2px 0 14px;
+  border: 1px solid var(--ta-appointment-toggle-off-border);
+  border-radius: 999px;
+  background: var(--ta-appointment-toggle-off);
+  box-sizing: border-box;
+  overflow: hidden;
+  vertical-align: middle;
+  flex: 0 0 56px;
+  align-self: center;
+  cursor: pointer;
+  transition:
+    background var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    border-color var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    box-shadow var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    transform var(--ta-form-t-fast, .15s) var(--ta-form-ease, ease);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-toggle:hover {
+  transform: translateY(-1px);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--ta-form-accent-light);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-toggle[data-state="on"] {
+  background: var(--ta-form-accent);
+  border-color: var(--ta-form-accent);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  display: block;
+  border-radius: 50%;
+  background: var(--ta-appointment-toggle-thumb);
+  box-shadow: 0 2px 6px rgba(0,0,0,.14);
+  transition:
+    left var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    box-shadow var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-toggle[data-state="on"] .ta-vet-toggle-thumb {
+  left: 29px;
+}
+
+
+/* =========================================================
+ * 12. DÉLAI AVANT RDV
+ * ---------------------------------------------------------
+ * Zone affichée quand on active le rappel avant rendez-vous.
+ * Les pills doivent rester stables, centrées et premium.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-delay {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  margin: -2px 0 18px;
+  padding: 14px 14px 10px;
+  border: 1px dashed var(--ta-form-accent-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--ta-form-accent-light) 48%, #fff);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-delay-pills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 10px;
+  align-items: stretch;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-delay-pill {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--ta-form-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ta-form-ink-2);
+  font-size: .92rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    background var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    color var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    box-shadow var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    transform var(--ta-form-t-fast, .15s) var(--ta-form-ease, ease);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-delay-pill:hover {
+  transform: translateY(-1px);
+  border-color: var(--ta-form-accent-border);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-delay-pill.is-selected {
+  border-color: var(--ta-form-accent);
+  background: var(--ta-form-accent-light);
+  color: var(--ta-form-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ta-form-accent) 10%, transparent);
+}
+
+/* =========================================================
+ * 13. PROCHAIN RENDEZ-VOUS
+ * ---------------------------------------------------------
+ * Bloc utilisé pour planifier automatiquement un prochain RDV.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-next-freq {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-next-freq .ta-form-label {
+  margin-bottom: 10px;
+  color: #9A7857;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-size: .95rem;
+  font-weight: 800;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-next-freq .ta-form-input {
+  background: #fffdfa;
+  border-color: #E3D6C6;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-next-preview {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 14px;
+  padding: 13px 16px;
+  border: 1.5px solid var(--ta-form-info-border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f9fcff 0%, #edf5ff 100%);
+  color: #2F5F9E;
+  font-size: .95rem;
+  font-weight: 800;
+  line-height: 1.45;
+  box-shadow: 0 6px 18px rgba(59,130,246,.07);
+}
+
+
+/* =========================================================
+ * 14. BADGES ET CARTES RDV
+ * ---------------------------------------------------------
+ * Petits enrichissements visuels utilisés dans les cartes RDV.
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-card {
+  --rdv-accent: var(--ta-form-accent);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-card--today {
+  border-left-color: #dc2626 !important;
+  background: color-mix(in srgb, #dc2626 3%, #fff);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-card--urgent {
+  border-left-color: #f59e0b !important;
+  background: color-mix(in srgb, #f59e0b 3%, #fff);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-card--soon {
+  border-left-color: #3b82f6 !important;
+  background: color-mix(in srgb, #3b82f6 2%, #fff);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-card--future {
+  border-left-style: dashed;
+  opacity: .88;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-type-label {
+  color: var(--rdv-accent, var(--ta-form-accent));
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-badge-count {
+  background: var(--ta-form-accent);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-badge--motif {
+  background: color-mix(in srgb, var(--ta-form-accent) 12%, #fff);
+  color: var(--ta-form-accent);
+  border-color: color-mix(in srgb, var(--ta-form-accent) 30%, transparent);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-badge--recurrent {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-badge--future {
+  background: #F1F5F9;
+  color: #475569;
+  border-color: #CBD5E1;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-badge--urgent {
+  background: #FEF3C7;
+  color: #B45309;
+  border-color: #FDE68A;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-rdv-badge--today {
+  background: #FEE2E2;
+  color: #991B1B;
+  border-color: #FCA5A5;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-badge--default {
+  background: var(--ta-form-accent-light);
+  color: var(--ta-form-accent);
+  border-color: var(--ta-form-accent-border);
+}
+
+/* =========================================================
+ * 15. VACCIN LIÉ AU RDV
+ * ---------------------------------------------------------
+ * Bloc affiché à l'étape "motif" quand le motif choisi
+ * est une vaccination vétérinaire.
+ *
+ * Objectifs :
+ * - rendre le bloc très visible
+ * - faciliter la sélection sur mobile
+ * - garder une hiérarchie premium cohérente avec le wizard
+ * ========================================================= */
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care {
+  display: grid;
+  gap: 14px;
+  margin: 16px 0 0;
+  padding: 16px;
+  border: 1.5px solid var(--ta-form-accent-border);
+  border-radius: var(--ta-appointment-card-radius-lg);
+  background: linear-gradient(180deg, #fff 0%, var(--ta-form-accent-light) 100%);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .05);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__head {
+  display: grid;
+  gap: 6px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__title {
+  margin: 0;
+  color: var(--ta-form-ink-1);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__subtitle {
+  margin: 0;
+  color: var(--ta-form-ink-3);
+  font-size: .86rem;
+  line-height: 1.5;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__list {
+  display: grid;
+  gap: 10px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  padding: 14px;
+  border: 1.5px solid var(--ta-form-accent-border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--ta-form-shadow);
+  text-align: left;
+  color: var(--ta-form-ink-1);
+  cursor: pointer;
+  transition:
+    transform var(--ta-form-t-fast, .15s) var(--ta-form-ease, ease),
+    border-color var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    box-shadow var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease),
+    background var(--ta-form-t-mid, .22s) var(--ta-form-ease, ease);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card:hover,
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--ta-form-accent);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, .08);
+  outline: none;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card.is-selected,
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card[aria-pressed="true"] {
+  border-color: var(--ta-form-accent);
+  background: color-mix(in srgb, var(--ta-form-accent-light) 55%, #fff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ta-form-accent) 14%, transparent);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card__icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ta-form-accent);
+  font-size: 1.2rem;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ta-form-accent) 14%, transparent);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card__body {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card__title {
+  display: block;
+  color: var(--ta-form-ink-1);
+  font-size: .95rem;
+  font-weight: 800;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card__meta {
+  display: block;
+  color: var(--ta-form-ink-3);
+  font-size: .82rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__selected {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--ta-form-accent-border);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ta-form-ink-1);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ta-form-accent) 10%, transparent);
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__selected strong {
+  color: var(--ta-form-accent);
+  font-size: .82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__actions {
+  display: grid;
+  gap: 10px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__actions .ta-form-btn {
+  width: 100%;
+  justify-content: center;
+  min-height: 48px;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-info-card {
+  padding: 14px;
+  border: 1px dashed var(--ta-form-accent-border);
+  border-radius: 14px;
+  background: rgba(255,255,255,.78);
+  color: var(--ta-form-ink-3);
+  text-align: center;
+  line-height: 1.5;
+}
+
+[data-ta-entry-root] [data-ta-appointment-root] .ta-vet-info-card p {
+  margin: 0;
+}
+
+
+/* =========================================================
+ * 16. RESPONSIVE
+ * ---------------------------------------------------------
+ * Ajustements mobile / tablette du wizard RDV.
+ * ========================================================= */
+
+@media (max-width: 759px) {
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__title {
+    font-size: .96rem;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__subtitle {
+    font-size: .84rem;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 1.08rem;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card__title {
+    font-size: .92rem;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-vaccine-card__meta {
+    font-size: .8rem;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-row {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 16px;
+    gap: 14px;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-info {
+    align-items: flex-start;
+    gap: 14px;
+    padding-right: 0;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-icon {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
+    font-size: 1.25rem;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-title {
+    font-size: .98rem;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-rappel-desc {
+    font-size: .89rem;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-toggle {
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  /* On garde 3 pills compactes sur mobile large */
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-delay-pills {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-delay-pill {
+    min-height: 42px;
+    padding: 9px 8px;
+    font-size: .84rem;
+  }
+}
+
+@media (max-width: 520px) {
+  /* Très petit mobile : on passe en 2 colonnes pour éviter l’écrasement */
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-delay-pills {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 760px) {
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-praticien-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-inline-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-linked-care__actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 480px) {
+  /* Boutons praticien — gap généreux sur mobile */
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-praticien-grid,
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-pro-list,
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-search-results {
+    gap: 14px;
+  }
+
+  /* Bouton praticien — hauteur min tactile confortable */
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-praticien-btn {
+    min-height: 76px;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  /* Delay pills — hauteur tactile */
+  [data-ta-entry-root] [data-ta-appointment-root] .ta-vet-delay-pill {
+    min-height: 48px;
+    padding: 11px 8px;
+  }
+}
+
+/* ── Bouton global "Retour à la santé / Retour au journal" ── */
+[data-ta-entry-root] .ta-vet-global-back {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ta-form-border-lo, #e5e7eb);
+}
+
+/* =========================================================
+ * FIN DU FICHIER
+ * ---------------------------------------------------------
+ * IMPORTANT :
+ * - Ne pas remettre ici .ta-vet-motif-grid
+ * - Ne pas remettre ici .ta-vet-confirm-card
+ * - Ne pas remettre ici .ta-form-progress-bar
+ * - Ne pas remettre ici .ta-form-step__*
+ *
+ * Sinon on recrée les doublons avec entry-journal.css
+ * ========================================================= */
